@@ -1,4 +1,95 @@
+require 'nokogiri'
+require 'open-uri'
+
 module Ossert
+  module Reference
+    class Base
+      attr_reader :total, :representative, :pages, :project_names
+
+      def initialize(representative, total, pages)
+        @representative = representative
+        @total = total
+        @pages = pages
+        @project_names = Set.new
+        # 20 each page, total 5907 pages
+      end
+
+      def prepare_projects!
+        all_pages = pages.to_a.shuffle
+        all_projects = Hash.new
+        representative.times do
+          current_page = all_pages.pop
+          Fetch::BestgemsTotalStat.process_page(current_page) do |rank, downloads, name|
+            all_projects[name] = {rank: rank, downloads: downloads}
+          end
+        end
+
+        @project_names.merge all_projects.keys.shuffle.first(representative)
+      end
+
+      class << self
+        attr_reader :refs
+        def load
+          @refs = %w(A B C D E).map { |e| "Ossert::Reference::Class#{e}".constantize.new.load }
+        end
+      end
+
+
+      def load
+        if File.exists?("data/#{self.class.name}.json")
+          @project_names = Oj.load File.read("data/#{self.class.name}.json")
+        end
+      end
+
+      def dump
+        existance_backup("data/#{self.class.name}.json")
+        File.open("data/#{self.class.name}.json","w") do |f|
+          f.write(Oj.dump(project_names))
+        end
+      end
+
+      def existance_backup(filename)
+        return unless File.exists?(filename)
+        FileUtils.cp(filename, "#{filename}.#{Time.now.strftime('%d%m%Y-%H%M%S.%L')}")
+      end
+    end
+
+    class ClassA < Base
+      def initialize
+        # super(25, 500, 1..25)
+        super(5, 500, 1..25)
+      end
+    end
+
+    class ClassB < Base
+      def initialize
+        # super(25, 500, 26..50)
+        super(10, 500, 26..50)
+      end
+    end
+
+    class ClassC < Base
+      def initialize
+        # super(100, 10000, 51..550)
+        super(10, 10000, 51..550)
+      end
+    end
+
+    class ClassD < Base
+      def initialize
+        # super(100, 50000, 551..2500)
+        super(10, 50000, 551..2500)
+      end
+    end
+
+    class ClassE < Base
+      def initialize
+        # super(100, 50000, 2501..5000)
+        super(10, 50000, 2501..5000)
+      end
+    end
+  end
+
   module Fetch
     class SimpleClient
       attr_reader :api_endpoint, :type
@@ -32,6 +123,17 @@ module Ossert
       end
     end
 
+    class BestgemsTotalStat
+      def self.process_page(page = nil)
+        doc = Nokogiri::HTML(open("http://bestgems.org/total#{page ? "?page=#{page}" : '' }"))
+        doc.css("table").xpath('//tr//td').each_slice(4) do |rank, downloads, name, _|
+          rank = rank.text.gsub(',', '').to_i
+          downloads = downloads.text.gsub(',', '').to_i
+          yield(rank, downloads, name.text)
+        end
+      end
+    end
+
     class Rubygems
       # Agility
       # => Total
@@ -47,11 +149,17 @@ module Ossert
         @project = project
       end
 
+      def info
+        @info ||= client.get("gems/#{project.rg_alias}.json")
+      end
+
       def releases
         @releases ||= client.get("versions/#{project.rg_alias}.json")
       end
 
       def process
+        project.gh_alias ||= info['homepage_uri'].gsub('http://github.com/','') if info['homepage_uri'].start_with? 'http://github.com/'
+
         releases.each do |release|
           project.agility.total.releases_total_rg << release['number']
           project.agility.quarters[release['created_at'].to_datetime].releases_total_rg << release['number']
@@ -127,70 +235,74 @@ module Ossert
 
       def initialize(project)
         @client = ::Octokit::Client.new(:access_token => ENV["GHTOKEN"])
-        client.default_media_type = 'application/vnd.github.v3.star+json'
+        # client.default_media_type = 'application/vnd.github.v3.star+json'
 
         @project = project
-        @owner = project.gh_alias.split('/')[0]
+        raise ArgumentError unless (@repo_name = project.gh_alias || find_repo).present?
+        @owner = @repo_name.split('/')[0]
+      end
+
+      def find_repo
+        first_found = client.search_repos(project.name, language: :ruby)[:items].first
+        first_found && first_found[:full_name]
       end
 
       def issues
-        @issues ||= client.issues(project.gh_alias, state: :all)# .index_by { |i| i[:url] }
+        @issues ||= client.issues(@repo_name, state: :all)
       end
 
       def issues_comments
-        @issues_comments ||= client.issues_comments(project.gh_alias)# .index_by { |i| i[:url] }
-        # @issues_comments_by_user = @issues_comments.values.index_by { |i| i[:user][:login] }
+        @issues_comments ||= client.issues_comments(@repo_name)
       end
 
       def pulls
         # fetch pull requests, identify by "url", store: "assignee", "milestone", created_at/updated_at, "user"
         # http://octokit.github.io/octokit.rb/Octokit/Client/PullRequests.html#pull_requests_comments-instance_method
         # fetch comments and link with PR by "pull_request_url"
-        @pulls ||= client.pull_requests(project.gh_alias, state: :all)# .index_by { |p| p[:url] }
+        @pulls ||= client.pull_requests(@repo_name, state: :all)
       end
 
       def pulls_comments
         # fetch pull requests, identify by "url", store: "assignee", "milestone", created_at/updated_at, "user"
         # http://octokit.github.io/octokit.rb/Octokit/Client/PullRequests.html#pull_requests_comments-instance_method
         # fetch comments and link with PR by "pull_request_url"
-        @pulls_comments ||= client.pulls_comments(project.gh_alias)# .index_by { |pc| pc[:url] }
-        #@pulls_comments_by_user = @pulls_comments.values.index_by { |i| i[:user][:login] }
+        @pulls_comments ||= client.pulls_comments(@repo_name)
       end
 
       def contributors
-        @contributors ||= client.contribs(project.gh_alias)# .index_by { |c| c[:login] }
+        @contributors ||= client.contribs(@repo_name)
       end
 
       def stargazers
-        @stargazers ||= client.stargazers(project.gh_alias)# .index_by { |s| s[:login] }
+        @stargazers ||= client.stargazers(@repo_name, :accept =>'application/vnd.github.v3.star+json')
       end
 
       def watchers
-        @watchers ||= client.subscribers(project.gh_alias)# .index_by { |w| w[:login] }
+        @watchers ||= client.subscribers(@repo_name)
       end
 
       def forkers
-        @forkers ||= client.forks(project.gh_alias)# .index_by { |f| f[:owner][:login] }
+        @forkers ||= client.forks(@repo_name)
       end
 
       def branches
-        @branches ||= client.branches(project.gh_alias)# .index_by { |b| b[:name] }
+        @branches ||= client.branches(@repo_name)
       end
 
       def tags
-        @tags ||= client.tags(project.gh_alias)# .index_by { |b| b[:tag_name] }
+        @tags ||= client.tags(@repo_name)
       end
 
       def commits
-        @commits ||= client.commits(project.gh_alias)
+        @commits ||= client.commits(@repo_name)
       end
 
       def commit(sha)
-        client.commit(project.gh_alias, sha)
+        client.commit(@repo_name, sha)
       end
 
       def tag_info(sha)
-        client.tag(project.gh_alias, sha)
+        client.tag(@repo_name, sha)
       rescue Octokit::NotFound
         false
       end
@@ -202,11 +314,11 @@ module Ossert
       end
 
       def commits_since(date)
-        client.commits_since(project.gh_alias, date)
+        client.commits_since(@repo_name, date)
       end
 
       def latest_release
-        @latest_release ||= client.latest_release(project.gh_alias)
+        @latest_release ||= client.latest_release(@repo_name)
       end
 
       def process
@@ -223,13 +335,6 @@ module Ossert
         # end
 
         issues.each do |issue|
-          # select open, closed, owner, non_owner, total
-          # first date, last date
-          #
-          # open for quarter, closed for quarter
-          #
-          # users_writing_issues (+ by quarter)
-          # total_users_involved (+ by quarter)
           case issue[:state]
           when 'open'
             project.agility.total.issues_open << issue[:url]
@@ -329,8 +434,10 @@ module Ossert
 
         # latest release = http://octokit.github.io/octokit.rb/Octokit/Client/Releases.html#latest_release-instance_method
         # commits_count_since_last_release = http://octokit.github.io/octokit.rb/Octokit/Client/Commits.html#commits_since-instance_method
-        project.agility.total.last_release_date = @latest_release_date# wrong: last_release_commit[:commit][:committer][:date]
-        project.agility.total.commits_count_since_last_release = commits_since(@latest_release_date).length
+        if @last_release_date.present?
+          project.agility.total.last_release_date = @latest_release_date# wrong: last_release_commit[:commit][:committer][:date]
+          project.agility.total.commits_count_since_last_release = commits_since(@latest_release_date).length
+        end
 
         # ... better to use just `git` ???
         # @commits.each do |commit|
@@ -392,21 +499,6 @@ module Ossert
         #
         # attr_accessor :users_writing_issues, :users_creating_pr, :contributors, # NO DATES. FUUUU... :watchers, :stargazers, :forks,
         #               :total_users_involved
-      end
-
-      def load
-        if File.exists?("data/gh.#{project.gh_alias}.json")
-          Oj.load File.read("data/gh.#{project.gh_alias}.json")
-        end
-
-        self
-      end
-
-      def dump
-        existance_backup("data/gh.#{project.gh_alias}.json")
-        File.open("data/gh.#{project.gh_alias}.json","w") do |f|
-          f.write(Oj.dump(projects))
-        end
       end
     end
   end
