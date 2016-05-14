@@ -37,7 +37,11 @@ module Ossert
           @refs.each_with_index do |class_projects, idx|
             class_projects.each do |project_name|
               puts "#{CLASSES[idx]} reference project: '#{project_name}'"
-              Ossert::Fetch.all Ossert::Project.new(project_name, nil, project_name, CLASSES[idx])
+              begin
+                Ossert::Fetch.all Ossert::Project.new(project_name, nil, project_name, CLASSES[idx])
+              rescue ArgumentError
+                puts "Fetching Failed for '#{project_name}'"
+              end
               sleep(5)
             end
           end

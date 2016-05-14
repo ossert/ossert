@@ -469,6 +469,8 @@ module Ossert
         #
         # attr_accessor :users_writing_issues, :users_creating_pr, :contributors, # NO DATES. FUUUU... :watchers, :stargazers, :forks,
         #               :total_users_involved
+      rescue Octokit::NotFound => e
+        puts "Github NotFound Error: #{e.inspect}"
       end
 
       def generate_anonymous

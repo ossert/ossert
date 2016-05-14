@@ -95,7 +95,11 @@ module Ossert
     end
 
     def fullfill!
-      return if quarters.empty?
+      if quarters.empty?
+        @start_date = Time.now
+        @end_date = Time.now
+        return
+      end
 
       sorted_quarters = quarters.keys.sort
       @start_date = Time.at sorted_quarters.first
