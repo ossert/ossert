@@ -61,7 +61,7 @@ module Ossert
         :users_involved
       ]
       AGILITY_METRICS = [
-        :issues_open, :issues_closed, :issues_total, :pr_open, :pr_merged, :pr_closed, :pr_total,
+        :issues_open, :issues_closed, :issues_total, :pr_open, :pr_closed, :pr_total,
         :releases_total_gh, :branches, :releases_total_rg, :commits,
         :download_divergence, :total_downloads, :delta_downloads
       ]

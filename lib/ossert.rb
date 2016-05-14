@@ -1,6 +1,7 @@
 require "ossert/version"
 require "ossert/fetch"
 require "ossert/reports"
+require "ossert/reference"
 require 'octokit'
 require 'gems'
 # interesting... https://rubygems.org/pages/data
@@ -17,12 +18,13 @@ module Ossert
     attr_accessor :name, :gh_alias, :rg_alias,
                   :community, :agility
 
-    def initialize(name, gh_alias, rg_alias)
+    def initialize(name, gh_alias = nil, rg_alias = nil, reference = nil)
       @name = name
       @gh_alias = gh_alias
-      @rg_alias = rg_alias
+      @rg_alias = rg_alias || name
       @agility = Agility.new
       @community = Community.new
+      @reference = reference
       self.class.projects << self
     end
 
