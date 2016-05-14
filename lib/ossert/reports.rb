@@ -57,11 +57,11 @@ module Ossert
     class Pulse # Prepare data for Graph
       COMMUNITY_METRICS = [
         :users_creating_issues, :users_commenting_issues, :users_creating_pr, :users_commenting_pr,
-        :contributors, :stargazers, :forks, # NO DATES... FUUU... :watchers,
+        :stargazers, :forks, # NO DATES... FUUU... :watchers,
         :users_involved
       ]
       AGILITY_METRICS = [
-        :issues_open, :issues_closed, :pr_open, :pr_merged, :pr_closed, :releases,
+        :issues_open, :issues_closed, :issues_total, :pr_open, :pr_merged, :pr_closed, :pr_total,
         :releases_total_gh, :branches, :releases_total_rg, :commits,
         :download_divergence, :total_downloads, :delta_downloads
       ]
@@ -92,19 +92,19 @@ module Ossert
         # DATE | PR1-METRIC2 | PR2-METRIC2 |
 
         # CSV.open("reports/projects-pulse.csv", "wb") do |csv|
-          agility_start_date = Time.now
-          agility_end_date = 20.years.ago
-          community_start_date = Time.now
-          community_end_date = 20.years.ago
+        agility_start_date = Time.now
+        agility_end_date = 20.years.ago
+        community_start_date = Time.now
+        community_end_date = 20.years.ago
 
-          projects.each do |project|
-            project.agility.quarters.fullfill!
-            agility_start_date = [project.agility.quarters.start_date, agility_start_date].min
-            agility_end_date = [project.agility.quarters.end_date, agility_end_date].max
-            project.community.quarters.fullfill!
-            community_start_date = [project.community.quarters.start_date, community_start_date].min
-            community_end_date = [project.community.quarters.end_date, community_end_date].min
-          end
+        projects.each do |project|
+          project.agility.quarters.fullfill!
+          agility_start_date = [project.agility.quarters.start_date, agility_start_date].min
+          agility_end_date = [project.agility.quarters.end_date, agility_end_date].max
+          project.community.quarters.fullfill!
+          community_start_date = [project.community.quarters.start_date, community_start_date].min
+          community_end_date = [project.community.quarters.end_date, community_end_date].max
+        end
 
         CSV.open("reports/projects-community-pulse.csv", "wb") do |csv|
           csv << ['Community Metrics']

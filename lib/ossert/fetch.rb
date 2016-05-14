@@ -1,5 +1,6 @@
 require 'nokogiri'
 require 'open-uri'
+require 'benchmark'
 
 module Ossert
   module Reference
@@ -91,6 +92,29 @@ module Ossert
   end
 
   module Fetch
+    def all_by_names(names)
+      names.each do |name|
+        puts "Fetching project '#{name}'..."
+        all(Project.new(name, nil, name))
+        puts "Done."
+        sleep(1)
+      end
+      nil
+    end
+    module_function :all_by_names
+
+    def all(project)
+      [Rubygems, Bestgems, GitHub].each do |fetcher|
+        puts "======> with #{fetcher}..."
+        time = Benchmark.realtime {
+          fetcher.new(project).process
+        }
+        puts "<====== Finished in #{time.round(3)} sec."
+        sleep(1)
+      end
+      nil
+    end
+    module_function :all
     class SimpleClient
       attr_reader :api_endpoint, :type
 
@@ -297,7 +321,16 @@ module Ossert
       end
 
       def last_year_commits
-        @last_year_commits ||= client.commit_activity_stats(@repo_name)
+        return @last_year_commits if @last_year_commits
+        retry_count = 3
+        while @last_year_commits.blank? && retry_count > 0
+          @last_year_commits ||= client.commit_activity_stats(@repo_name)
+          if @last_year_commits.blank?
+            sleep(15*retry_count)
+            retry_count -= 1
+          end
+        end
+        @last_year_commits
       end
 
       def commit(sha)
@@ -351,10 +384,10 @@ module Ossert
           case issue[:state]
           when 'open'
             project.agility.total.issues_open << issue[:url]
-            project.agility.quarters[issue[:updated_at]].issues_open << issue[:url]
+            project.agility.quarters[issue[:created_at]].issues_open << issue[:url]
           when 'closed'
             project.agility.total.issues_closed << issue[:url]
-            project.agility.quarters[issue[:updated_at]].issues_closed << issue[:url]
+            project.agility.quarters[issue[:created_at]].issues_closed << issue[:url]
           end
 
           if issue[:user][:login] == @owner
@@ -364,19 +397,19 @@ module Ossert
           end
 
           project.agility.total.issues_total << issue[:url]
-          project.agility.quarters[issue[:updated_at]].issues_total << issue[:url]
-          if project.agility.total.first_issue_date.nil? || issue[:updated_at] < project.agility.total.first_issue_date
-            project.agility.total.first_issue_date = issue[:updated_at]
+          project.agility.quarters[issue[:created_at]].issues_total << issue[:url]
+          if project.agility.total.first_issue_date.nil? || issue[:created_at] < project.agility.total.first_issue_date
+            project.agility.total.first_issue_date = issue[:created_at]
           end
 
-          if project.agility.total.last_issue_date.nil? || issue[:updated_at] > project.agility.total.last_issue_date
-            project.agility.total.last_issue_date = issue[:updated_at]
+          if project.agility.total.last_issue_date.nil? || issue[:created_at] > project.agility.total.last_issue_date
+            project.agility.total.last_issue_date = issue[:created_at]
           end
 
           project.community.total.users_creating_issues << issue[:user][:login]
-          project.community.quarters[issue[:updated_at]].users_creating_issues << issue[:user][:login]
+          project.community.quarters[issue[:created_at]].users_creating_issues << issue[:user][:login]
           project.community.total.users_involved << issue[:user][:login]
-          project.community.quarters[issue[:updated_at]].users_involved << issue[:user][:login]
+          project.community.quarters[issue[:created_at]].users_involved << issue[:user][:login]
         end
 
         issues_comments.each do |issue_comment|
@@ -387,19 +420,19 @@ module Ossert
           end
 
           project.community.total.users_commenting_issues << issue_comment[:user][:login]
-          project.community.quarters[issue_comment[:updated_at]].users_commenting_issues << issue_comment[:user][:login]
+          project.community.quarters[issue_comment[:created_at]].users_commenting_issues << issue_comment[:user][:login]
           project.community.total.users_involved << issue_comment[:user][:login]
-          project.community.quarters[issue_comment[:updated_at]].users_involved << issue_comment[:user][:login]
+          project.community.quarters[issue_comment[:created_at]].users_involved << issue_comment[:user][:login]
         end
 
         pulls.each do |pull|
           case pull[:state]
           when 'open'
             project.agility.total.pr_open << pull[:url]
-            project.agility.quarters[pull[:updated_at]].pr_open << pull[:url]
+            project.agility.quarters[pull[:created_at]].pr_open << pull[:url]
           when 'closed'
             project.agility.total.pr_closed << pull[:url]
-            project.agility.quarters[pull[:updated_at]].pr_closed << pull[:url]
+            project.agility.quarters[pull[:created_at]].pr_closed << pull[:url]
           end
 
           if pull[:user][:login] == @owner
@@ -409,20 +442,20 @@ module Ossert
           end
 
           project.agility.total.pr_total << pull[:url]
-          project.agility.quarters[issue[:updated_at]].pr_total << pull[:url]
+          project.agility.quarters[pull[:created_at]].pr_total << pull[:url]
 
-          if project.agility.total.first_pr_date.nil? || pull[:updated_at] < project.agility.total.first_pr_date
-            project.agility.total.first_pr_date = pull[:updated_at]
+          if project.agility.total.first_pr_date.nil? || pull[:created_at] < project.agility.total.first_pr_date
+            project.agility.total.first_pr_date = pull[:created_at]
           end
 
-          if project.agility.total.last_pr_date.nil? || pull[:updated_at] > project.agility.total.last_pr_date
-            project.agility.total.last_pr_date = pull[:updated_at]
+          if project.agility.total.last_pr_date.nil? || pull[:created_at] > project.agility.total.last_pr_date
+            project.agility.total.last_pr_date = pull[:created_at]
           end
 
           project.community.total.users_creating_pr << pull[:user][:login]
-          project.community.quarters[pull[:updated_at]].users_creating_pr << pull[:user][:login]
+          project.community.quarters[pull[:created_at]].users_creating_pr << pull[:user][:login]
           project.community.total.users_involved << pull[:user][:login]
-          project.community.quarters[pull[:updated_at]].users_involved << pull[:user][:login]
+          project.community.quarters[pull[:created_at]].users_involved << pull[:user][:login]
         end
 
         pulls_comments.each do |pull_comment|
@@ -431,9 +464,9 @@ module Ossert
           end
 
           project.community.total.users_commenting_pr << pull_comment[:user][:login]
-          project.community.quarters[pull_comment[:updated_at]].users_commenting_pr << pull_comment[:user][:login]
+          project.community.quarters[pull_comment[:created_at]].users_commenting_pr << pull_comment[:user][:login]
           project.community.total.users_involved << pull_comment[:user][:login]
-          project.community.quarters[pull_comment[:updated_at]].users_involved << pull_comment[:user][:login]
+          project.community.quarters[pull_comment[:created_at]].users_involved << pull_comment[:user][:login]
         end
 
         @latest_release_sha = nil
