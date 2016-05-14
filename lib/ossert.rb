@@ -1,5 +1,6 @@
 require "ossert/version"
 require "ossert/fetch"
+require "ossert/reports"
 require 'octokit'
 require 'gems'
 # interesting... https://rubygems.org/pages/data
@@ -71,7 +72,7 @@ module Ossert
   end
 
   class QuartersStore
-    attr_reader :quarters, :stat_klass
+    attr_reader :quarters, :stat_klass, :start_date, :end_date
 
     def initialize(stat_klass)
       @stat_klass = stat_klass
@@ -89,6 +90,19 @@ module Ossert
 
     def preview
       quarters.sort.map { |date_i, value| [Time.at(date_i), value] }.to_h
+    end
+
+    def fullfill!
+      return if quarters.empty?
+
+      sorted_quarters = quarters.keys.sort
+      @start_date = Time.at sorted_quarters.first
+      @end_date = Time.at sorted_quarters.last
+      period = start_date + 93.days
+      while period < end_date
+        find_or_create(period)
+        period = period + 93.days
+      end
     end
 
     def each_sorted
@@ -184,10 +198,10 @@ module Ossert
                   :pr_open, :pr_merged, :pr_closed, :pr_owner, :pr_non_owner, :pr_with_contrib_comments, :pr_total,
                   :first_pr_date, :last_pr_date, :first_issue_date, :last_issue_date,
                   :releases_total_gh, :releases_total_rg, :last_release_date, :commits_count_since_last_release,
-                  :stale_branches, :branches, :total_downloads, :delta_downloads
+                  :last_year_commits, :stale_branches, :branches, :total_downloads, :delta_downloads
 
     NON_SET_VARS = %w(first_pr_date last_pr_date first_issue_date last_issue_date last_release_date
-                      commits_count_since_after_release total_downloads delta_downloads)
+                      commits_count_since_after_release total_downloads delta_downloads last_year_commits)
 
     def initialize
       self.class.attributes.each do |var|
@@ -213,11 +227,11 @@ module Ossert
     # - Downloads divergence
     # - Downloads degradation per release ??
     # - Branches Count
-    attr_accessor :issues_open, :issues_closed, :pr_open, :pr_merged, :pr_closed, :releases,
-                  :releases_total_gh, :branches, :releases_total_rg,
+    attr_accessor :issues_open, :issues_closed, :issues_total, :pr_open, :pr_merged, :pr_closed, :pr_total, :releases,
+                  :releases_total_gh, :branches, :releases_total_rg, :commits,
                   :download_divergence, :total_downloads, :delta_downloads
 
-    NON_SET_VARS = %w(download_divergence total_downloads delta_downloads)
+    NON_SET_VARS = %w(download_divergence total_downloads delta_downloads commits)
     def initialize
       self.class.attributes.each do |var|
         next if NON_SET_VARS.include?(var.to_s)

@@ -235,16 +235,18 @@ module Ossert
 
       def initialize(project)
         @client = ::Octokit::Client.new(:access_token => ENV["GHTOKEN"])
-        # client.default_media_type = 'application/vnd.github.v3.star+json'
+        client.default_media_type = 'application/vnd.github.v3.star+json'
+        client.auto_paginate = true
 
         @project = project
         raise ArgumentError unless (@repo_name = project.gh_alias || find_repo).present?
+        project.gh_alias ||= @repo_name
         @owner = @repo_name.split('/')[0]
       end
 
       def find_repo
         first_found = client.search_repos(project.name, language: :ruby)[:items].first
-        first_found && first_found[:full_name]
+        first_found.try(:[], :full_name)
       end
 
       def issues
@@ -274,7 +276,8 @@ module Ossert
       end
 
       def stargazers
-        @stargazers ||= client.stargazers(@repo_name, :accept =>'application/vnd.github.v3.star+json')
+        # @stargazers ||= client.stargazers(@repo_name, :accept =>'application/vnd.github.v3.star+json')
+        @stargazers ||= client.stargazers(@repo_name)
       end
 
       def watchers
@@ -293,8 +296,8 @@ module Ossert
         @tags ||= client.tags(@repo_name)
       end
 
-      def commits
-        @commits ||= client.commits(@repo_name)
+      def last_year_commits
+        @last_year_commits ||= client.commit_activity_stats(@repo_name)
       end
 
       def commit(sha)
@@ -319,6 +322,16 @@ module Ossert
 
       def latest_release
         @latest_release ||= client.latest_release(@repo_name)
+      end
+
+      def process_commits
+        last_year_commits.each do |week|
+          current_count = project.agility.total.last_year_commits.to_i
+          project.agility.total.last_year_commits = current_count + week['total']
+
+          current_quarter_count = project.agility.quarters[week['week']].commits.to_i
+          project.agility.quarters[week['week']].commits = current_quarter_count + week['total']
+        end
       end
 
       def process
@@ -351,6 +364,7 @@ module Ossert
           end
 
           project.agility.total.issues_total << issue[:url]
+          project.agility.quarters[issue[:updated_at]].issues_total << issue[:url]
           if project.agility.total.first_issue_date.nil? || issue[:updated_at] < project.agility.total.first_issue_date
             project.agility.total.first_issue_date = issue[:updated_at]
           end
@@ -395,6 +409,7 @@ module Ossert
           end
 
           project.agility.total.pr_total << pull[:url]
+          project.agility.quarters[issue[:updated_at]].pr_total << pull[:url]
 
           if project.agility.total.first_pr_date.nil? || pull[:updated_at] < project.agility.total.first_pr_date
             project.agility.total.first_pr_date = pull[:updated_at]
@@ -445,6 +460,7 @@ module Ossert
         #   project.agility.commits << commit[:sha]
         #   project.agility.quarters[???].commits << commit[:sha]
         # end
+        process_commits
 
         branches.each do |branch|
           # stale and total
@@ -460,15 +476,24 @@ module Ossert
           #    date -> stale
         end
 
-        project.community.total.stargazers.merge(stargazers.map { |s| s[:login] })
-        project.community.total.users_involved.merge(project.community.total.stargazers)
+        # project.community.total.stargazers.merge(stargazers.map { |s| s[:login] }.compact)
+        # project.community.total.users_involved.merge(project.community.total.stargazers)
         stargazers.each do |stargazer|
-          project.community.quarters[stargazer[:starred_at]].stargazers << stargazer[:user][:login]
-          project.community.quarters[stargazer[:starred_at]].users_involved << stargazer[:user][:login]
+          login = stargazer[:user][:login].presence || generate_anonymous
+          project.community.total.stargazers << login
+          project.community.total.users_involved << login
+
+          project.community.quarters[stargazer[:starred_at]].stargazers << login
+          project.community.quarters[stargazer[:starred_at]].users_involved << login
         end
 
         project.community.total.watchers.merge(watchers.map { |w| w[:login] })
         project.community.total.users_involved.merge(project.community.total.watchers)
+        watchers.each do |watcher|
+          login = watcher[:login].presence || generate_anonymous
+          project.community.total.watchers << login
+          project.community.total.users_involved << login
+        end
         # @watchers.each do |contrib|
         #   # total (+ by quarter) NO DATES!!! FUUUU...
         #   # total_users_involved (+ by quarter)
@@ -499,6 +524,12 @@ module Ossert
         #
         # attr_accessor :users_writing_issues, :users_creating_pr, :contributors, # NO DATES. FUUUU... :watchers, :stargazers, :forks,
         #               :total_users_involved
+      end
+
+      def generate_anonymous
+        @anonymous_count ||= 0
+        @anonymous_count += 1
+        "anonymous_#{@anonymous_count}"
       end
     end
   end
