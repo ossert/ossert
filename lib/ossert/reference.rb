@@ -9,6 +9,7 @@ module Ossert
         @total = total
         @pages = pages
         @project_names = Set.new
+        (Base.refs ||= []) << self
         # 20 each page, total 5907 pages
       end
 
@@ -27,16 +28,30 @@ module Ossert
 
 
       class << self
-        attr_reader :refs
+        attr_accessor :refs
         def load
           @refs = %w(A B C D E).map { |e| "Ossert::Reference::Class#{e}".constantize.new.load }
         end
 
-        def collect_stats_for_refs!
+        def dump
+          @refs.each { |ref| ref.dump }
+        end
+
+        def prepare_projects!
+          %w(A B C D E).map { |e| "Ossert::Reference::Class#{e}".constantize.new.prepare_projects! }
+        end
+
+        def collect_stats_for_refs!(force = false)
+          existing_projects = Project.projects.map { |p| p.name }
           puts "==== COLLECTING REFERENCE PROJECTS ===="
-          @refs.each_with_index do |class_projects, idx|
-            class_projects.each do |project_name|
+          @refs.each_with_index do |reference, idx|
+            reference.project_names.each do |project_name|
               puts "#{CLASSES[idx]} reference project: '#{project_name}'"
+              if !force && existing_projects.include?(project_name)
+                puts "Exists. Skipping"
+                next
+              end
+
               begin
                 Ossert::Fetch.all Ossert::Project.new(project_name, nil, project_name, CLASSES[idx])
               rescue ArgumentError
@@ -53,6 +68,7 @@ module Ossert
         if File.exists?("data/#{self.class.name}.json")
           @project_names = Oj.load File.read("data/#{self.class.name}.json")
         end
+        self
       end
 
       def dump
@@ -70,36 +86,36 @@ module Ossert
 
     class ClassA < Base
       def initialize
-        # super(25, 500, 1..25)
-        super(5, 500, 1..25)
+        super(25, 500, 1..25)
+        # super(5, 500, 1..25)
       end
     end
 
     class ClassB < Base
       def initialize
-        # super(25, 500, 26..50)
-        super(10, 500, 26..50)
+        super(25, 500, 26..50)
+        # super(10, 500, 26..50)
       end
     end
 
     class ClassC < Base
       def initialize
-        # super(100, 10000, 51..550)
-        super(10, 10000, 51..550)
+        super(100, 10000, 51..550)
+        # super(10, 10000, 51..550)
       end
     end
 
     class ClassD < Base
       def initialize
-        # super(100, 50000, 551..2500)
-        super(10, 50000, 551..2500)
+        super(100, 50000, 551..2500)
+        # super(10, 50000, 551..2500)
       end
     end
 
     class ClassE < Base
       def initialize
-        # super(100, 50000, 2501..5000)
-        super(10, 50000, 2501..5000)
+        super(100, 50000, 2501..5000)
+        # super(10, 50000, 2501..5000)
       end
     end
   end

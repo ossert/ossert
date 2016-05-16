@@ -27,6 +27,7 @@ module Ossert
       nil
     end
     module_function :all
+
     class SimpleClient
       attr_reader :api_endpoint, :type
 
@@ -94,7 +95,7 @@ module Ossert
       end
 
       def process
-        project.gh_alias ||= info['homepage_uri'].gsub('http://github.com/','') if info['homepage_uri'].start_with? 'http://github.com/'
+        project.gh_alias ||= info['homepage_uri'].gsub(/http?s\:\/\/github.com\//,'') if info['homepage_uri'].try(:match, /http?s\:\/\/github.com/)
 
         releases.each do |release|
           project.agility.total.releases_total_rg << release['number']
@@ -175,61 +176,68 @@ module Ossert
         client.auto_paginate = true
 
         @project = project
-        raise ArgumentError unless (@repo_name = project.gh_alias || find_repo).present?
-        project.gh_alias ||= @repo_name
+        raise ArgumentError unless (@repo_name = project.gh_alias).present?
         @owner = @repo_name.split('/')[0]
+        @requests_count = 0
       end
 
-      def find_repo
-        first_found = client.search_repos(project.name, language: :ruby)[:items].first
-        first_found.try(:[], :full_name)
+      # DO NOT WORK CORRECTLY!!!! FUUUUU....
+      # def find_repo(user)
+      #   first_found = client.search_repos(project.name, language: :ruby, user: user)[:items].first
+      #   first_found.try(:[], :full_name)
+      # end
+
+      def request(endpoint, *args)
+        raise 'Requests limit reached' if @requests_count % 500 == 0 && client.rate_limit![:remaining] < 30
+        @requests_count += 1
+        client.send(endpoint, *args)
       end
 
       def issues
-        @issues ||= client.issues(@repo_name, state: :all)
+        @issues ||= request(:issues, @repo_name, state: :all)
       end
 
       def issues_comments
-        @issues_comments ||= client.issues_comments(@repo_name)
+        @issues_comments ||= request(:issues_comments, @repo_name)
       end
 
       def pulls
         # fetch pull requests, identify by "url", store: "assignee", "milestone", created_at/updated_at, "user"
         # http://octokit.github.io/octokit.rb/Octokit/Client/PullRequests.html#pull_requests_comments-instance_method
         # fetch comments and link with PR by "pull_request_url"
-        @pulls ||= client.pull_requests(@repo_name, state: :all)
+        @pulls ||= request(:pull_requests, @repo_name, state: :all)
       end
 
       def pulls_comments
         # fetch pull requests, identify by "url", store: "assignee", "milestone", created_at/updated_at, "user"
         # http://octokit.github.io/octokit.rb/Octokit/Client/PullRequests.html#pull_requests_comments-instance_method
         # fetch comments and link with PR by "pull_request_url"
-        @pulls_comments ||= client.pulls_comments(@repo_name)
+        @pulls_comments ||= request(:pulls_comments, @repo_name)
       end
 
       def contributors
-        @contributors ||= client.contribs(@repo_name)
+        @contributors ||= request(:contribs, @repo_name)
       end
 
       def stargazers
         # @stargazers ||= client.stargazers(@repo_name, :accept =>'application/vnd.github.v3.star+json')
-        @stargazers ||= client.stargazers(@repo_name)
+        @stargazers ||= request(:stargazers, @repo_name)
       end
 
       def watchers
-        @watchers ||= client.subscribers(@repo_name)
+        @watchers ||= request(:subscribers, @repo_name)
       end
 
       def forkers
-        @forkers ||= client.forks(@repo_name)
+        @forkers ||= request(:forks, @repo_name)
       end
 
       def branches
-        @branches ||= client.branches(@repo_name)
+        @branches ||= request(:branches, @repo_name)
       end
 
       def tags
-        @tags ||= client.tags(@repo_name)
+        @tags ||= request(:tags, @repo_name)
       end
 
       def last_year_commits
@@ -293,6 +301,7 @@ module Ossert
         # end
 
         issues.each do |issue|
+          next if issue.key? :pull_request
           case issue[:state]
           when 'open'
             project.agility.total.issues_open << issue[:url]
@@ -303,9 +312,9 @@ module Ossert
           end
 
           if issue[:user][:login] == @owner
-            project.agility.total.issues_non_owner << issue[:url]
-          else
             project.agility.total.issues_owner << issue[:url]
+          else
+            project.agility.total.issues_non_owner << issue[:url]
           end
 
           project.agility.total.issues_total << issue[:url]
@@ -325,16 +334,18 @@ module Ossert
         end
 
         issues_comments.each do |issue_comment|
+          login = issue_comment[:user].try(:[], :login).presence || generate_anonymous
           issue_url = /\A(.*)#issuecomment.*\z/.match(issue_comment[:html_url])[1]
+          next if issue_url.include?('/pull/')
 
-          if project.community.total.contributors.include? issue_comment[:user][:login]
+          if project.community.total.contributors.include? login
             project.agility.total.issues_with_contrib_comments << issue_url
           end
 
-          project.community.total.users_commenting_issues << issue_comment[:user][:login]
-          project.community.quarters[issue_comment[:created_at]].users_commenting_issues << issue_comment[:user][:login]
-          project.community.total.users_involved << issue_comment[:user][:login]
-          project.community.quarters[issue_comment[:created_at]].users_involved << issue_comment[:user][:login]
+          project.community.total.users_commenting_issues << login
+          project.community.quarters[issue_comment[:created_at]].users_commenting_issues << login
+          project.community.total.users_involved << login
+          project.community.quarters[issue_comment[:created_at]].users_involved << login
         end
 
         pulls.each do |pull|
@@ -348,9 +359,9 @@ module Ossert
           end
 
           if pull[:user][:login] == @owner
-            project.agility.total.pr_non_owner << pull[:url]
-          else
             project.agility.total.pr_owner << pull[:url]
+          else
+            project.agility.total.pr_non_owner << pull[:url]
           end
 
           project.agility.total.pr_total << pull[:url]
@@ -371,14 +382,15 @@ module Ossert
         end
 
         pulls_comments.each do |pull_comment|
-          if project.community.total.contributors.include? pull_comment[:user][:login]
+          login = pull_comment[:user].try(:[], :login).presence || generate_anonymous
+          if project.community.total.contributors.include? login
             project.agility.total.pr_with_contrib_comments << pull_comment[:pull_request_url]
           end
 
-          project.community.total.users_commenting_pr << pull_comment[:user][:login]
-          project.community.quarters[pull_comment[:created_at]].users_commenting_pr << pull_comment[:user][:login]
-          project.community.total.users_involved << pull_comment[:user][:login]
-          project.community.quarters[pull_comment[:created_at]].users_involved << pull_comment[:user][:login]
+          project.community.total.users_commenting_pr << login
+          project.community.quarters[pull_comment[:created_at]].users_commenting_pr << login
+          project.community.total.users_involved << login
+          project.community.quarters[pull_comment[:created_at]].users_involved << login
         end
 
         @latest_release_sha = nil
