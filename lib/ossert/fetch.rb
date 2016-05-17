@@ -95,8 +95,11 @@ module Ossert
       end
 
       def process
-        project.gh_alias ||= info['homepage_uri'].gsub(/http?s\:\/\/github.com\//,'') if info['homepage_uri'].try(:match, /http?s\:\/\/github.com/)
-        project.gh_alias ||= info['source_code_uri'].gsub(/http?s\:\/\/github.com\//,'') if info['source_code_uri'].try(:match, /http?s\:\/\/github.com/)
+        if project.gh_alias.blank?
+          match = info['source_code_uri'].try(:match, /github.com\/([a-zA-Z0-9\_\-]+)\/([a-zA-Z0-9\_\-]+)/)
+          match ||= info['homepage_uri'].try(:match, /github.com\/([a-zA-Z0-9\_\-]+)\/([a-zA-Z0-9\_\-]+)/)
+          project.gh_alias = "#{match[1]}/#{match[2]}" if match
+        end
 
         releases.each do |release|
           project.agility.total.releases_total_rg << release['number']
