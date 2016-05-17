@@ -28,6 +28,23 @@ module Ossert
     end
     module_function :all
 
+    # Example
+    #   projects_without_gh_data = Ossert::Project.projects.select { |proj| proj.gh_alias.blank? }
+    #   projects_without_gh_data.each { |prj| Ossert::Fetch.only([Ossert::Fetch::Rubygems, Ossert::Fetch::GitHub], prj) }
+    def only(fetchers, project)
+      puts "Fetching project '#{project.name}'..."
+      ([Rubygems, Bestgems, GitHub] & fetchers).each do |fetcher|
+        puts "======> with #{fetcher}..."
+        time = Benchmark.realtime {
+          fetcher.new(project).process
+        }
+        puts "<====== Finished in #{time.round(3)} sec."
+        sleep(1)
+      end
+      nil
+    end
+    module_function :only
+
     class SimpleClient
       attr_reader :api_endpoint, :type
 
@@ -101,6 +118,7 @@ module Ossert
           project.gh_alias = "#{match[1]}/#{match[2]}" if match
         end
 
+        return if project.agility.total.releases_total_rg.present?
         releases.each do |release|
           project.agility.total.releases_total_rg << release['number']
           project.agility.quarters[release['created_at'].to_datetime].releases_total_rg << release['number']
