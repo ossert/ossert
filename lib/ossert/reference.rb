@@ -96,7 +96,7 @@ module Ossert
       # Each Absolute metric gives 0.1 probability of Class A qualification
       # Absolute:
       #   - Issues Total > X
-      #   - PR Total > 180 (100) ???
+      #   - PR Total > 180
       #   - Last year commits > 100
       #   - Total Downloads > 2M
       #   - Total Releases > 55
@@ -107,6 +107,20 @@ module Ossert
       #   - (0.05 + 0.05) Non-owner PRs > 60%, Issues > 60%
       #   - (0.05 + 0.05) Open PRs < 5%, Issues < 10%
       #   - (0.05 + 0.05) With contributors comments PRs > 12%, Issues > 78%
+      #
+      #
+      # Comunity.
+      # Each metric has absolute value and gives 0,1 probability:
+      #   - Users creating issues > 375
+      #   - Users commenting issues > 500
+      #   - Users creating pulls > 90
+      #   - Users commenting pulls > 24
+      #   - Users contributors > 70
+      #   - Users watchers > 50
+      #   - Users stargazers > 1000
+      #   - Users forks > 150
+      #   - Users total > 1200
+      #   - Users total without stargazers > 400
       #
     end
 
@@ -134,6 +148,20 @@ module Ossert
       #   - (0.05 + 0.05) Open PRs < 25%, Issues < 28%
       #   - (0.05 + 0.05) With contributors comments PRs > 10%, Issues > 58%
       #
+      #
+      # Comunity.
+      # Each metric has absolute value and gives 0,1 probability:
+      #   - Users creating issues > 42
+      #   - Users commenting issues > 42
+      #   - Users creating pulls > 21
+      #   - Users commenting pulls > 3 ???
+      #   - Users contributors > 28
+      #   - Users watchers > 24
+      #   - Users stargazers > 180
+      #   - Users forks > 40
+      #   - Users total > 300
+      #   - Users total without stargazers > 60
+      #
     end
 
     class ClassC < Base
@@ -159,6 +187,20 @@ module Ossert
       #   - (0.05 + 0.05) Non-owner PRs > 30%, Issues > 28%
       #   - (0.05 + 0.05) Open PRs < 45%, Issues < 46%
       #   - (0.05 + 0.05) With contributors comments PRs > 10%, Issues > 58%
+      #
+      #
+      # Comunity.
+      # Each metric has absolute value and gives 0,1 probability:
+      #   - Users creating issues > 23
+      #   - Users commenting issues > 24
+      #   - Users creating pulls > 21
+      #   - Users commenting pulls > 2
+      #   - Users contributors > 12
+      #   - Users watchers > 7
+      #   - Users stargazers > 120
+      #   - Users forks > 25
+      #   - Users total > 200
+      #   - Users total without stargazers > 49
       #
     end
 
@@ -186,6 +228,20 @@ module Ossert
       #   - (0.05 + 0.05) Open PRs < 65%, Issues < 66%
       #   - (0.05 + 0.05) With contributors comments PRs > 4%, Issues > 19%
       #
+      #
+      # Comunity.
+      # Each metric has absolute value and gives 0,1 probability:
+      #   - Users creating issues > 4
+      #   - Users commenting issues > 4
+      #   - Users creating pulls > 4
+      #   - Users commenting pulls > 0
+      #   - Users contributors > 3
+      #   - Users watchers > 3
+      #   - Users stargazers > 8
+      #   - Users forks > 7
+      #   - Users total > 28
+      #   - Users total without stargazers > 6
+      #
     end
 
     class ClassE < Base
@@ -211,6 +267,20 @@ module Ossert
       #   - (0.05 + 0.05) Non-owner PRs > 0%, Issues > 0%
       #   - (0.05 + 0.05) Open PRs < 100%, Issues < 100%
       #   - (0.05 + 0.05) With contributors comments PRs > 0%, Issues > 0%
+      #
+      #
+      # Comunity.
+      # Each metric has absolute value and gives 0,1 probability:
+      #   - Users creating issues > 0
+      #   - Users commenting issues > 0
+      #   - Users creating pulls > 0
+      #   - Users commenting pulls > 0
+      #   - Users contributors > 0
+      #   - Users watchers > 0
+      #   - Users stargazers > 0
+      #   - Users forks > 0
+      #   - Users total > 0
+      #   - Users total without stargazers > 0
       #
     end
   end
