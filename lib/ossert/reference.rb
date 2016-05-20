@@ -1,3 +1,6 @@
+require 'graphr'
+require 'decisiontree'
+
 module Ossert
   module Reference
     class Base
@@ -26,7 +29,6 @@ module Ossert
         @project_names.merge all_projects.keys.shuffle.first(representative)
       end
 
-
       class << self
         attr_accessor :refs
         def load
@@ -35,6 +37,49 @@ module Ossert
 
         def dump
           @refs.each { |ref| ref.dump }
+        end
+
+        attr_reader :agility_total_dec_tree, :agility_total_dec_tree, :agility_quarters_dec_tree,
+                    :agility_quarters_dec_tree, :community_total_dec_tree, :community_total_dec_tree,
+                    :community_quarters_dec_tree, :community_quarters_dec_tree
+
+        def train_descision_tree
+          grouped_projects = Project.projects_by_reference
+          agility_total_attributes = AgilityQuarterStat.attributes
+          agility_quarters_attributes = AgilityTotalStat.attributes
+          community_total_attributes = CommunityTotalStat.attributes
+          community_quarters_attributes = CommunityQuarterStat.attributes
+          agility_total_data, community_total_data, agility_last_year_data, community_last_year_data = [], [], [], []
+
+          CLASSES.each do |ref_class|
+            grouped_projects[ref_class].each do |project|
+              agility_total_data << (project.agility.total.values << ref_class)
+              community_total_data << (project.community.total.values << ref_class)
+              if (last_year_data = project.agility.quarters.last_year_data).present?
+                agility_last_year_data << (project.agility.quarters.last_year_data << ref_class)
+              end
+              if (last_year_data = project.community.quarters.last_year_data).present?
+                community_last_year_data << (project.community.quarters.last_year_data << ref_class)
+              end
+            end
+          end
+
+          @agility_total_dec_tree = DecisionTree::ID3Tree.new(
+            agility_total_attributes, agility_total_data, 'ClassE', :continuous
+          )
+          @agility_total_dec_tree.train
+          @agility_quarters_dec_tree = DecisionTree::ID3Tree.new(
+            agility_quarters_attributes, agility_last_year_data, 'ClassE', :continuous
+          )
+          @agility_quarters_dec_tree.train
+          @community_total_dec_tree = DecisionTree::ID3Tree.new(
+            community_total_attributes, community_total_data, 'ClassE', :continuous
+          )
+          @community_total_dec_tree.train
+          @community_quarters_dec_tree = DecisionTree::ID3Tree.new(
+            community_quarters_attributes, community_last_year_data, 'ClassE', :continuous
+          )
+          @community_quarters_dec_tree.train
         end
 
         def prepare_projects!

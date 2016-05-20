@@ -32,6 +32,8 @@ Gem::Specification.new do |spec|
   spec.add_runtime_dependency "activesupport"
   spec.add_runtime_dependency "oj"
   spec.add_runtime_dependency "nokogiri"
+  spec.add_runtime_dependency "graphr"
+  spec.add_runtime_dependency "decisiontree"
 
   spec.add_development_dependency "bundler", "~> 1.11"
   spec.add_development_dependency "pry"

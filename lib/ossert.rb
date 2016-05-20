@@ -16,7 +16,7 @@ require 'oj'
 module Ossert
   class Project
     attr_accessor :name, :gh_alias, :rg_alias,
-                  :community, :agility
+                  :community, :agility, :reference
 
     def initialize(name, gh_alias = nil, rg_alias = nil, reference = nil)
       @name = name
@@ -49,6 +49,10 @@ module Ossert
     class << self
       def projects
         @projects ||= []
+      end
+
+      def projects_by_reference
+        projects.group_by { |prj| prj.reference }
       end
 
       def load
@@ -92,6 +96,10 @@ module Ossert
 
     def preview
       quarters.sort.map { |date_i, value| [Time.at(date_i), value] }.to_h
+    end
+
+    def last_year_data
+      quarters.sort.last(4).map { |_, quarter| quarter.values }.transpose.map {|x| x.reduce(:+)}
     end
 
     def fullfill!
@@ -145,6 +153,13 @@ module Ossert
         send "#{var}=", Set.new
       end
     end
+
+    def values
+      self.class.attributes.map do |attr|
+        val = send(attr)
+        val.is_a?(Set) ? val.count : (val.to_i)
+      end
+    end
   end
 
   class CommunityQuarterStat
@@ -171,6 +186,13 @@ module Ossert
     def initialize
       self.class.attributes.each do |var|
         send "#{var}=", Set.new
+      end
+    end
+
+    def values
+      self.class.attributes.map do |attr|
+        val = send(attr)
+        val.is_a?(Set) ? val.count : (val.to_i)
       end
     end
   end
@@ -215,6 +237,13 @@ module Ossert
         send "#{var}=", Set.new
       end
     end
+
+    def values
+      self.class.attributes.map do |attr|
+        val = send(attr)
+        val.is_a?(Set) ? val.count : (val.to_i)
+      end
+    end
   end
 
   class AgilityQuarterStat
@@ -242,6 +271,13 @@ module Ossert
       self.class.attributes.each do |var|
         next if NON_SET_VARS.include?(var.to_s)
         send "#{var}=", Set.new
+      end
+    end
+
+    def values
+      self.class.attributes.map do |attr|
+        val = send(attr)
+        val.is_a?(Set) ? val.count : (val.to_i)
       end
     end
   end
