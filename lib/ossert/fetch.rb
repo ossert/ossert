@@ -360,7 +360,7 @@ module Ossert
           issue_url = /\A(.*)#issuecomment.*\z/.match(issue_comment[:html_url])[1]
           if issue_url.include?('/pull/') # PR comments are stored as Issue comments. Sadness =(
             if project.community.total.contributors.include? login
-              project.agility.total.pr_with_contrib_comments << pull_comment[:pull_request_url]
+              project.agility.total.pr_with_contrib_comments << issue_url
             end
 
             project.community.total.users_commenting_pr << login

@@ -7,6 +7,12 @@ module Ossert
       CLASSES = %w(ClassA ClassB ClassC ClassD ClassE)
       CLASS_DOWNLOADS_THRESHOLD = [2_000_000, 750_000, 150_000, 10_000, 0]
       CLASS_LAST_YEAR_COMMIT_THRESHOLD = [100, 22, 14, 4, 0]
+      CLASS_CONTRIBUTORS_THRESHOLD = [70, 28, 12, 3, 0]
+      #   - Users contributors > 70
+      #   - Users contributors > 28
+      #   - Users contributors > 12
+      #   - Users contributors > 3
+      # CLASS_RELEASES_THRESHOLD = [55, 24, 12, 5, 0]
 
       attr_reader :total, :representative, :pages, :project_names
 
@@ -55,6 +61,7 @@ module Ossert
           community_quarters_dec_tree
         end
 
+
         def train_descision_tree
           grouped_projects = Project.projects_by_reference
           agility_total_attributes = AgilityQuarterStat.attributes
@@ -65,7 +72,21 @@ module Ossert
 
           CLASSES.each_with_index do |ref_class, i|
             grouped_projects[ref_class].each do |project|
-              next if project.agility.total.total_downloads < CLASS_DOWNLOADS_THRESHOLD[i]
+              # Best results:
+              # pry(main)> prj_gon.analyze
+              # => {:agility   => {:total=>"ClassB", :last_year=>"ClassB"},
+              #     :community => {:total=>"ClassB", :last_year=>"ClassB"}}
+              # pry(main)> prj_rack.analyze
+              # => {:agility   => {:total=>"ClassA", :last_year=>"ClassA"},
+              #     :community => {:total=>"ClassA", :last_year=>"ClassB"}}
+              # pry(main)> prj_reports.analyze
+              # => {:agility   => {:total=>"ClassD", :last_year=>"ClassE"},
+              #     :community => {:total=>"ClassE", :last_year=>"ClassE"}}
+              #
+              # Skipping popular projects without enough "weight"
+              next if project.community.total.contributors.count < CLASS_CONTRIBUTORS_THRESHOLD[i]
+              # next if project.agility.total.total_downloads < CLASS_DOWNLOADS_THRESHOLD[i]
+              # next if project.agility.total.releases_total_rg.count < CLASS_RELEASES_THRESHOLD[i]
               # next if project.agility.total.last_year_commits.to_i < CLASS_LAST_YEAR_COMMIT_THRESHOLD[i]
 
               agility_total_data << (project.agility.total.values << ref_class)
