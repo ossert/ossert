@@ -358,7 +358,17 @@ module Ossert
         issues_comments.each do |issue_comment|
           login = issue_comment[:user].try(:[], :login).presence || generate_anonymous
           issue_url = /\A(.*)#issuecomment.*\z/.match(issue_comment[:html_url])[1]
-          next if issue_url.include?('/pull/')
+          if issue_url.include?('/pull/') # PR comments are stored as Issue comments. Sadness =(
+            if project.community.total.contributors.include? login
+              project.agility.total.pr_with_contrib_comments << pull_comment[:pull_request_url]
+            end
+
+            project.community.total.users_commenting_pr << login
+            project.community.quarters[issue_comment[:created_at]].users_commenting_pr << login
+            project.community.total.users_involved << login
+            project.community.quarters[issue_comment[:created_at]].users_involved << login
+            next
+          end
 
           if project.community.total.contributors.include? login
             project.agility.total.issues_with_contrib_comments << issue_url

@@ -79,6 +79,7 @@ module Ossert
         projects.group_by { |prj| prj.reference }
       end
 
+      # FIXME: Use normal backend, such as Postgres
       def load
         if File.exists?('data/projects.json')
           @projects = Oj.load File.read('data/projects.json')

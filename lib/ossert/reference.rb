@@ -5,6 +5,9 @@ module Ossert
   module Reference
     class Base
       CLASSES = %w(ClassA ClassB ClassC ClassD ClassE)
+      CLASS_DOWNLOADS_THRESHOLD = [2_000_000, 750_000, 150_000, 10_000, 0]
+      CLASS_LAST_YEAR_COMMIT_THRESHOLD = [100, 22, 14, 4, 0]
+
       attr_reader :total, :representative, :pages, :project_names
 
       def initialize(representative, total, pages)
@@ -31,6 +34,8 @@ module Ossert
 
       class << self
         attr_accessor :refs
+
+        # FIXME: Use normal backend, such as Postgres
         def load
           @refs = %w(A B C D E).map { |e| "Ossert::Reference::Class#{e}".constantize.new.load }
         end
@@ -58,8 +63,11 @@ module Ossert
           community_quarters_attributes = CommunityQuarterStat.attributes
           agility_total_data, community_total_data, agility_last_year_data, community_last_year_data = [], [], [], []
 
-          CLASSES.each do |ref_class|
+          CLASSES.each_with_index do |ref_class, i|
             grouped_projects[ref_class].each do |project|
+              next if project.agility.total.total_downloads < CLASS_DOWNLOADS_THRESHOLD[i]
+              # next if project.agility.total.last_year_commits.to_i < CLASS_LAST_YEAR_COMMIT_THRESHOLD[i]
+
               agility_total_data << (project.agility.total.values << ref_class)
               community_total_data << (project.community.total.values << ref_class)
               if (last_year_data = project.agility.quarters.last_year_data).present?
@@ -116,6 +124,7 @@ module Ossert
         end
       end
 
+      # FIXME: Use normal backend, such as Postgres
       def load
         if File.exists?("data/#{self.class.name}.json")
           @project_names = Oj.load File.read("data/#{self.class.name}.json")
