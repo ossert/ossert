@@ -18,6 +18,30 @@ module Ossert
     attr_accessor :name, :gh_alias, :rg_alias,
                   :community, :agility, :reference
 
+    def analyze
+      raise unless Reference::Base.decision_tree_ready?
+
+      agility.total_prediction =
+        Reference::Base.agility_total_dec_tree.predict(agility.total.values)
+      agility.quarter_prediction =
+        Reference::Base.agility_quarters_dec_tree.predict(agility.quarters.last_year_data)
+      community.total_prediction =
+        Reference::Base.community_total_dec_tree.predict(community.total.values)
+      community.quarter_prediction =
+        Reference::Base.community_quarters_dec_tree.predict(community.quarters.last_year_data)
+
+      {
+        agility: {
+          total: agility.total_prediction,
+          last_year: agility.quarter_prediction
+        },
+        community: {
+          total: community.total_prediction,
+          last_year: community.quarter_prediction
+        }
+      }
+    end
+
     def initialize(name, gh_alias = nil, rg_alias = nil, reference = nil)
       @name = name
       @gh_alias = gh_alias
@@ -29,7 +53,7 @@ module Ossert
     end
 
     class Agility
-      attr_accessor :quarters, :total
+      attr_accessor :quarters, :total, :total_prediction, :quarter_prediction
 
       def initialize
         @quarters = QuartersStore.new(AgilityQuarterStat)
@@ -38,7 +62,7 @@ module Ossert
     end
 
     class Community
-      attr_accessor :quarters, :total
+      attr_accessor :quarters, :total, :total_prediction, :quarter_prediction
 
       def initialize
         @quarters = QuartersStore.new(CommunityQuarterStat)

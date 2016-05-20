@@ -43,6 +43,13 @@ module Ossert
                     :agility_quarters_dec_tree, :community_total_dec_tree, :community_total_dec_tree,
                     :community_quarters_dec_tree, :community_quarters_dec_tree
 
+        def decision_tree_ready?
+          agility_total_dec_tree.presence &&
+          agility_quarters_dec_tree.presence &&
+          community_total_dec_tree.presence &&
+          community_quarters_dec_tree
+        end
+
         def train_descision_tree
           grouped_projects = Project.projects_by_reference
           agility_total_attributes = AgilityQuarterStat.attributes
