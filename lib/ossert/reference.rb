@@ -8,6 +8,7 @@ module Ossert
       CLASS_DOWNLOADS_THRESHOLD = [2_000_000, 750_000, 150_000, 10_000, 0]
       CLASS_LAST_YEAR_COMMIT_THRESHOLD = [100, 22, 14, 4, 0]
       CLASS_CONTRIBUTORS_THRESHOLD = [70, 28, 12, 3, 0]
+      CLASS_LIFE_PERIOD_THRESHOLD = [3.year, 2.year, 1.year, 6.month, 0]
       #   - Users contributors > 70
       #   - Users contributors > 28
       #   - Users contributors > 12
@@ -35,7 +36,8 @@ module Ossert
           end
         end
 
-        @project_names.merge all_projects.keys.shuffle.first(representative)
+        # @project_names.merge all_projects.keys.shuffle.first(representative)
+        @project_names.merge Hash[all_projects.sort_by {|_, info| info[:downloads]}].keys.last(representative)
       end
 
       class << self
@@ -64,10 +66,10 @@ module Ossert
 
         def train_descision_tree
           grouped_projects = Project.projects_by_reference
-          agility_total_attributes = AgilityQuarterStat.attributes
-          agility_quarters_attributes = AgilityTotalStat.attributes
-          community_total_attributes = CommunityTotalStat.attributes
-          community_quarters_attributes = CommunityQuarterStat.attributes
+          agility_total_attributes = AgilityQuarterStat.metrics
+          agility_quarters_attributes = AgilityTotalStat.metrics
+          community_total_attributes = CommunityTotalStat.metrics
+          community_quarters_attributes = CommunityQuarterStat.metrics
           agility_total_data, community_total_data, agility_last_year_data, community_last_year_data = [], [], [], []
 
           CLASSES.each_with_index do |ref_class, i|
@@ -84,13 +86,17 @@ module Ossert
               #     :community => {:total=>"ClassE", :last_year=>"ClassE"}}
               #
               # Skipping popular projects without enough "weight"
-              next if project.community.total.contributors.count < CLASS_CONTRIBUTORS_THRESHOLD[i]
+              #
+              # next if project.community.total.contributors.count < CLASS_CONTRIBUTORS_THRESHOLD[i]
+              #
+              # next if project.agility.total.life_period < CLASS_LIFE_PERIOD_THRESHOLD[i]
+              #
               # next if project.agility.total.total_downloads < CLASS_DOWNLOADS_THRESHOLD[i]
               # next if project.agility.total.releases_total_rg.count < CLASS_RELEASES_THRESHOLD[i]
               # next if project.agility.total.last_year_commits.to_i < CLASS_LAST_YEAR_COMMIT_THRESHOLD[i]
 
-              agility_total_data << (project.agility.total.values << ref_class)
-              community_total_data << (project.community.total.values << ref_class)
+              agility_total_data << (project.agility.total.metric_values << ref_class)
+              community_total_data << (project.community.total.metric_values << ref_class)
               if (last_year_data = project.agility.quarters.last_year_data).present?
                 agility_last_year_data << (project.agility.quarters.last_year_data << ref_class)
               end
@@ -123,24 +129,31 @@ module Ossert
         end
 
         def collect_stats_for_refs!(force = false)
-          existing_projects = Project.projects.map { |p| p.name }
+          existing_projects = Set.new(Project.projects.map { |p| p.name })
+          threads = []
           puts "==== COLLECTING REFERENCE PROJECTS ===="
-          @refs.each_with_index do |reference, idx|
-            reference.project_names.each do |project_name|
-              puts "#{CLASSES[idx]} reference project: '#{project_name}'"
-              if !force && existing_projects.include?(project_name)
-                puts "Exists. Skipping"
-                next
-              end
+          @refs.in_groups_of(3, false).each do |_batch|
+            threads << Thread.new(_batch) do |batch|
+              batch.each do |reference|
+                proj_class = reference.class.name.demodulize
+                reference.project_names.each do |project_name|
+                  puts "#{proj_class} reference project: '#{project_name}'"
+                  if !force && existing_projects.include?(project_name)
+                    puts "Exists. Skipping"
+                    next
+                  end
 
-              begin
-                Ossert::Fetch.all Ossert::Project.new(project_name, nil, project_name, CLASSES[idx])
-              rescue ArgumentError
-                puts "Fetching Failed for '#{project_name}'"
+                  begin
+                    Ossert::Fetch.all Ossert::Project.new(project_name, nil, project_name, proj_class)
+                  rescue ArgumentError
+                    puts "Fetching Failed for '#{project_name}'"
+                  end
+                  sleep(5)
+                end
               end
-              sleep(5)
             end
           end
+          threads.each {|thr| thr.join }
           puts "Done with reference projects."
         end
       end

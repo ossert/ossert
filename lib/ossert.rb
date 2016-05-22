@@ -1,8 +1,4 @@
 require "ossert/version"
-require "ossert/fetch"
-require "ossert/reports"
-require "ossert/reference"
-require 'octokit'
 require 'gems'
 # interesting... https://rubygems.org/pages/data
 # https://github.com/xmisao/bestgems.org/wiki/BestGems-API-v1-Specification
@@ -10,6 +6,11 @@ require 'gems'
 require 'active_support/all' # remove later, we use only quarters and index_by here
 require 'json'
 require 'oj'
+
+require "ossert/fetch"
+require "ossert/reports"
+require "ossert/reference"
+require 'octokit'
 
 # TODO: convert data to CSV
 
@@ -22,11 +23,11 @@ module Ossert
       raise unless Reference::Base.decision_tree_ready?
 
       agility.total_prediction =
-        Reference::Base.agility_total_dec_tree.predict(agility.total.values)
+        Reference::Base.agility_total_dec_tree.predict(agility.total.metric_values)
       agility.quarter_prediction =
         Reference::Base.agility_quarters_dec_tree.predict(agility.quarters.last_year_data)
       community.total_prediction =
-        Reference::Base.community_total_dec_tree.predict(community.total.values)
+        Reference::Base.community_total_dec_tree.predict(community.total.metric_values)
       community.quarter_prediction =
         Reference::Base.community_quarters_dec_tree.predict(community.quarters.last_year_data)
 
@@ -124,7 +125,7 @@ module Ossert
     end
 
     def last_year_data
-      quarters.sort.last(4).map { |_, quarter| quarter.values }.transpose.map {|x| x.reduce(:+)}
+      quarters.sort.last(4).map { |_, quarter| quarter.metric_values }.transpose.map {|x| x.reduce(:+)}
     end
 
     def fullfill!
@@ -159,18 +160,31 @@ module Ossert
         self.attributes = Array attrs
         super
       end
+
+      def metrics
+        [
+          :users_creating_issues_count, :users_commenting_issues_count, :users_creating_pr_count,
+          :users_commenting_pr_count, :contributors_count, :watchers_count, #:stargazers_count,
+          :forks_count,
+          :users_involved_count#, :users_involved_no_stars_count
+        ]
+      end
     end
     # #### Stats, total for all time
-    # - Users count writing issues
-    # - Users count sent PR
-    # - Contributors count
-    # - Watchers, Stargazers, Forks
-    # - Owners... (link Rubygems and Github by email)
     # - Popularity Rating (https://www.ruby-toolbox.com/projects/delayed_job/popularity)
-    # - Total users involved
     attr_accessor :users_creating_issues, :users_commenting_issues, :users_creating_pr, :users_commenting_pr,
                   :contributors, :watchers, :stargazers, :forks,
                   :owners_github, :owners_rubygems, :users_involved
+
+    [:users_creating_issues, :users_commenting_issues, :users_creating_pr,
+    :users_commenting_pr, :contributors, :watchers, :stargazers, :forks,
+    :users_involved].each do |metric|
+      define_method("#{metric}_count") { send(metric).count }
+    end
+
+    def users_involved_no_stars_count
+      (users_involved - stargazers).count
+    end
 
     # sets of users
     def initialize
@@ -179,11 +193,8 @@ module Ossert
       end
     end
 
-    def values
-      self.class.attributes.map do |attr|
-        val = send(attr)
-        val.is_a?(Set) ? val.count : (val.to_i)
-      end
+    def metric_values
+      self.class.metrics.map { |metric| public_send(metric).to_i }
     end
   end
 
@@ -194,6 +205,15 @@ module Ossert
       def attr_accessor *attrs
         self.attributes = Array attrs
         super
+      end
+
+      def metrics
+        [
+          :users_creating_issues_count, :users_commenting_issues_count, :users_creating_pr_count,
+          :users_commenting_pr_count, :contributors_count, #:stargazers_count,
+          :forks_count,
+          :users_involved_count#, :users_involved_no_stars_count
+        ]
       end
     end
 
@@ -207,6 +227,16 @@ module Ossert
                   :contributors, :stargazers, :forks, # NO DATES... FUUU... :watchers,
                   :users_involved
 
+    [:users_creating_issues, :users_commenting_issues, :users_creating_pr,
+    :users_commenting_pr, :contributors, :stargazers, :forks,
+    :users_involved].each do |metric|
+      define_method("#{metric}_count") { send(metric).count }
+    end
+
+    def users_involved_no_stars_count
+      (users_involved - stargazers).count
+    end
+
     # sets of users
     def initialize
       self.class.attributes.each do |var|
@@ -214,11 +244,8 @@ module Ossert
       end
     end
 
-    def values
-      self.class.attributes.map do |attr|
-        val = send(attr)
-        val.is_a?(Set) ? val.count : (val.to_i)
-      end
+    def metric_values
+      self.class.metrics.map { |metric| public_send(metric).to_i }
     end
   end
 
@@ -230,23 +257,22 @@ module Ossert
         self.attributes = Array attrs
         super
       end
+
+      def metrics
+        [
+          :issues_open_percent, :issues_non_owner_percent, :issues_with_contrib_comments_percent, :issues_total_count,
+          :pr_open_percent, :pr_non_owner_percent, :pr_with_contrib_comments_percent, :pr_total_count,
+          :first_pr_date_int, :last_pr_date_int, :first_issue_date_int, :last_issue_date_int, :last_release_date_int,
+          :releases_count, :commits_count_since_last_release_count,
+          :last_year_commits, :total_downloads, :life_period
+        ]
+      end
     end
     # #### Stats, total for all time
-    # - Opened and Closed Issues
-    # - Opened, Merged and Closed PRs
-    # - PR with owner/contributors comments
+    # - Merged PRs
     # - Opened non-author Issues, "with author comments" and total count
     # - Issues "no:assignee" "no:milestone" to total count
-    # - Time since first/last PR and Issue
-    # - Releases Count
-    #   http://octokit.github.io/octokit.rb/Octokit/Client/Releases.html#releases-instance_method
-    # - Last Release Date
-    #   http://octokit.github.io/octokit.rb/Octokit/Client/Releases.html#latest_release-instance_method
-    # - Commits count since last release
-    #   http://octokit.github.io/octokit.rb/Octokit/Client/Commits.html#commits_since-instance_method
     # - Amount of changes each quarter (Graph? -> Later)
-    # - Stale and Total branches count
-    # - Total downloads
     attr_accessor :issues_open, :issues_closed, :issues_owner, :issues_non_owner, :issues_with_contrib_comments, :issues_total,
                   :pr_open, :pr_merged, :pr_closed, :pr_owner, :pr_non_owner, :pr_with_contrib_comments, :pr_total,
                   :first_pr_date, :last_pr_date, :first_issue_date, :last_issue_date,
@@ -255,6 +281,35 @@ module Ossert
 
     NON_SET_VARS = %w(first_pr_date last_pr_date first_issue_date last_issue_date last_release_date
                       commits_count_since_after_release total_downloads delta_downloads last_year_commits)
+    [
+      :issues_open, :issues_non_owner, :issues_with_contrib_comments,
+      :pr_open, :pr_non_owner, :pr_with_contrib_comments,
+    ].each do |metric|
+      total = "#{metric.to_s.split('_').first}_total"
+      define_method("#{metric}_percent") do
+        total_count = public_send(total).count
+        return  if total_count.zero?
+        (public_send(metric).count.to_f / total_count.to_f) * 100
+      end
+    end
+
+    [
+      :first_pr_date, :last_pr_date, :first_issue_date, :last_issue_date, :last_release_date,
+    ].each do |metric|
+      define_method("#{metric}_int") { public_send(metric).to_i }
+    end
+
+    [:issues_total, :pr_total, :commits_count_since_last_release].each do |metric|
+      define_method("#{metric}_count") { public_send(metric).count }
+    end
+
+    def life_period
+      [last_pr_date_int, last_issue_date_int].max - [first_pr_date_int, first_issue_date_int].min
+    end
+
+    def releases_count
+      [releases_total_rg.count, releases_total_gh.count].max
+    end
 
     def initialize
       self.class.attributes.each do |var|
@@ -263,11 +318,8 @@ module Ossert
       end
     end
 
-    def values
-      self.class.attributes.map do |attr|
-        val = send(attr)
-        val.is_a?(Set) ? val.count : (val.to_i)
-      end
+    def metric_values
+      self.class.metrics.map { |metric| public_send(metric).to_i }
     end
   end
 
@@ -278,6 +330,14 @@ module Ossert
       def attr_accessor *attrs
         self.attributes = Array attrs
         super
+      end
+
+      def metrics
+        [
+          :issues_open_percent, :issues_closed_percent,:issues_total_count,
+          :pr_open_percent, :pr_closed_percent, :pr_total_count,
+          :releases_count, :commits, :total_downloads, :download_divergence
+        ]
       end
     end
     # #### Pulse, for last year/quarter/month (amount + delta from total)
@@ -292,6 +352,27 @@ module Ossert
                   :download_divergence, :total_downloads, :delta_downloads
 
     NON_SET_VARS = %w(download_divergence total_downloads delta_downloads commits)
+
+    [
+      :issues_open, :issues_closed,
+      :pr_open, :pr_closed,
+    ].each do |metric|
+      total = "#{metric.to_s.split('_').first}_total"
+      define_method("#{metric}_percent") do
+        total_count = public_send(total).count
+        return  if total_count.zero?
+        (public_send(metric).count.to_f / total_count.to_f) * 100
+      end
+    end
+
+    [:issues_total, :pr_total].each do |metric|
+      define_method("#{metric}_count") { public_send(metric).count }
+    end
+
+    def releases_count
+      [releases_total_rg.count, releases_total_gh.count].max
+    end
+
     def initialize
       self.class.attributes.each do |var|
         next if NON_SET_VARS.include?(var.to_s)
@@ -299,11 +380,8 @@ module Ossert
       end
     end
 
-    def values
-      self.class.attributes.map do |attr|
-        val = send(attr)
-        val.is_a?(Set) ? val.count : (val.to_i)
-      end
+    def metric_values
+      self.class.metrics.map { |metric| public_send(metric).to_i }
     end
   end
 end
