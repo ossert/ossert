@@ -7,12 +7,12 @@ require 'active_support/all' # remove later, we use only quarters and index_by h
 require 'json'
 require 'oj'
 
+require "ossert/saveable"
 require "ossert/fetch"
 require "ossert/reports"
 require "ossert/reference"
+require "ossert/classifiers"
 require 'octokit'
-
-# TODO: convert data to CSV
 
 module Ossert
   class Project
@@ -20,32 +20,13 @@ module Ossert
                   :community, :agility, :reference
 
     def analyze_by_growing_classifier
-      raise unless Reference::Base.growing_classifier_ready?
-      Reference::Base.check_against_growing_classifier(self)
+      raise unless Classifiers::Growing.current.ready?
+      Classifiers::Growing.current.check(self)
     end
 
-    def analyze
-      raise unless Reference::Base.decision_tree_ready?
-
-      agility.total_prediction =
-        Reference::Base.agility_total_dec_tree.predict(agility.total.metric_values)
-      agility.quarter_prediction =
-        Reference::Base.agility_quarters_dec_tree.predict(agility.quarters.last_year_data)
-      community.total_prediction =
-        Reference::Base.community_total_dec_tree.predict(community.total.metric_values)
-      community.quarter_prediction =
-        Reference::Base.community_quarters_dec_tree.predict(community.quarters.last_year_data)
-
-      {
-        agility: {
-          total: agility.total_prediction,
-          last_year: agility.quarter_prediction
-        },
-        community: {
-          total: community.total_prediction,
-          last_year: community.quarter_prediction
-        }
-      }
+    def analyze_by_decisision_tree
+      raise unless Classifiers::DecisionTree.current.ready?
+      Classifiers::DecisionTree.current.check(self)
     end
 
     def initialize(name, gh_alias = nil, rg_alias = nil, reference = nil)
@@ -77,6 +58,12 @@ module Ossert
     end
 
     class << self
+      include Ossert::Saveable
+
+      def filename
+        "projects"
+      end
+
       def projects
         @projects ||= []
       end
@@ -85,25 +72,12 @@ module Ossert
         projects.group_by { |prj| prj.reference }
       end
 
-      # FIXME: Use normal backend, such as Postgres
-      def load
-        if File.exists?('data/projects.json')
-          @projects = Oj.load File.read('data/projects.json')
-        end
-
-        self
+      def read
+        projects
       end
 
-      def dump
-        existance_backup("data/projects.json")
-        File.open("data/projects.json","w") do |f|
-          f.write(Oj.dump(projects))
-        end
-      end
-
-      def existance_backup(filename)
-        return unless File.exists?(filename)
-        FileUtils.cp(filename, "#{filename}.#{Time.now.strftime('%d%m%Y-%H%M%S.%L')}")
+      def assign(saved_data)
+        @projects = saved_data
       end
     end
   end
