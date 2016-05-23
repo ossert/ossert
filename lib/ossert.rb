@@ -19,6 +19,11 @@ module Ossert
     attr_accessor :name, :gh_alias, :rg_alias,
                   :community, :agility, :reference
 
+    def analyze_by_growing_classifier
+      raise unless Reference::Base.growing_classifier_ready?
+      Reference::Base.check_against_growing_classifier(self)
+    end
+
     def analyze
       raise unless Reference::Base.decision_tree_ready?
 
@@ -128,6 +133,10 @@ module Ossert
       quarters.sort.last(4).map { |_, quarter| quarter.metric_values }.transpose.map {|x| x.reduce(:+)}
     end
 
+    def last_year_as_hash
+      Hash[stat_klass.metrics.zip(last_year_data)]
+    end
+
     def fullfill!
       if quarters.empty?
         @start_date = Time.now
@@ -210,9 +219,9 @@ module Ossert
       def metrics
         [
           :users_creating_issues_count, :users_commenting_issues_count, :users_creating_pr_count,
-          :users_commenting_pr_count, :contributors_count, #:stargazers_count,
+          :users_commenting_pr_count, :contributors_count, :stargazers_count,
           :forks_count,
-          :users_involved_count#, :users_involved_no_stars_count
+          :users_involved_count, :users_involved_no_stars_count
         ]
       end
     end
@@ -264,7 +273,7 @@ module Ossert
           :pr_open_percent, :pr_non_owner_percent, :pr_with_contrib_comments_percent, :pr_total_count,
           :first_pr_date_int, :last_pr_date_int, :first_issue_date_int, :last_issue_date_int, :last_release_date_int,
           :releases_count, :commits_count_since_last_release_count,
-          :last_year_commits, :total_downloads, :life_period
+          :last_year_commits, :total_downloads, :life_period, :last_changed
         ]
       end
     end
@@ -282,13 +291,13 @@ module Ossert
     NON_SET_VARS = %w(first_pr_date last_pr_date first_issue_date last_issue_date last_release_date
                       commits_count_since_after_release total_downloads delta_downloads last_year_commits)
     [
-      :issues_open, :issues_non_owner, :issues_with_contrib_comments,
-      :pr_open, :pr_non_owner, :pr_with_contrib_comments,
+      :issues_closed, :issues_open, :issues_non_owner, :issues_with_contrib_comments,
+      :pr_closed, :pr_open, :pr_non_owner, :pr_with_contrib_comments,
     ].each do |metric|
       total = "#{metric.to_s.split('_').first}_total"
       define_method("#{metric}_percent") do
         total_count = public_send(total).count
-        return  if total_count.zero?
+        return 0 if total_count.zero?
         (public_send(metric).count.to_f / total_count.to_f) * 100
       end
     end
@@ -303,8 +312,32 @@ module Ossert
       define_method("#{metric}_count") { public_send(metric).count }
     end
 
+    def last_changed
+      if last_pr_date.presence && last_issue_date.presence
+        [last_pr_date, last_issue_date].max.to_i
+      else
+        last_pr_date.presence || last_issue_date.presence || 10.years.ago
+      end
+    end
+
     def life_period
-      [last_pr_date_int, last_issue_date_int].max - [first_pr_date_int, first_issue_date_int].min
+      last_change = if last_pr_date.presence && last_issue_date.presence
+                      [last_pr_date, last_issue_date].max
+                    else
+                      last_pr_date.presence || last_issue_date.presence
+                    end
+
+      return 0 if last_change.nil?
+
+      first_change = if first_pr_date.presence && first_issue_date.presence
+                      [first_pr_date, first_issue_date].min
+                    else
+                      last_pr_date.presence || last_issue_date.presence
+                    end
+
+      return 0 if first_change.nil?
+
+      (last_change - first_change).to_i
     end
 
     def releases_count
@@ -334,7 +367,7 @@ module Ossert
 
       def metrics
         [
-          :issues_open_percent, :issues_closed_percent,:issues_total_count,
+          :issues_open_percent, :issues_closed_percent, :issues_total_count,
           :pr_open_percent, :pr_closed_percent, :pr_total_count,
           :releases_count, :commits, :total_downloads, :download_divergence
         ]
@@ -360,7 +393,7 @@ module Ossert
       total = "#{metric.to_s.split('_').first}_total"
       define_method("#{metric}_percent") do
         total_count = public_send(total).count
-        return  if total_count.zero?
+        return 0 if total_count.zero?
         (public_send(metric).count.to_f / total_count.to_f) * 100
       end
     end
