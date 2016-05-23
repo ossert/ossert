@@ -77,7 +77,7 @@ module Ossert
 
           agility_quarter_classifier.each_pair do |ref_class, metrics|
             metrics.each_pair do |metric, value|
-              agility_quarter_results[ref_class] += 0.125 if project.agility.quarters.last_year_as_hash[metric].to_f >= value
+              agility_quarter_results[ref_class] += 0.11 if project.agility.quarters.last_year_as_hash[metric].to_f >= value
             end
           end
 
@@ -99,25 +99,25 @@ module Ossert
           community_quarter_decision = 'ClassE'
 
           agility_total_results.each_pair do |ref_class, gain|
-            next if gain < 0.5
+            next if gain <= 0.5
             agility_total_decision = ref_class
             break
           end
 
           community_total_results.each_pair do |ref_class, gain|
-            next if gain < 0.5
+            next if gain <= 0.5
             community_total_decision = ref_class
             break
           end
 
           agility_quarter_results.each_pair do |ref_class, gain|
-            next if gain < 0.5
+            next if gain <= 0.5
             agility_quarter_decision = ref_class
             break
           end
 
           community_quarter_results.each_pair do |ref_class, gain|
-            next if gain < 0.5
+            next if gain <= 0.5
             community_quarter_decision = ref_class
             break
           end
@@ -152,8 +152,8 @@ module Ossert
                 ((@agility_total_classifier[ref_class] ||= {})[metric] ||= []) << next_metric_val
               end
 
-              [:issues_closed_percent, :issues_total_count,
-               :pr_closed_percent, :pr_total_count,
+              [:issues_closed_count, :issues_open_count, :issues_total_count,
+               :pr_closed_count, :pr_open_count, :pr_total_count,
                :releases_count, :commits, :delta_downloads].each do |metric|
                 next_metric_val = project.agility.quarters.last_year_as_hash[metric].to_f
                 ((@agility_quarter_classifier[ref_class] ||= {})[metric] ||= []) << next_metric_val
@@ -167,6 +167,7 @@ module Ossert
                 next_metric_val = project.community.quarters.last_year_as_hash[metric].to_f
                 ((@community_quarter_classifier[ref_class] ||= {})[metric] ||= []) << next_metric_val
               end
+
             end
           end
 

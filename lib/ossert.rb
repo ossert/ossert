@@ -367,9 +367,12 @@ module Ossert
 
       def metrics
         [
+          :issues_open_count, :issues_closed_count,
+          :pr_open_count, :pr_closed_count,
           :issues_open_percent, :issues_closed_percent, :issues_total_count,
           :pr_open_percent, :pr_closed_percent, :pr_total_count,
-          :releases_count, :commits, :total_downloads, :download_divergence
+          :releases_count, :commits, :total_downloads, :download_divergence,
+          :delta_downloads
         ]
       end
     end
@@ -398,7 +401,7 @@ module Ossert
       end
     end
 
-    [:issues_total, :pr_total].each do |metric|
+    [:issues_open, :pr_open, :issues_closed, :pr_closed, :issues_total, :pr_total].each do |metric|
       define_method("#{metric}_count") { public_send(metric).count }
     end
 
