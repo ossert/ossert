@@ -330,7 +330,9 @@ module Ossert
             project.agility.quarters[issue[:created_at]].issues_open << issue[:url]
           when 'closed'
             project.agility.total.issues_closed << issue[:url]
-            project.agility.quarters[issue[:created_at]].issues_closed << issue[:url]
+            # if issue is closed for now, it also was opened somewhen
+            project.agility.quarters[issue[:created_at]].issues_open << issue[:url]
+            project.agility.quarters[issue[:closed_at]].issues_closed << issue[:url]
           end
 
           if issue[:user][:login] == @owner
@@ -387,7 +389,9 @@ module Ossert
             project.agility.quarters[pull[:created_at]].pr_open << pull[:url]
           when 'closed'
             project.agility.total.pr_closed << pull[:url]
-            project.agility.quarters[pull[:created_at]].pr_closed << pull[:url]
+            project.agility.quarters[pull[:created_at]].pr_open << pull[:url]
+            project.agility.quarters[pull[:closed_at]].pr_closed << pull[:url]
+            project.agility.quarters[pull[:merged_at]].pr_merged << pull[:url]
           end
 
           if pull[:user][:login] == @owner

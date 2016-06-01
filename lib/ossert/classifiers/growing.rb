@@ -129,23 +129,23 @@ module Ossert
         CLASSES.each do |ref_class|
           grouped_projects[ref_class].each do |project|
             [:issues_total_count, :pr_total_count, :total_downloads, :releases_count, :last_year_commits,
-              :life_period, :last_changed, :issues_non_owner_percent, :pr_non_owner_percent,
-              :pr_closed_percent, :issues_closed_percent, :pr_with_contrib_comments_percent,
-              :issues_with_contrib_comments_percent].each do |metric|
+             :life_period, :last_changed, :issues_non_owner_percent, :pr_non_owner_percent,
+             :pr_closed_percent, :issues_closed_percent, :pr_with_contrib_comments_percent,
+             :issues_with_contrib_comments_percent].each do |metric|
               next_metric_val = project.agility.total.send(metric).to_f
               ((@agility_total_classifier[ref_class] ||= {})[metric] ||= []) << next_metric_val
             end
 
             [:issues_closed_count, :issues_open_count, :issues_total_count,
-              :pr_closed_count, :pr_open_count, :pr_total_count,
-              :releases_count, :commits, :delta_downloads].each do |metric|
+             :pr_closed_count, :pr_open_count, :pr_total_count,
+             :releases_count, :commits, :delta_downloads].each do |metric|
               next_metric_val = project.agility.quarters.last_year_as_hash[metric].to_f
               ((@agility_quarter_classifier[ref_class] ||= {})[metric] ||= []) << next_metric_val
             end
 
             [:users_creating_issues_count, :users_commenting_issues_count, :users_creating_pr_count,
-              :users_commenting_pr_count, :contributors_count, :stargazers_count,
-              :forks_count, :users_involved_count, :users_involved_no_stars_count].each do |metric|
+             :users_commenting_pr_count, :contributors_count, :stargazers_count,
+             :forks_count, :users_involved_count, :users_involved_no_stars_count].each do |metric|
               next_metric_val = project.community.total.send(metric).to_f
               ((@community_total_classifier[ref_class] ||= {})[metric] ||= []) << next_metric_val
               next_metric_val = project.community.quarters.last_year_as_hash[metric].to_f
