@@ -1,11 +1,15 @@
 require "ossert/version"
 require 'gems'
+require 'sequel'
 # interesting... https://rubygems.org/pages/data
 # https://github.com/xmisao/bestgems.org/wiki/BestGems-API-v1-Specification
 # http://bestgems.org/gems/gon
 require 'active_support/all' # remove later, we use only quarters and index_by here
 require 'json'
 require 'oj'
+
+require 'rom-repository'
+require 'rom-sql'
 
 require "ossert/saveable"
 require "ossert/fetch"
@@ -29,12 +33,12 @@ module Ossert
       Classifiers::DecisionTree.current.check(self)
     end
 
-    def initialize(name, gh_alias = nil, rg_alias = nil, reference = nil)
+    def initialize(name, gh_alias = nil, rg_alias = nil, reference = nil, agility: nil, community: nil)
       @name = name
       @gh_alias = gh_alias
       @rg_alias = rg_alias || name
-      @agility = Agility.new
-      @community = Community.new
+      @agility = agility || Agility.new
+      @community = community || Community.new
       @reference = reference
       self.class.projects << self
     end
@@ -42,18 +46,18 @@ module Ossert
     class Agility
       attr_accessor :quarters, :total, :total_prediction, :quarter_prediction
 
-      def initialize
-        @quarters = QuartersStore.new(AgilityQuarterStat)
-        @total = AgilityTotalStat.new
+      def initialize(quarters: nil, total: nil)
+        @quarters = quarters || QuartersStore.new(AgilityQuarterStat)
+        @total = total || AgilityTotalStat.new
       end
     end
 
     class Community
       attr_accessor :quarters, :total, :total_prediction, :quarter_prediction
 
-      def initialize
-        @quarters = QuartersStore.new(CommunityQuarterStat)
-        @total = CommunityTotalStat.new
+      def initialize(quarters: nil, total: nil)
+        @quarters = quarters || QuartersStore.new(CommunityQuarterStat)
+        @total = total || CommunityTotalStat.new
       end
     end
 
@@ -90,13 +94,17 @@ module Ossert
       @quarters = Hash.new
     end
 
+    def fetch(date)
+      quarters.fetch date_to_start(date)
+    end
+
     def find_or_create(date)
       quarters[date_to_start(date)] ||= stat_klass.new
     end
     alias_method :[], :find_or_create
 
     def date_to_start(value)
-      Time.at(value.to_i).beginning_of_quarter.to_i
+      Time.at(value).to_date.to_time(:utc).beginning_of_quarter.to_i
     end
 
     def preview
@@ -132,6 +140,13 @@ module Ossert
       quarters.sort.map do |key,value|
         yield(key, value)
       end
+    end
+
+    def to_json
+      hash = quarters.each_with_object({}) do |(time, metrics), result|
+        result[time] = metrics.to_hash
+      end
+      JSON.generate(hash)
     end
   end
 
@@ -178,6 +193,21 @@ module Ossert
 
     def metric_values
       self.class.metrics.map { |metric| public_send(metric).to_i }
+    end
+
+    def to_hash
+      self.class.attributes.each_with_object({}) do |var, result|
+        value = send(var)
+        if value.is_a? Set
+          result[var] = value.to_a
+        else
+          result[var] = value
+        end
+      end
+    end
+
+    def to_json
+      JSON.generate(to_hash)
     end
   end
 
@@ -229,6 +259,21 @@ module Ossert
 
     def metric_values
       self.class.metrics.map { |metric| public_send(metric).to_i }
+    end
+
+    def to_hash
+      self.class.attributes.each_with_object({}) do |var, result|
+        value = send(var)
+        if value.is_a? Set
+          result[var] = value.to_a
+        else
+          result[var] = value
+        end
+      end
+    end
+
+    def to_json
+      JSON.generate(to_hash)
     end
   end
 
@@ -314,6 +359,10 @@ module Ossert
       (last_change - first_change).to_i
     end
 
+    def life_period_months
+      life_period / 1.month
+    end
+
     def releases_count
       [releases_total_rg.count, releases_total_gh.count].max
     end
@@ -327,6 +376,21 @@ module Ossert
 
     def metric_values
       self.class.metrics.map { |metric| public_send(metric).to_i }
+    end
+
+    def to_hash
+      self.class.attributes.each_with_object({}) do |var, result|
+        value = send(var)
+        if value.is_a? Set
+          result[var] = value.to_a
+        else
+          result[var] = value
+        end
+      end
+    end
+
+    def to_json
+      JSON.generate(to_hash)
     end
   end
 
@@ -357,11 +421,25 @@ module Ossert
     # - Downloads divergence
     # - Downloads degradation per release ??
     # - Branches Count
-    attr_accessor :issues_open, :issues_closed, :issues_total, :pr_open, :pr_merged, :pr_closed, :pr_total, :releases,
+    attr_accessor :issues_open, :issues_closed, :issues_total, :pr_open,
+                  :pr_merged, :pr_closed, :pr_total, :releases,
                   :releases_total_gh, :branches, :releases_total_rg, :commits,
                   :download_divergence, :total_downloads, :delta_downloads
 
-    NON_SET_VARS = %w(download_divergence total_downloads delta_downloads commits)
+    VARS_INITIALIZE = {
+      issues_open: Set,
+      issues_closed: Set,
+      issues_total: Set,
+      pr_open: Set,
+      pr_merged: Set,
+      pr_closed: Set,
+      pr_total: Set,
+      releases: Set,
+      releases_total_gh: Set,
+      branches: Set,
+      releases_total_rg: Set
+    }
+    # NON_SET_VARS = %w()
 
     [
       :issues_open, :issues_closed,
@@ -375,7 +453,8 @@ module Ossert
       end
     end
 
-    [:issues_open, :pr_open, :issues_closed, :pr_closed, :issues_total, :pr_total].each do |metric|
+    [:issues_open, :pr_open, :issues_closed,
+     :pr_closed, :issues_total, :pr_total].each do |metric|
       define_method("#{metric}_count") { public_send(metric).count }
     end
 
@@ -384,14 +463,32 @@ module Ossert
     end
 
     def initialize
-      self.class.attributes.each do |var|
-        next if NON_SET_VARS.include?(var.to_s)
-        send "#{var}=", Set.new
+      VARS_INITIALIZE.each_pair do |var, type|
+        send "#{var}=", type.new
       end
+      # self.class.attributes.each do |var|
+      #   next if NON_SET_VARS.include?(var.to_s)
+      #   send "#{var}=", Set.new
+      # end
     end
 
     def metric_values
       self.class.metrics.map { |metric| public_send(metric).to_i }
+    end
+
+    def to_hash
+      self.class.attributes.each_with_object({}) do |var, result|
+        value = send(var)
+        if value.is_a? Set
+          result[var] = value.to_a
+        else
+          result[var] = value
+        end
+      end
+    end
+
+    def to_json
+      JSON.generate(to_hash)
     end
   end
 end

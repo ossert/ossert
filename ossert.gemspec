@@ -9,9 +9,9 @@ Gem::Specification.new do |spec|
   spec.authors       = ["Sergey Dolganov"]
   spec.email         = ["sclinede@gmail.com"]
 
-  spec.summary       = %q{TODO: Write a short summary, because Rubygems requires one.}
-  spec.description   = %q{TODO: Write a longer description or delete this line.}
-  spec.homepage      = "TODO: Put your gem's website or public repo URL here."
+  spec.summary       = %q{Write a short summary, because Rubygems requires one.}
+  spec.description   = %q{Write a longer description or delete this line.}
+  spec.homepage      = "https://github.com/sclinede/ossert"
   spec.license       = "MIT"
 
   # Prevent pushing this gem to RubyGems.org by setting 'allowed_push_host', or
@@ -31,6 +31,10 @@ Gem::Specification.new do |spec|
   spec.add_runtime_dependency "gems", "~> 0.8.3"
   spec.add_runtime_dependency "activesupport"
   spec.add_runtime_dependency "oj"
+  spec.add_runtime_dependency "sequel"
+  spec.add_runtime_dependency "rom-repository"
+  spec.add_runtime_dependency "rom-sql"
+  spec.add_runtime_dependency "pg"
   spec.add_runtime_dependency "nokogiri"
   spec.add_runtime_dependency "graphr"
   spec.add_runtime_dependency "decisiontree"
