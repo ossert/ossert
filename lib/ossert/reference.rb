@@ -1,5 +1,40 @@
 module Ossert
   module Reference
+    def prepare_projects!
+      %w(A B C D E).map { |e| "Ossert::Reference::Class#{e}".constantize.new.prepare_projects! }
+    end
+    module_function :prepare_projects!
+
+    def collect_stats_for_refs!(refs, force = false)
+      existing_projects = Set.new(Project.projects.map { |p| p.name })
+      threads = []
+      puts "==== COLLECTING REFERENCE PROJECTS ===="
+      refs.in_groups_of(3, false).each do |_batch|
+        threads << Thread.new(_batch) do |batch|
+          batch.each do |reference|
+            proj_class = reference.class.name.demodulize
+            reference.project_names.each do |project_name|
+              puts "#{proj_class} reference project: '#{project_name}'"
+              if !force && existing_projects.include?(project_name)
+                puts "Exists. Skipping"
+                next
+              end
+
+              begin
+                Ossert::Fetch.all Ossert::Project.new(project_name, nil, project_name, proj_class)
+              rescue ArgumentError
+                puts "Fetching Failed for '#{project_name}'"
+              end
+              sleep(5)
+            end
+          end
+        end
+      end
+      threads.each {|thr| thr.join }
+      puts "Done with reference projects."
+    end
+    module_function :collect_stats_for_refs!
+
     class Base
       CLASSES = %w(ClassA ClassB ClassC ClassD ClassE)
       CLASS_DOWNLOADS_THRESHOLD = [2_000_000, 750_000, 150_000, 10_000, 0]
@@ -47,39 +82,6 @@ module Ossert
 
         def dump
           @refs.each { |ref| ref.dump }
-        end
-
-        def prepare_projects!
-          %w(A B C D E).map { |e| "Ossert::Reference::Class#{e}".constantize.new.prepare_projects! }
-        end
-
-        def collect_stats_for_refs!(force = false)
-          existing_projects = Set.new(Project.projects.map { |p| p.name })
-          threads = []
-          puts "==== COLLECTING REFERENCE PROJECTS ===="
-          @refs.in_groups_of(3, false).each do |_batch|
-            threads << Thread.new(_batch) do |batch|
-              batch.each do |reference|
-                proj_class = reference.class.name.demodulize
-                reference.project_names.each do |project_name|
-                  puts "#{proj_class} reference project: '#{project_name}'"
-                  if !force && existing_projects.include?(project_name)
-                    puts "Exists. Skipping"
-                    next
-                  end
-
-                  begin
-                    Ossert::Fetch.all Ossert::Project.new(project_name, nil, project_name, proj_class)
-                  rescue ArgumentError
-                    puts "Fetching Failed for '#{project_name}'"
-                  end
-                  sleep(5)
-                end
-              end
-            end
-          end
-          threads.each {|thr| thr.join }
-          puts "Done with reference projects."
         end
       end
 
