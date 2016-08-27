@@ -1,9 +1,4 @@
-require 'rom-sql'
-require 'rom-repository'
-
-conf = ROM::Configuration.new(:sql, ENV.fetch("DATABASE_URL"))
-
-migration = conf.gateways[:default].migration do
+migration = $rom_conf.gateways[:default].migration do
   change do
     # create_table(:projects) do
     #   primary_key :id
@@ -19,4 +14,4 @@ migration = conf.gateways[:default].migration do
   end
 end
 
-migration.apply(conf.gateways[:default].connection, :up)
+migration.apply($rom_conf.gateways[:default].connection, :up)

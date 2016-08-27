@@ -8,9 +8,6 @@ require 'active_support/all' # remove later, we use only quarters and index_by h
 require 'json'
 require 'oj'
 
-require 'rom-repository'
-require 'rom-sql'
-
 require "ossert/saveable"
 require "ossert/fetch"
 require "ossert/reports"

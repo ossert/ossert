@@ -1,3 +1,6 @@
+require 'rom-repository'
+require 'rom-sql'
+
 module Ossert
   module Saveable
     # DB = Sequel.connect(ENV.fetch("DATABASE_URL")) # memory database, requires sqlite3
