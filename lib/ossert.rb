@@ -40,6 +40,43 @@ module Ossert
       self.class.projects << self
     end
 
+    def repo
+      return @repo if defined? @repo
+      conf = ROM::Configuration.new(:sql, ENV.fetch("DATABASE_URL"))
+      conf.register_relation(Projects)
+      rom = ROM.container(conf)
+      @repo = ProjectRepo.new(rom)
+    end
+
+    def dump
+      saved = repo[name]
+      if saved
+        changeset = repo.changeset(
+          name,
+          name: name,
+          github_name: gh_alias,
+          rubygems_name: rg_alias,
+          reference: reference,
+          agility_total_data: agility.total.to_json,
+          agility_quarters_data: agility.quarters.to_json,
+          community_total_data: community.total.to_json,
+          community_quarters_data: community.quarters.to_json
+        )
+        repo.update(name, changeset)
+      else
+        repo.create(
+          name: name,
+          github_name: gh_alias,
+          rubygems_name: rg_alias,
+          reference: reference,
+          agility_total_data: agility.total.to_json,
+          agility_quarters_data: agility.quarters.to_json,
+          community_total_data: community.total.to_json,
+          community_quarters_data: community.quarters.to_json
+        )
+      end
+    end
+
     class Agility
       attr_accessor :quarters, :total, :total_prediction, :quarter_prediction
 

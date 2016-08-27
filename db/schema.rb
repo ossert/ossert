@@ -1,5 +1,6 @@
 migration = $rom_conf.gateways[:default].migration do
   change do
+    # TODO: make schema.rb work with migrations along
     # create_table(:projects) do
     #   primary_key :id
     #   String :name, :null=>false
