@@ -83,25 +83,25 @@ module Ossert
         community_quarter_decision = 'ClassE'
 
         agility_total_results.each_pair do |ref_class, gain|
-          next if gain <= 0.75
+          next if gain <= 0.5
           agility_total_decision = ref_class
           break
         end
 
         community_total_results.each_pair do |ref_class, gain|
-          next if gain <= 0.75
+          next if gain <= 0.5
           community_total_decision = ref_class
           break
         end
 
         agility_quarter_results.each_pair do |ref_class, gain|
-          next if gain <= 0.75
+          next if gain <= 0.5
           agility_quarter_decision = ref_class
           break
         end
 
         community_quarter_results.each_pair do |ref_class, gain|
-          next if gain <= 0.75
+          next if gain <= 0.5
           community_quarter_decision = ref_class
           break
         end

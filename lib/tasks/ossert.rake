@@ -1,18 +1,17 @@
 namespace :ossert do
   desc 'Collect reference projects'
-  task :collect, [:size] do |t, args|
-    Rake::Task["db:dump"].invoke
+  task :collect => ['db:dump'] do |t, args|
+    puts "Run collecting process"
+    time = Benchmark.realtime do
+      Ossert::Project.cleanup_referencies!
+      reference_projects = Ossert::Reference.prepare_projects!
+      Ossert::Reference.collect_stats_for_refs!(reference_projects, true)
+    end
 
-    # run collect...
-    reference_projects = Ossert::Reference.prepare_projects!
-    Ossert::Reference.collect_stats_for_refs!(reference_projects)
+    puts "Collecting process finished in #{time.round(3)} sec."
 
     Ossert::Project.dump
-  end
-
-  desc 'Analyze reference projects'
-  task :analyze do |t, args|
-
+    # Rake::Task["db:dump"].invoke
   end
   # desc "Run migrations"
   # task :migrate, [:version] do |t, args|

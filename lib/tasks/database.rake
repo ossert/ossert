@@ -56,7 +56,9 @@ namespace :db do
       cmd = "pg_dump #{db_url} -F #{dump_fmt} -v -f #{backup_dir}/#{file_name}"
     end
     puts cmd
-    exec cmd
+    sh cmd do
+      # Ignore errors
+    end
   end
 
   desc "Show the existing database backups"
@@ -93,7 +95,7 @@ namespace :db do
       unless cmd.nil?
         Rake::Task["db:drop"].invoke
         puts cmd
-        exec cmd
+        exec cmd << " || exit 0"
       end
     else
       puts 'Please pass a pattern to the task'

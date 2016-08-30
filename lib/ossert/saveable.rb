@@ -4,6 +4,7 @@ require 'rom-sql'
 module Ossert
   module Saveable
     # DB = Sequel.connect(ENV.fetch("DATABASE_URL")) # memory database, requires sqlite3
+    UNUSED_REFERENCE = 'unused'.freeze
 
     def filename
       self.class.name
@@ -28,10 +29,14 @@ module Ossert
       deserialize(repo[name])
     end
 
+    def cleanup_referencies!
+      repo.command(:update, repo.projects).call(reference: UNUSED_REFERENCE)
+    end
+
     def deserialize(stored_prj)
       coerce_value = (->(value) {
         return Set.new(value) if value.is_a? Array
-        return Date.parse(value) rescue value
+        return DateTime.parse(value) rescue value
       })
 
       agility_total_stat = AgilityTotalStat.new

@@ -1,7 +1,9 @@
 module Ossert
   module Reference
     def prepare_projects!
-      %w(A B C D E).map { |e| "Ossert::Reference::Class#{e}".constantize.new.prepare_projects! }
+      refs = %w(A B C D E).map { |e| "Ossert::Reference::Class#{e}".constantize.new }
+      refs.each { |ref_class| ref_class.prepare_projects! }
+      refs
     end
     module_function :prepare_projects!
 
@@ -98,7 +100,7 @@ module Ossert
 
     class ClassA < Base
       def initialize
-        super(25, 500, 1..25)
+        super(50, 500, 1..25)
         # super(5, 500, 1..25)
       end
 
@@ -138,7 +140,7 @@ module Ossert
 
     class ClassB < Base
       def initialize
-        super(25, 500, 26..50)
+        super(50, 500, 26..50)
         # super(10, 500, 26..50)
       end
 
