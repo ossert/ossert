@@ -4,8 +4,9 @@ require 'ossert/classifiers/growing'
 module Ossert
   module Classifiers
     def train
-      Growing.for_current_projects.train
-      DecisionTree.for_current_projects.train
+      projects_by_reference = Ossert::Project.projects_by_reference
+      Growing.new(projects_by_reference).train
+      DecisionTree.new(projects_by_reference).train
     end
     module_function :train
   end

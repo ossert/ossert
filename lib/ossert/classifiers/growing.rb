@@ -4,8 +4,6 @@ module Ossert
       CLASSES = %w(ClassA ClassB ClassC ClassD ClassE)
 
       class << self
-        include Ossert::Saveable
-
         attr_accessor :all
 
         def for_current_projects
@@ -14,18 +12,6 @@ module Ossert
 
         def current
           all.last
-        end
-
-        def filename
-          "growing_classifier"
-        end
-
-        def read
-          all
-        end
-
-        def assign(saved_data)
-          @all = saved_data
         end
       end
 

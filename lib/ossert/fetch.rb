@@ -77,6 +77,17 @@ module Ossert
       end
     end
 
+    class BestgemsDailyStat
+      def self.process_page(page = nil)
+        doc = Nokogiri::HTML(open("http://bestgems.org/daily#{page ? "?page=#{page}" : '' }"))
+        doc.css("table").xpath('//tr//td').each_slice(4) do |rank, downloads, name, _|
+          rank = rank.text.gsub(',', '').to_i
+          downloads = downloads.text.gsub(',', '').to_i
+          yield(rank, downloads, name.text)
+        end
+      end
+    end
+
     class BestgemsTotalStat
       def self.process_page(page = nil)
         doc = Nokogiri::HTML(open("http://bestgems.org/total#{page ? "?page=#{page}" : '' }"))
@@ -121,7 +132,7 @@ module Ossert
         return if project.agility.total.releases_total_rg.present?
         releases.each do |release|
           project.agility.total.releases_total_rg << release['number']
-          project.agility.quarters[release['created_at'].to_datetime].releases_total_rg << release['number']
+          project.agility.quarters[release['created_at']].releases_total_rg << release['number']
         end
       end
     end
@@ -161,14 +172,14 @@ module Ossert
         downloads_till_now = nil
         total_downloads.each do |total|
           downloads_till_now = total unless downloads_till_now
-          downloads_saved = project.agility.quarters[total['date'].to_datetime].total_downloads.to_i
-          project.agility.quarters[total['date'].to_datetime].total_downloads = [downloads_saved, total['total_downloads']].max
+          downloads_saved = project.agility.quarters[total['date']].total_downloads.to_i
+          project.agility.quarters[total['date']].total_downloads = [downloads_saved, total['total_downloads']].max
         end
         project.agility.total.total_downloads = downloads_till_now['total_downloads']
 
         daily_downloads.each do |daily|
-          downloads_saved = project.agility.quarters[daily['date'].to_datetime].delta_downloads.to_i
-          project.agility.quarters[daily['date'].to_datetime].delta_downloads = downloads_saved + daily['daily_downloads']
+          downloads_saved = project.agility.quarters[daily['date']].delta_downloads.to_i
+          project.agility.quarters[daily['date']].delta_downloads = downloads_saved + daily['daily_downloads']
         end
 
         prev_downloads_delta = 0
@@ -210,8 +221,9 @@ module Ossert
       # end
 
       def request(endpoint, *args)
-        raise 'Requests limit reached' if @requests_count % 500 == 0 && client.rate_limit![:remaining] < 30
-        @requests_count += 1
+        # TODO: replace Octokit with Faraday and little facade on it
+        # raise 'Requests limit reached' if @requests_count % 500 == 0 && client.rate_limit![:remaining] < 30
+        # @requests_count += 1
         client.send(endpoint, *args)
       end
 
@@ -469,8 +481,6 @@ module Ossert
           #    date -> stale
         end
 
-        # project.community.total.stargazers.merge(stargazers.map { |s| s[:login] }.compact)
-        # project.community.total.users_involved.merge(project.community.total.stargazers)
         stargazers.each do |stargazer|
           login = stargazer[:user][:login].presence || generate_anonymous
           project.community.total.stargazers << login
@@ -487,10 +497,6 @@ module Ossert
           project.community.total.watchers << login
           project.community.total.users_involved << login
         end
-        # @watchers.each do |contrib|
-        #   # total (+ by quarter) NO DATES!!! FUUUU...
-        #   # total_users_involved (+ by quarter)
-        # end
 
         project.community.total.forks.merge(forkers.map { |f| f[:owner][:login] })
         project.community.total.users_involved.merge(project.community.total.forks)
@@ -518,7 +524,7 @@ module Ossert
         # attr_accessor :users_writing_issues, :users_creating_pr, :contributors, # NO DATES. FUUUU... :watchers, :stargazers, :forks,
         #               :total_users_involved
       rescue Octokit::NotFound => e
-        puts "Github NotFound Error: #{e.inspect}"
+        raise "Github NotFound Error: #{e.inspect}"
       end
 
       def generate_anonymous

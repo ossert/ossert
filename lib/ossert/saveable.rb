@@ -19,14 +19,17 @@ module Ossert
     end
 
     def repo
-      conf = ROM::Configuration.new(:sql, ENV.fetch("DATABASE_URL"))
-      conf.register_relation(Projects)
-      rom = ROM.container(conf)
-      ProjectRepo.new(rom)
+      ProjectRepo.new(Ossert.rom)
     end
 
     def load_by_name(name)
       deserialize(repo[name])
+    end
+
+    def load_referenced
+      repo.referenced.map do |stored_prj|
+        deserialize(stored_prj)
+      end
     end
 
     def cleanup_referencies!
@@ -91,9 +94,35 @@ module Ossert
   end
 end
 
+class Exceptions < ROM::Relation[:sql]
+  def by_name(name)
+    where(name: name)
+  end
+end
+
+class ExceptionsRepo < ROM::Repository[:exceptions]
+  commands :create, update: :by_name, delete: :by_name
+
+  def [](name)
+    exceptions.by_name(name).one
+  end
+
+  def all
+    exceptions.to_a
+  end
+
+  def all_by_names
+    all.index_by(&:name)
+  end
+end
+
 class Projects < ROM::Relation[:sql]
   def by_name(name)
     where(name: name)
+  end
+
+  def referenced
+    where('reference <> ?', Ossert::Saveable::UNUSED_REFERENCE)
   end
 end
 
@@ -106,5 +135,9 @@ class ProjectRepo < ROM::Repository[:projects]
 
   def all
     projects.to_a
+  end
+
+  def referenced
+    projects.referenced.to_a
   end
 end

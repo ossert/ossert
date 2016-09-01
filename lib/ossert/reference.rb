@@ -7,8 +7,7 @@ module Ossert
     end
     module_function :prepare_projects!
 
-    def collect_stats_for_refs!(refs, force = false)
-      existing_projects = Set.new(Project.projects.map { |p| p.name })
+    def collect_stats_for_refs!(refs)
       threads = []
       puts "==== COLLECTING REFERENCE PROJECTS ===="
       refs.in_groups_of(3, false).each do |_batch|
@@ -17,17 +16,14 @@ module Ossert
             proj_class = reference.class.name.demodulize
             reference.project_names.each do |project_name|
               puts "#{proj_class} reference project: '#{project_name}'"
-              if !force && existing_projects.include?(project_name)
-                puts "Exists. Skipping"
-                next
-              end
 
               begin
-                Ossert::Fetch.all Ossert::Project.new(project_name, nil, project_name, proj_class)
-              rescue ArgumentError
-                puts "Fetching Failed for '#{project_name}'"
+                Ossert::Project.fetch_all(project_name.dup, proj_class.dup)
+              rescue => e
+                puts "Fetching Failed for '#{project_name}' with error: #{e.inspect}"
               end
               sleep(5)
+              GC.start
             end
           end
         end
@@ -56,7 +52,6 @@ module Ossert
         @total = total
         @pages = pages
         @project_names = Set.new
-        (Base.refs ||= []) << self
         # 20 each page, total 5907 pages
       end
 
@@ -65,7 +60,7 @@ module Ossert
         all_projects = Hash.new
         representative.times do
           current_page = all_pages.pop
-          Fetch::BestgemsTotalStat.process_page(current_page) do |rank, downloads, name|
+          Fetch::BestgemsDailyStat.process_page(current_page) do |rank, downloads, name|
             all_projects[name] = {rank: rank, downloads: downloads}
           end
         end
@@ -86,21 +81,11 @@ module Ossert
           @refs.each { |ref| ref.dump }
         end
       end
-
-      include Ossert::Saveable
-
-      def read
-        @project_names
-      end
-
-      def assign(saved_data)
-        @project_names = saved_data
-      end
     end
 
     class ClassA < Base
       def initialize
-        super(50, 500, 1..25)
+        super(25, 500, 1..25)
         # super(5, 500, 1..25)
       end
 
@@ -140,7 +125,7 @@ module Ossert
 
     class ClassB < Base
       def initialize
-        super(50, 500, 26..50)
+        super(25, 500, 26..50)
         # super(10, 500, 26..50)
       end
 

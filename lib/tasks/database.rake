@@ -102,6 +102,32 @@ namespace :db do
     end
   end
 
+  namespace :restore do
+    desc "Restores the database from latest backup"
+    task :last do |t, args|
+      cmd = nil
+      with_config do |app, db_url|
+        backup_dir = backup_directory
+        file = Dir.glob("#{backup_dir}/*").max_by {|f| File.mtime(f)}
+        if file
+          fmt = format_for_file file
+          if fmt.nil?
+            puts "No recognized dump file suffix: #{file}"
+          else
+            cmd = "pg_restore -d '#{db_url}' -F #{fmt} -v -c -C #{file}"
+          end
+        else
+          puts "No backups found"
+        end
+      end
+      unless cmd.nil?
+        Rake::Task["db:drop"].invoke
+        puts cmd
+        exec cmd << " || exit 0"
+      end
+    end
+  end
+
   private
 
   def suffix_for_format suffix

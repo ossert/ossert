@@ -8,6 +8,7 @@ require 'active_support/all' # remove later, we use only quarters and index_by h
 require 'json'
 require 'oj'
 
+require 'weakref'
 require "ossert/saveable"
 require "ossert/fetch"
 require "ossert/reports"
@@ -16,6 +17,15 @@ require "ossert/classifiers"
 require 'octokit'
 
 module Ossert
+  def rom
+    return @rom if defined? @rom
+    conf = ROM::Configuration.new(:sql, ENV.fetch("DATABASE_URL"))
+    conf.register_relation(Projects)
+    conf.register_relation(Exceptions)
+    @rom = ROM.container(conf)
+  end
+  module_function :rom
+
   class Project
     attr_accessor :name, :gh_alias, :rg_alias,
                   :community, :agility, :reference
@@ -31,27 +41,23 @@ module Ossert
     end
 
     def initialize(name, gh_alias = nil, rg_alias = nil, reference = nil, agility: nil, community: nil)
-      @name = name
+      @name = name.dup
       @gh_alias = gh_alias
-      @rg_alias = rg_alias || name
+      @rg_alias = (rg_alias || name).dup
       @agility = agility || Agility.new
       @community = community || Community.new
-      @reference = reference
-      self.class.projects << self
+      @reference = reference.dup
     end
 
     def repo
-      return @repo if defined? @repo
-      conf = ROM::Configuration.new(:sql, ENV.fetch("DATABASE_URL"))
-      conf.register_relation(Projects)
-      rom = ROM.container(conf)
-      @repo = ProjectRepo.new(rom)
+      ProjectRepo.new(Ossert.rom)
     end
 
     def dump
-      saved = repo[name]
+      current_repo = repo
+      saved = current_repo[name]
       if saved
-        changeset = repo.changeset(
+        current_repo.update(
           name,
           name: name,
           github_name: gh_alias,
@@ -62,9 +68,8 @@ module Ossert
           community_total_data: community.total.to_json,
           community_quarters_data: community.quarters.to_json
         )
-        repo.update(name, changeset)
       else
-        repo.create(
+        current_repo.create(
           name: name,
           github_name: gh_alias,
           rubygems_name: rg_alias,
@@ -98,6 +103,20 @@ module Ossert
     class << self
       include Ossert::Saveable
 
+      def fetch_all(name, reference = Ossert::Saveable::UNUSED_REFERENCE)
+        name = name.dup
+        reference = reference.dup
+        name_exception = ExceptionsRepo.new(Ossert.rom)[name]
+        if name_exception
+          prj = new(name, name_exception.github_name, name, reference)
+        else
+          prj = new(name, nil, name, reference)
+        end
+        Ossert::Fetch.all prj
+        prj.dump
+        nil
+      end
+
       def filename
         "projects"
       end
@@ -107,7 +126,7 @@ module Ossert
       end
 
       def projects_by_reference
-        projects.group_by { |prj| prj.reference }
+        load_referenced.group_by { |prj| prj.reference }
       end
 
       def read
@@ -138,7 +157,12 @@ module Ossert
     alias_method :[], :find_or_create
 
     def date_to_start(value)
-      Time.at(value).to_date.to_time(:utc).beginning_of_quarter.to_i
+      if value.is_a? String
+        # DateTime.parse(value).beginning_of_quarter.to_i
+        DateTime.new(*value.split('-'.freeze).map(&:to_i)).beginning_of_quarter.to_i
+      else
+        Time.at(value).to_date.to_time(:utc).beginning_of_quarter.to_i
+      end
     end
 
     def preview
