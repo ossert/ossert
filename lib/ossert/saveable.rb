@@ -23,7 +23,8 @@ module Ossert
     end
 
     def load_by_name(name)
-      deserialize(repo[name])
+      stored_prj = repo[name]
+      deserialize(stored_prj) if stored_prj
     end
 
     def load_referenced

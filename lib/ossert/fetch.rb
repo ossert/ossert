@@ -221,7 +221,6 @@ module Ossert
       # end
 
       def request(endpoint, *args)
-        # TODO: replace Octokit with Faraday and little facade on it
         # raise 'Requests limit reached' if @requests_count % 500 == 0 && client.rate_limit![:remaining] < 30
         # @requests_count += 1
         client.send(endpoint, *args)

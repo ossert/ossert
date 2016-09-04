@@ -114,7 +114,7 @@ module Ossert
         @agility_quarter_classifier, @community_quarter_classifier = {}, {}
         CLASSES.each do |ref_class|
           grouped_projects[ref_class].each do |project|
-            [:issues_total_count, :pr_total_count, :total_downloads, :releases_count, :last_year_commits,
+            [:issues_all_count, :pr_all_count, :total_downloads, :releases_count, :last_year_commits,
              :life_period, :last_changed, :issues_non_owner_percent, :pr_non_owner_percent,
              :pr_closed_percent, :issues_closed_percent, :pr_with_contrib_comments_percent,
              :issues_with_contrib_comments_percent].each do |metric|
@@ -122,8 +122,8 @@ module Ossert
               ((@agility_total_classifier[ref_class] ||= {})[metric] ||= []) << next_metric_val
             end
 
-            [:issues_closed_count, :issues_open_count, :issues_total_count,
-             :pr_closed_count, :pr_open_count, :pr_total_count,
+            [:issues_closed_count, :issues_open_count, :issues_all_count,
+             :pr_closed_count, :pr_open_count, :pr_all_count,
              :releases_count, :commits, :delta_downloads].each do |metric|
               next_metric_val = project.agility.quarters.last_year_as_hash[metric].to_f
               ((@agility_quarter_classifier[ref_class] ||= {})[metric] ||= []) << next_metric_val

@@ -253,6 +253,17 @@ module Ossert
       self.class.metrics.map { |metric| public_send(metric).to_i }
     end
 
+    def metrics_to_hash
+      self.class.metrics.each_with_object({}) do |var, result|
+        value = send(var)
+        if value.is_a? Set
+          result[var] = value.to_a
+        else
+          result[var] = value
+        end
+      end
+    end
+
     def to_hash
       self.class.attributes.each_with_object({}) do |var, result|
         value = send(var)
@@ -319,6 +330,17 @@ module Ossert
       self.class.metrics.map { |metric| public_send(metric).to_i }
     end
 
+    def metrics_to_hash
+      self.class.metrics.each_with_object({}) do |var, result|
+        value = send(var)
+        if value.is_a? Set
+          result[var] = value.to_a
+        else
+          result[var] = value
+        end
+      end
+    end
+
     def to_hash
       self.class.attributes.each_with_object({}) do |var, result|
         value = send(var)
@@ -335,6 +357,24 @@ module Ossert
     end
   end
 
+  module OpenWithoutClosed
+    def issues_open
+      super - issues_closed
+    end
+
+    def pr_open
+      super - pr_closed
+    end
+
+    def issues_total
+      issues_open + issues_closed
+    end
+
+    def pr_total
+      pr_open + pr_closed
+    end
+  end
+
   class AgilityTotalStat
     class << self
       attr_accessor :attributes
@@ -346,14 +386,15 @@ module Ossert
 
       def metrics
         [
-          :issues_open_percent, :issues_non_owner_percent, :issues_with_contrib_comments_percent, :issues_total_count,
-          :pr_open_percent, :pr_non_owner_percent, :pr_with_contrib_comments_percent, :pr_total_count,
+          :issues_active_percent, :issues_non_owner_percent, :issues_with_contrib_comments_percent, :issues_all_count,
+          :pr_active_percent, :pr_non_owner_percent, :pr_with_contrib_comments_percent, :pr_all_count,
           :first_pr_date_int, :last_pr_date_int, :first_issue_date_int, :last_issue_date_int, :last_release_date_int,
           :releases_count, :commits_count_since_last_release_count,
           :last_year_commits, :total_downloads, :life_period, :last_changed
         ]
       end
     end
+
     # #### Stats, total for all time
     # - Merged PRs
     # - Opened non-author Issues, "with author comments" and total count
@@ -368,14 +409,15 @@ module Ossert
     NON_SET_VARS = %w(first_pr_date last_pr_date first_issue_date last_issue_date last_release_date
                       commits_count_since_after_release total_downloads delta_downloads last_year_commits)
     [
-      :issues_closed, :issues_open, :issues_non_owner, :issues_with_contrib_comments,
-      :pr_closed, :pr_open, :pr_non_owner, :pr_with_contrib_comments,
+      :issues_closed, :issues_active, :issues_non_owner, :issues_with_contrib_comments,
+      :pr_closed, :pr_active, :pr_non_owner, :pr_with_contrib_comments,
     ].each do |metric|
-      total = "#{metric.to_s.split('_').first}_total"
+      type = metric.to_s.split('_').first
       define_method("#{metric}_percent") do
-        total_count = public_send(total).count
+        value = public_send(metric)
+        total_count = public_send("#{type}_all").count
         return 0 if total_count.zero?
-        (public_send(metric).count.to_f / total_count.to_f) * 100
+        ((value.count.to_f / total_count.to_f) * 100).round(2)
       end
     end
 
@@ -385,8 +427,24 @@ module Ossert
       define_method("#{metric}_int") { public_send(metric).to_i }
     end
 
-    [:issues_total, :pr_total, :commits_count_since_last_release].each do |metric|
+    [:issues_all, :pr_all, :commits_count_since_last_release].each do |metric|
       define_method("#{metric}_count") { public_send(metric).count }
+    end
+
+    def issues_active
+      issues_open - issues_closed
+    end
+
+    def issues_all
+      issues_open + issues_closed
+    end
+
+    def pr_active
+      pr_open - pr_closed
+    end
+
+    def pr_all
+      pr_open + pr_closed
     end
 
     def last_changed
@@ -436,6 +494,17 @@ module Ossert
       self.class.metrics.map { |metric| public_send(metric).to_i }
     end
 
+    def metrics_to_hash
+      self.class.metrics.each_with_object({}) do |var, result|
+        value = send(var)
+        if value.is_a? Set
+          result[var] = value.to_a
+        else
+          result[var] = value
+        end
+      end
+    end
+
     def to_hash
       self.class.attributes.each_with_object({}) do |var, result|
         value = send(var)
@@ -463,10 +532,10 @@ module Ossert
 
       def metrics
         [
-          :issues_open_count, :issues_closed_count,
-          :pr_open_count, :pr_closed_count,
-          :issues_open_percent, :issues_closed_percent, :issues_total_count,
-          :pr_open_percent, :pr_closed_percent, :pr_total_count,
+          :issues_active_count, :issues_closed_count,
+          :pr_active_count, :pr_closed_count,
+          :issues_active_percent, :issues_closed_percent, :issues_all_count,
+          :pr_active_percent, :pr_closed_percent, :pr_all_count,
           :releases_count, :commits, :total_downloads, :download_divergence,
           :delta_downloads
         ]
@@ -500,20 +569,38 @@ module Ossert
     # NON_SET_VARS = %w()
 
     [
-      :issues_open, :issues_closed,
-      :pr_open, :pr_closed,
+      :issues_active, :issues_closed,
+      :pr_active, :pr_closed,
     ].each do |metric|
-      total = "#{metric.to_s.split('_').first}_total"
+      type = metric.to_s.split('_').first
+      # total = "#{metric.to_s.split('_').first}_total"
       define_method("#{metric}_percent") do
-        total_count = public_send(total).count
+        value = public_send(metric)
+        total_count = public_send("#{type}_all").count
         return 0 if total_count.zero?
-        (public_send(metric).count.to_f / total_count.to_f) * 100
+        ((value.count.to_f / total_count.to_f) * 100).round(2)
       end
     end
 
-    [:issues_open, :pr_open, :issues_closed,
-     :pr_closed, :issues_total, :pr_total].each do |metric|
+    [:issues_active, :pr_active, :issues_closed,
+     :pr_closed, :issues_all, :pr_all].each do |metric|
       define_method("#{metric}_count") { public_send(metric).count }
+    end
+
+    def issues_active
+      issues_open - issues_closed
+    end
+
+    def issues_all
+      issues_open + issues_closed
+    end
+
+    def pr_active
+      pr_open - pr_closed
+    end
+
+    def pr_all
+      pr_open + pr_closed
     end
 
     def releases_count
@@ -532,6 +619,17 @@ module Ossert
 
     def metric_values
       self.class.metrics.map { |metric| public_send(metric).to_i }
+    end
+
+    def metrics_to_hash
+      self.class.metrics.each_with_object({}) do |var, result|
+        value = send(var)
+        if value.is_a? Set
+          result[var] = value.to_a
+        else
+          result[var] = value
+        end
+      end
     end
 
     def to_hash
