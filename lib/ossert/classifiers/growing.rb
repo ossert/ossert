@@ -29,6 +29,35 @@ module Ossert
         agility_total_classifier.keys == CLASSES && community_total_classifier.keys == CLASSES
       end
 
+      def reference_values_per_class
+        agility_total = agility_total_classifier.each_with_object({}) do |(ref_class, metrics), res|
+          metrics.each do |metric, value|
+            (res[metric] ||= {})[ref_class] = value
+          end
+        end
+        agility_quarter = agility_quarter_classifier.each_with_object({}) do |(ref_class, metrics), res|
+          metrics.each do |metric, value|
+            (res[metric] ||= {})[ref_class] = value
+          end
+        end
+        community_total = community_total_classifier.each_with_object({}) do |(ref_class, metrics), res|
+          metrics.each do |metric, value|
+            (res[metric] ||= {})[ref_class] = value
+          end
+        end
+        community_quarter = community_quarter_classifier.each_with_object({}) do |(ref_class, metrics), res|
+          metrics.each do |metric, value|
+            (res[metric] ||= {})[ref_class] = value
+          end
+        end
+        {
+          agility_total: agility_total,
+          agility_quarter: agility_quarter,
+          community_total: community_total,
+          community_quarter: community_quarter
+        }
+      end
+
       def check(project)
         agility_total_results = CLASSES.each_with_object({}) { |klass, res| res[klass] = 0.0 }
         community_total_results = agility_total_results.dup
@@ -122,8 +151,8 @@ module Ossert
               ((@agility_total_classifier[ref_class] ||= {})[metric] ||= []) << next_metric_val
             end
 
-            [:issues_closed_count, :issues_open_count, :issues_all_count,
-             :pr_closed_count, :pr_open_count, :pr_all_count,
+            [:issues_closed_count, :issues_active_count, :issues_all_count,
+             :pr_closed_count, :pr_active_count, :pr_all_count,
              :releases_count, :commits, :delta_downloads].each do |metric|
               next_metric_val = project.agility.quarters.last_year_as_hash[metric].to_f
               ((@agility_quarter_classifier[ref_class] ||= {})[metric] ||= []) << next_metric_val
