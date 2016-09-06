@@ -8,14 +8,18 @@ module Ossert
     end
 
     def with_reference(text, value, metric, type)
+      value = value.to_f * 4 if type.to_s =~ /quarter/
       reference = @reference[type][metric].inject('NaN') do |acc, (ref, ref_values)|
-        Range.new(*ref_values).cover?(value) ? ref : acc
+        ref_values[:range].cover?(value) ? ref : acc
       end
-      "#{text} (#{reference})"
+      "#{text} (#{reference.gsub(/Class/, '')})"
+    rescue => e
+      puts "NO DATA FOR METRIC: '#{metric}'"
+      raise e
     end
 
     def percent(value)
-      "#{value} %"
+      "#{value}%"
     end
 
     def date(value)
@@ -23,164 +27,88 @@ module Ossert
     end
 
     def years(value)
-      "#{(value / 365.0).ceil} years"
+      "#{value.to_i / 365}+ years"
+    end
+
+    def downloads(value)
+      value.to_s.gsub(/\d(?=(...)+$)/, '\0,')
+    end
+
+    def decorate_metric(metric, value, type)
+      case metric.to_s
+      when /(percent|divergence)/
+        with_reference(
+          percent(value),
+          value,
+          metric,
+          type
+        )
+      when /(date|changed)/
+        with_reference(
+          date(value),
+          value,
+          metric,
+          type
+        )
+      when /period/
+        with_reference(
+          years(value),
+          value,
+          metric,
+          type
+        )
+      when /count/
+        with_reference(
+          value.to_i,
+          value,
+          metric,
+          type
+        )
+      when /downloads/
+        with_reference(
+          downloads(value),
+          value,
+          metric,
+          type
+        )
+      else
+        with_reference(
+          value,
+          value,
+          metric,
+          type
+        )
+      end
     end
 
     def agility_total
       @project.agility.total.metrics_to_hash.each_with_object({}) do |(metric, value), res|
-        res[metric] = case metric
-                      when /percent/
-                        with_reference(
-                          percent(value),
-                          metric,
-                          :agility_total
-                        )
-                      when /(date|period)/
-                        with_reference(
-                          date(value),
-                          metric,
-                          :agility_total
-                        )
-                      when /period/
-                        with_reference(
-                          years(value),
-                          metric,
-                          :agility_total
-                        )
-                      when /count/
-                        with_reference(
-                          value.to_i,
-                          metric,
-                          :agility_total
-                        )
-                      else
-                        with_reference(
-                          value,
-                          metric,
-                          :agility_total
-                        )
-                      end
+        metric_name = metric.to_s.gsub(/(_percent|_int|_count)/, '')
+        res[metric_name] = decorate_metric metric, value, :agility_total
       end
     end
 
     def agility_quarter(quarter)
       quarter = Time.at(quarter).to_date.to_time(:utc).beginning_of_quarter
       @project.agility.quarters[quarter].metrics_to_hash.each_with_object({}) do |(metric, value), res|
-        res[metric] = case metric
-                      when /percent/
-                        with_reference(
-                          percent(value),
-                          metric,
-                          :agility_quarter
-                        )
-                      when /(date|period)/
-                        with_reference(
-                          date(value),
-                          metric,
-                          :agility_quarter
-                        )
-                      when /period/
-                        with_reference(
-                          years(value),
-                          metric,
-                          :agility_quarter
-                        )
-                      when /count/
-                        with_reference(
-                          value.to_i,
-                          metric,
-                          :agility_quarter
-                        )
-                      else
-                        with_reference(
-                          value,
-                          metric,
-                          :agility_quarter
-                        )
-                      end
+        metric_name = metric.to_s.gsub(/(_percent|_int|_count)/, '')
+        res[metric_name] = decorate_metric metric, value, :agility_quarter
       end
     end
 
     def community_total
       @project.community.total.metrics_to_hash.each_with_object({}) do |(metric, value), res|
-        res[metric] = case metric
-                      when /percent/
-                        with_reference(
-                          percent(value),
-                          metric,
-                          :community_total
-                        )
-                      when /(date|period)/
-                        with_reference(
-                          date(value),
-                          metric,
-                          :community_total
-                        )
-                      when /period/
-                        with_reference(
-                          years(value),
-                          metric,
-                          :community_total
-                        )
-                      when /count/
-                        with_reference(
-                          value.to_i,
-                          metric,
-                          :community_total
-                        )
-                      else
-                        with_reference(
-                          value,
-                          metric,
-                          :community_total
-                        )
-                      end
+        metric_name = metric.to_s.gsub(/(_percent|_int|_count)/, '')
+        res[metric_name] = decorate_metric metric, value, :community_total
       end
     end
 
-    def community_quarter
+    def community_quarter(quarter)
       quarter = Time.at(quarter).to_date.to_time(:utc).beginning_of_quarter
       @project.community.quarters[quarter].metrics_to_hash.each_with_object({}) do |(metric, value), res|
-        res[metric] = case metric
-                      when /percent/
-                        with_reference(
-                          percent(value),
-                          metric,
-                          :community_quarter
-                        )
-                      when /(date|period)/
-                        with_reference(
-                          date(value),
-                          metric,
-                          :community_quarter
-                        )
-                      when /period/
-                        with_reference(
-                          years(value),
-                          metric,
-                          :community_quarter
-                        )
-                      when /count/
-                        with_reference(
-                          value.to_i,
-                          metric,
-                          :community_quarter
-                        )
-                      else
-                        with_reference(
-                          value,
-                          metric,
-                          :community_quarter
-                        )
-                      end
+        metric_name = metric.to_s.gsub(/(_percent|_int|_count)/, '')
+        res[metric_name] = decorate_metric metric, value, :community_quarter
       end
-    end
-
-    def issues_active_percent
-      with_reference(
-        percent(project.agility.total.issues_active_percent),
-
-      )
     end
   end
 end

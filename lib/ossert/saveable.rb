@@ -83,10 +83,9 @@ module Ossert
 
     def load_all
       # TODO: Later we'll need pagination here!
-      repo.all.each do |stored_prj|
+      repo.all.map do |stored_prj|
         deserialize(stored_prj)
       end
-      self
     end
 
     def dump

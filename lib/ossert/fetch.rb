@@ -31,12 +31,13 @@ module Ossert
     # Example
     #   projects_without_gh_data = Ossert::Project.projects.select { |proj| proj.gh_alias.blank? }
     #   projects_without_gh_data.each { |prj| Ossert::Fetch.only([Ossert::Fetch::Rubygems, Ossert::Fetch::GitHub], prj) }
-    def only(fetchers, project)
+    def only(fetchers, project, process = :process)
+      fetchers = Array.wrap(fetchers)
       puts "Fetching project '#{project.name}'..."
       ([Rubygems, Bestgems, GitHub] & fetchers).each do |fetcher|
         puts "======> with #{fetcher}..."
         time = Benchmark.realtime {
-          fetcher.new(project).process
+          fetcher.new(project).send(process)
         }
         puts "<====== Finished in #{time.round(3)} sec."
         sleep(1)
@@ -320,6 +321,15 @@ module Ossert
         end
       end
 
+      def process_last_release_date
+        tag = tags.first
+
+        if tag && (latest_release_date = date_from_tag(tag[:commit][:sha])).present?
+          project.agility.total.last_release_date = latest_release_date
+          project.agility.total.commits_count_since_last_release = commits_since(latest_release_date).length
+        end
+      end
+
       def process
         # TODO: what to choose? !!!updated_at!!! vs created_at ???
         # we must track latest changes. so updated_at is correct
@@ -440,7 +450,7 @@ module Ossert
           project.community.quarters[pull_comment[:created_at]].users_involved << login
         end
 
-        @latest_release_sha = nil
+        @latest_release_date = nil
         tags.each do |tag|
           tag_date = if @latest_release_date.nil?
             @latest_release_date = date_from_tag(tag[:commit][:sha])
@@ -453,7 +463,7 @@ module Ossert
 
         # latest release = http://octokit.github.io/octokit.rb/Octokit/Client/Releases.html#latest_release-instance_method
         # commits_count_since_last_release = http://octokit.github.io/octokit.rb/Octokit/Client/Commits.html#commits_since-instance_method
-        if @last_release_date.present?
+        if @latest_release_date.present?
           project.agility.total.last_release_date = @latest_release_date# wrong: last_release_commit[:commit][:committer][:date]
           project.agility.total.commits_count_since_last_release = commits_since(@latest_release_date).length
         end

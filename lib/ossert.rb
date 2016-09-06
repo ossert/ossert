@@ -14,6 +14,7 @@ require "ossert/fetch"
 require "ossert/reports"
 require "ossert/reference"
 require "ossert/classifiers"
+require "ossert/project_decorator"
 require 'octokit'
 
 module Ossert
@@ -220,9 +221,11 @@ module Ossert
       def metrics
         [
           :users_creating_issues_count, :users_commenting_issues_count, :users_creating_pr_count,
-          :users_commenting_pr_count, :contributors_count, :watchers_count, #:stargazers_count,
+          :users_commenting_pr_count,
+          :contributors_count, :watchers_count, :stargazers_count,
           :forks_count,
-          :users_involved_count#, :users_involved_no_stars_count
+          :users_involved_count,
+          :users_involved_no_stars_count
         ]
       end
     end
@@ -292,8 +295,9 @@ module Ossert
       def metrics
         [
           :users_creating_issues_count, :users_commenting_issues_count, :users_creating_pr_count,
-          :users_commenting_pr_count, :contributors_count, :stargazers_count,
+          :users_commenting_pr_count, :stargazers_count,
           :forks_count,
+          # :contributors_count,
           :users_involved_count, :users_involved_no_stars_count
         ]
       end
@@ -387,7 +391,9 @@ module Ossert
       def metrics
         [
           :issues_active_percent, :issues_non_owner_percent, :issues_with_contrib_comments_percent, :issues_all_count,
+          :issues_closed_percent,
           :pr_active_percent, :pr_non_owner_percent, :pr_with_contrib_comments_percent, :pr_all_count,
+          :pr_closed_percent,
           :first_pr_date_int, :last_pr_date_int, :first_issue_date_int, :last_issue_date_int, :last_release_date_int,
           :releases_count, :commits_count_since_last_release_count,
           :last_year_commits, :total_downloads, :life_period, :last_changed
@@ -407,7 +413,7 @@ module Ossert
                   :last_year_commits, :stale_branches, :branches, :total_downloads, :delta_downloads
 
     NON_SET_VARS = %w(first_pr_date last_pr_date first_issue_date last_issue_date last_release_date
-                      commits_count_since_after_release total_downloads delta_downloads last_year_commits)
+                      commits_count_since_last_release total_downloads delta_downloads last_year_commits)
     [
       :issues_closed, :issues_active, :issues_non_owner, :issues_with_contrib_comments,
       :pr_closed, :pr_active, :pr_non_owner, :pr_with_contrib_comments,
@@ -427,8 +433,12 @@ module Ossert
       define_method("#{metric}_int") { public_send(metric).to_i }
     end
 
-    [:issues_all, :pr_all, :commits_count_since_last_release].each do |metric|
+    [:issues_all, :pr_all].each do |metric|
       define_method("#{metric}_count") { public_send(metric).count }
+    end
+
+    def commits_count_since_last_release_count
+      commits_count_since_last_release.is_a?(Set) ? 0 : commits_count_since_last_release
     end
 
     def issues_active
@@ -532,8 +542,8 @@ module Ossert
 
       def metrics
         [
-          :issues_active_count, :issues_closed_count,
-          :pr_active_count, :pr_closed_count,
+          # :issues_active_count, :issues_closed_count,
+          # :pr_active_count, :pr_closed_count,
           :issues_active_percent, :issues_closed_percent, :issues_all_count,
           :pr_active_percent, :pr_closed_percent, :pr_all_count,
           :releases_count, :commits, :total_downloads, :download_divergence,
