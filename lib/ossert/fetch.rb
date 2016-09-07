@@ -330,6 +330,18 @@ module Ossert
         end
       end
 
+      def process_actual_prs_and_issues
+        actual_prs, actual_issues = Set.new, Set.new
+        project.agility.quarters.each_sorted do |quarter, data|
+          data.pr_actual = actual_prs
+          data.issues_actual = actual_issues
+
+          closed = data.pr_closed + data.issues_closed
+          actual_prs = (actual_prs + data.pr_open) - closed
+          actual_issues = (actual_issues + data.issues_open) - closed
+        end
+      end
+
       def process
         # TODO: what to choose? !!!updated_at!!! vs created_at ???
         # we must track latest changes. so updated_at is correct
@@ -449,6 +461,8 @@ module Ossert
           project.community.total.users_involved << login
           project.community.quarters[pull_comment[:created_at]].users_involved << login
         end
+
+        process_actual_prs_and_issues
 
         @latest_release_date = nil
         tags.each do |tag|

@@ -3,6 +3,8 @@ module Ossert
     class Growing
       CLASSES = %w(ClassA ClassB ClassC ClassD ClassE)
       SYNTETIC = [:download_divergence, :pr_active_percent, :issues_active_percent]
+      REVERSED = [:issues_active_percent, :pr_active_percent,
+                  :issues_actual_count, :pr_actual_count]
 
       class << self
         attr_accessor :all
@@ -43,35 +45,14 @@ module Ossert
       # Maybe add syntetic attributes. Take maximum as a start and go less. from A to E... and reversed
 
       def reference_values_per_class
-        reversed = [
-          :issues_active_percent, :pr_active_percent
-        ]
-        agility_total = agility_total_classifier.each_with_object({}) do |(ref_class, metrics), res|
-          metrics.each do |metric, value|
-            if reversed.include? metric
-              (res[metric] ||= {})[reversed(ref_class)] = value
-            else
+        agility_total, agility_quarter, community_total, community_quarter = [
+          agility_total_classifier, agility_quarter_classifier,
+          community_total_classifier, community_quarter_classifier
+        ].map do |classifier|
+          classifier.each_with_object({}) do |(ref_class, metrics), res|
+            metrics.each do |metric, value|
               (res[metric] ||= {})[ref_class] = value
             end
-          end
-        end
-        agility_quarter = agility_quarter_classifier.each_with_object({}) do |(ref_class, metrics), res|
-          metrics.each do |metric, value|
-            if reversed.include? metric
-              (res[metric] ||= {})[reversed(ref_class)] = value
-            else
-              (res[metric] ||= {})[ref_class] = value
-            end
-          end
-        end
-        community_total = community_total_classifier.each_with_object({}) do |(ref_class, metrics), res|
-          metrics.each do |metric, value|
-            (res[metric] ||= {})[ref_class] = value
-          end
-        end
-        community_quarter = community_quarter_classifier.each_with_object({}) do |(ref_class, metrics), res|
-          metrics.each do |metric, value|
-            (res[metric] ||= {})[ref_class] = value
           end
         end
         {
@@ -152,33 +133,33 @@ module Ossert
         agility_total_classifier.each_pair do |ref_class, metrics|
           metrics.each_pair do |metric, values|
             next unless all_metrics.include? metric
-            threshold = values[:threshold]
+            range = values[:range]
             gain = half_metrics.include?(metric) ? 0.05 : 0.1
-            agility_total_results[ref_class] += gain if project.agility.total.send(metric).to_f >= threshold
+            agility_total_results[ref_class] += gain if range.cover? project.agility.total.send(metric).to_f
           end
         end
 
         agility_quarter_classifier.each_pair do |ref_class, metrics|
           metrics.each_pair do |metric, values|
             next unless all_metrics.include? metric
-            threshold = values[:threshold]
-            agility_quarter_results[ref_class] += 0.11 if project.agility.quarters.last_year_as_hash[metric].to_f >= threshold
+            range = values[:range]
+            agility_quarter_results[ref_class] += 0.11 if range.cover? project.agility.quarters.last_year_as_hash[metric].to_f
           end
         end
 
         community_total_classifier.each_pair do |ref_class, metrics|
           metrics.each_pair do |metric, values|
             next unless all_metrics.include? metric
-            threshold = values[:threshold]
-            community_total_results[ref_class] += 0.11 if project.community.total.send(metric).to_f >= threshold
+            range = values[:range]
+            community_total_results[ref_class] += 0.11 if range.cover? project.community.total.send(metric).to_f
           end
         end
 
         community_quarter_classifier.each_pair do |ref_class, metrics|
           metrics.each_pair do |metric, values|
             next unless all_metrics.include? metric
-            threshold = values[:threshold]
-            community_quarter_results[ref_class] += 0.11 if project.community.quarters.last_year_as_hash[metric].to_f >= threshold
+            range = values[:range]
+            community_quarter_results[ref_class] += 0.11 if range.cover? project.community.quarters.last_year_as_hash[metric].to_f
           end
         end
 
@@ -245,8 +226,8 @@ module Ossert
               ((@agility_total_classifier[ref_class] ||= {})[metric] ||= []) << next_metric_val
             end
 
-            [:issues_closed_percent, :issues_active_percent, :issues_all_count,
-             :pr_closed_percent, :pr_active_percent, :pr_all_count,
+            [:issues_closed_percent, :issues_active_percent, :issues_all_count, :issues_actual_count,
+             :pr_closed_percent, :pr_active_percent, :pr_all_count, :pr_actual_count,
              :total_downloads, :download_divergence,
              :releases_count, :commits, :delta_downloads].each do |metric|
               next_metric_val = project.agility.quarters.last_year_as_hash[metric].to_f
@@ -267,48 +248,18 @@ module Ossert
         end
 
         CLASSES.each_with_index do |ref_class, idx|
-          @agility_total_classifier[ref_class].each_pair do |metric, values|
-            sibling_class_values = if (idx + 1) < CLASSES.count
-                                      @agility_total_classifier[CLASSES[idx+1]][metric]
-                                    else
-                                      []
-                                    end
-            all_values = sibling_class_values + values
-            @agility_total_classifier[ref_class][metric] = (values.max || 0) and next if all_values.count <= 2
-            @agility_total_classifier[ref_class][metric] = (all_values.sum/all_values.count).round(2)
-          end
-
-          @agility_quarter_classifier[ref_class].each_pair do |metric, values|
-            sibling_class_values = if (idx + 1) < CLASSES.count
-                                      @agility_quarter_classifier[CLASSES[idx+1]][metric]
-                                    else
-                                      []
-                                    end
-            all_values = sibling_class_values + values
-            @agility_quarter_classifier[ref_class][metric] = (values.max || 0) and next if all_values.count <= 2
-            @agility_quarter_classifier[ref_class][metric] = (all_values.sum/all_values.count).round(2)
-          end
-
-          @community_total_classifier[ref_class].each_pair do |metric, values|
-            sibling_class_values = if (idx + 1) < CLASSES.count
-                                      @community_total_classifier[CLASSES[idx+1]][metric]
-                                    else
-                                      []
-                                    end
-            all_values = sibling_class_values + values
-            @community_total_classifier[ref_class][metric] = (values.max || 0) and next if all_values.count <= 2
-            @community_total_classifier[ref_class][metric] = (all_values.sum/all_values.count).round(2)
-          end
-
-          @community_quarter_classifier[ref_class].each_pair do |metric, values|
-            sibling_class_values = if (idx + 1) < CLASSES.count
-                                      @community_quarter_classifier[CLASSES[idx+1]][metric]
-                                    else
-                                      []
-                                    end
-            all_values = sibling_class_values + values
-            @community_quarter_classifier[ref_class][metric] = (values.max || 0) and next if all_values.count <= 2
-            @community_quarter_classifier[ref_class][metric] = (all_values.sum/all_values.count).round(2)
+          [@agility_total_classifier, @agility_quarter_classifier,
+           @community_total_classifier, @community_quarter_classifier].each do |classifier|
+            classifier[ref_class].each_pair do |metric, values|
+              sibling_class_values = if (idx + 1) < CLASSES.count
+                                        classifier[CLASSES[idx+1]][metric]
+                                      else
+                                        []
+                                      end
+              all_values = sibling_class_values + values
+              classifier[ref_class][metric] = (values.max || 0) and next if all_values.count <= 2
+              classifier[ref_class][metric] = (all_values.sum/all_values.count).round(2)
+            end
           end
         end
 
@@ -319,8 +270,9 @@ module Ossert
             best_value = classifier.values.map { |metrics| metrics[synt_metric] }.compact.max
             next if best_value.to_f.zero?
 
-            CLASSES.each_with_index do |ref_class, idx|
-              classifier[ref_class][synt_metric] = (best_value / (idx + 1).to_f).round(2)
+            growth = (best_value / CLASSES.count.to_f).round(2)
+            CLASSES.reverse.each_with_index do |ref_class, idx|
+              classifier[ref_class][synt_metric] = (growth * (idx + 1)).round(2)
             end
           end
         end
@@ -330,28 +282,38 @@ module Ossert
           [@agility_total_classifier, @agility_quarter_classifier,
            @community_total_classifier, @community_quarter_classifier].each do |classifier|
             classifier[ref_class].each_pair do |metric, value|
-              higher_class_value = if (idx - 1) >= 0
-                                     classifier[CLASSES[idx-1]][metric][:threshold]
-                                   else
-                                     :none
-                                   end
-              start_value = if higher_class_value == :none
-                              value
-                            elsif idx == CLASSES.count - 1
-                              classifier[CLASSES.first][metric][:threshold] > value ? -Float::INFINITY : Float::INFINITY
-                            else
-                              value
-                            end
+              # higher_class_value = if (idx - 1) >= 0
+              #                        classifier[CLASSES[idx-1]][metric][:threshold]
+              #                      else
+              #                        :none
+              #                      end
+              reversed = REVERSED.include? metric
+              any_value_idx = reversed ? 0 : CLASSES.count - 1
 
-              end_value = if higher_class_value == :none
-                            classifier[CLASSES.last][metric] < value ? Float::INFINITY : -Float::INFINITY
-                          else
-                            higher_class_value
-                          end
+              if idx == any_value_idx
+                start_value, end_value = -Float::INFINITY, Float::INFINITY
+              else
+                start_value = reversed ? -Float::INFINITY : value
+                end_value = reversed ? value : Float::INFINITY
+              end
+
               classifier[ref_class][metric] = {
                 threshold: value,
                 range: start_value...end_value
               }
+            end
+          end
+        end
+
+        # fix reversed
+        [@agility_total_classifier, @agility_quarter_classifier,
+          @community_total_classifier, @community_quarter_classifier].each do |classifier|
+          REVERSED.each do |reversed_metric|
+            CLASSES.first((CLASSES.count / 2.0).ceil).each_with_index do |ref_class, idx|
+              next unless classifier[ref_class][reversed_metric].present?
+              previous_value = classifier[reversed(ref_class)][reversed_metric]
+              classifier[reversed(ref_class)][reversed_metric] = classifier[ref_class][reversed_metric]
+              classifier[ref_class][reversed_metric] = previous_value
             end
           end
         end

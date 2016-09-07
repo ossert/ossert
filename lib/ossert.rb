@@ -195,6 +195,12 @@ module Ossert
       end
     end
 
+    def reverse_each_sorted
+      quarters.sort.reverse.map do |key,value|
+        yield(key, value)
+      end
+    end
+
     def each_sorted
       quarters.sort.map do |key,value|
         yield(key, value)
@@ -544,8 +550,8 @@ module Ossert
         [
           # :issues_active_count, :issues_closed_count,
           # :pr_active_count, :pr_closed_count,
-          :issues_active_percent, :issues_closed_percent, :issues_all_count,
-          :pr_active_percent, :pr_closed_percent, :pr_all_count,
+          :issues_active_percent, :issues_closed_percent, :issues_all_count, :issues_actual_count,
+          :pr_active_percent, :pr_closed_percent, :pr_all_count, :pr_actual_count,
           :releases_count, :commits, :total_downloads, :download_divergence,
           :delta_downloads
         ]
@@ -558,8 +564,9 @@ module Ossert
     # - Downloads divergence
     # - Downloads degradation per release ??
     # - Branches Count
-    attr_accessor :issues_open, :issues_closed, :issues_total, :pr_open,
-                  :pr_merged, :pr_closed, :pr_total, :releases,
+    attr_accessor :issues_open, :issues_closed, :issues_total, :issues_actual,
+                  :pr_open, :pr_merged, :pr_closed, :pr_total, :pr_actual,
+                  :releases,
                   :releases_total_gh, :branches, :releases_total_rg, :commits,
                   :download_divergence, :total_downloads, :delta_downloads
 
@@ -567,10 +574,12 @@ module Ossert
       issues_open: Set,
       issues_closed: Set,
       issues_total: Set,
+      issues_actual: Set,
       pr_open: Set,
       pr_merged: Set,
       pr_closed: Set,
       pr_total: Set,
+      pr_actual: Set,
       releases: Set,
       releases_total_gh: Set,
       branches: Set,
@@ -580,10 +589,9 @@ module Ossert
 
     [
       :issues_active, :issues_closed,
-      :pr_active, :pr_closed,
+      :pr_active, :pr_closed, :pr_merged
     ].each do |metric|
       type = metric.to_s.split('_').first
-      # total = "#{metric.to_s.split('_').first}_total"
       define_method("#{metric}_percent") do
         value = public_send(metric)
         total_count = public_send("#{type}_all").count
@@ -592,25 +600,25 @@ module Ossert
       end
     end
 
-    [:issues_active, :pr_active, :issues_closed,
-     :pr_closed, :issues_all, :pr_all].each do |metric|
+    [:issues_active, :pr_active, :issues_closed, :issues_actual,
+     :pr_closed, :issues_all, :pr_all, :pr_actual].each do |metric|
       define_method("#{metric}_count") { public_send(metric).count }
     end
 
     def issues_active
-      issues_open - issues_closed
+      issues_open - issues_closed + issues_actual
     end
 
     def issues_all
-      issues_open + issues_closed
+      issues_open + issues_closed + issues_actual
     end
 
     def pr_active
-      pr_open - pr_closed
+      pr_open - pr_closed + pr_actual
     end
 
     def pr_all
-      pr_open + pr_closed
+      pr_open + pr_closed + pr_actual
     end
 
     def releases_count
@@ -628,7 +636,10 @@ module Ossert
     end
 
     def metric_values
-      self.class.metrics.map { |metric| public_send(metric).to_i }
+      self.class.metrics.map do |metric|
+        value = public_send(metric).to_f
+        metric.to_s =~ /percent/ ? value / 3.0 : value
+      end
     end
 
     def metrics_to_hash

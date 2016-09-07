@@ -1,5 +1,6 @@
 module Ossert
   class ProjectDecorator
+    CLASSES = %w(ClassE ClassD ClassC ClassB ClassA)
     attr_reader :project
 
     def initialize(project)
@@ -8,9 +9,9 @@ module Ossert
     end
 
     def with_reference(text, value, metric, type)
-      value = value.to_f * 4 if type.to_s =~ /quarter/
-      reference = @reference[type][metric].inject('NaN') do |acc, (ref, ref_values)|
-        ref_values[:range].cover?(value) ? ref : acc
+      metric_by_ref = @reference[type][metric]
+      reference = CLASSES.inject('NaN') do |acc, ref|
+        metric_by_ref[ref][:range].cover?(value.to_f) ? ref : acc
       end
       "#{text} (#{reference.gsub(/Class/, '')})"
     rescue => e
