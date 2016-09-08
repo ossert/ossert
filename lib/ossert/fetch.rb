@@ -224,54 +224,70 @@ module Ossert
       def request(endpoint, *args)
         # raise 'Requests limit reached' if @requests_count % 500 == 0 && client.rate_limit![:remaining] < 30
         # @requests_count += 1
-        client.send(endpoint, *args)
+        # client.send(endpoint, *args, &block)
+        first_response_data = client.paginate(url(endpoint, args.shift), *args) do |_, last_response|
+          last_response.data.each { |data| yield data }
+        end
+        first_response_data.each { |data| yield data }
       end
 
-      def issues
-        @issues ||= request(:issues, @repo_name, state: :all)
+      def url(endpoint, repo_name)
+        path = case endpoint
+               when /issues_comments/
+                 "issues/comments"
+               when /pulls_comments/
+                 "pulls/comments"
+               else
+                 endpoint
+               end
+        "#{Octokit::Repository.path repo_name}/#{path}"
       end
 
-      def issues_comments
-        @issues_comments ||= request(:issues_comments, @repo_name)
+      def issues(&block)
+        request(:issues, @repo_name, state: :all, &block)
       end
 
-      def pulls
+      def issues_comments(&block)
+        request(:issues_comments, @repo_name, &block)
+      end
+
+      def pulls(&block)
         # fetch pull requests, identify by "url", store: "assignee", "milestone", created_at/updated_at, "user"
         # http://octokit.github.io/octokit.rb/Octokit/Client/PullRequests.html#pull_requests_comments-instance_method
         # fetch comments and link with PR by "pull_request_url"
-        @pulls ||= request(:pull_requests, @repo_name, state: :all)
+        request(:pulls, @repo_name, state: :all, &block)
       end
 
-      def pulls_comments
+      def pulls_comments(&block)
         # fetch pull requests, identify by "url", store: "assignee", "milestone", created_at/updated_at, "user"
         # http://octokit.github.io/octokit.rb/Octokit/Client/PullRequests.html#pull_requests_comments-instance_method
         # fetch comments and link with PR by "pull_request_url"
-        @pulls_comments ||= request(:pulls_comments, @repo_name)
+        request(:pulls_comments, @repo_name, &block)
       end
 
-      def contributors
-        @contributors ||= request(:contribs, @repo_name)
+      def contributors(&block)
+        request(:contributors, @repo_name, &block)
       end
 
-      def stargazers
+      def stargazers(&block)
         # @stargazers ||= client.stargazers(@repo_name, :accept =>'application/vnd.github.v3.star+json')
-        @stargazers ||= request(:stargazers, @repo_name)
+        request(:stargazers, @repo_name, &block)
       end
 
-      def watchers
-        @watchers ||= request(:subscribers, @repo_name)
+      def watchers(&block)
+        request(:subscribers, @repo_name, &block)
       end
 
-      def forkers
-        @forkers ||= request(:forks, @repo_name)
+      def forkers(&block)
+        request(:forks, @repo_name, &block)
       end
 
-      def branches
-        @branches ||= request(:branches, @repo_name)
+      def branches(&block)
+        request(:branches, @repo_name, &block)
       end
 
-      def tags
-        @tags ||= request(:tags, @repo_name)
+      def tags(&block)
+        request(:tags, @repo_name, &block)
       end
 
       def last_year_commits
@@ -345,7 +361,7 @@ module Ossert
       def process
         # TODO: what to choose? !!!updated_at!!! vs created_at ???
         # we must track latest changes. so updated_at is correct
-        project.community.total.contributors.merge(contributors.map { |c| c[:login] })
+        contributors { |c| project.community.total.contributors << c[:login] }#
         project.community.total.users_involved.merge(project.community.total.contributors)
         # @contributors.each do |contrib|
         #   # FUUUUU... no dates included !!!!
@@ -355,7 +371,7 @@ module Ossert
         #   # project.community.quarters[issue[:updated_at]].total_users_involved << issue[:user][:login]
         # end
 
-        issues.each do |issue|
+        issues do |issue|
           next if issue.key? :pull_request
           case issue[:state]
           when 'open'
@@ -390,7 +406,7 @@ module Ossert
           project.community.quarters[issue[:created_at]].users_involved << issue[:user][:login]
         end
 
-        issues_comments.each do |issue_comment|
+        issues_comments do |issue_comment|
           login = issue_comment[:user].try(:[], :login).presence || generate_anonymous
           issue_url = /\A(.*)#issuecomment.*\z/.match(issue_comment[:html_url])[1]
           if issue_url.include?('/pull/') # PR comments are stored as Issue comments. Sadness =(
@@ -415,7 +431,7 @@ module Ossert
           project.community.quarters[issue_comment[:created_at]].users_involved << login
         end
 
-        pulls.each do |pull|
+        pulls do |pull|
           case pull[:state]
           when 'open'
             project.agility.total.pr_open << pull[:url]
@@ -450,7 +466,7 @@ module Ossert
           project.community.quarters[pull[:created_at]].users_involved << pull[:user][:login]
         end
 
-        pulls_comments.each do |pull_comment|
+        pulls_comments do |pull_comment|
           login = pull_comment[:user].try(:[], :login).presence || generate_anonymous
           if project.community.total.contributors.include? login
             project.agility.total.pr_with_contrib_comments << pull_comment[:pull_request_url]
@@ -465,7 +481,7 @@ module Ossert
         process_actual_prs_and_issues
 
         @latest_release_date = nil
-        tags.each do |tag|
+        tags do |tag|
           tag_date = if @latest_release_date.nil?
             @latest_release_date = date_from_tag(tag[:commit][:sha])
           else
@@ -490,7 +506,7 @@ module Ossert
         # end
         process_commits
 
-        branches.each do |branch|
+        branches do |branch|
           # stale and total
           # by quarter ? date from commit -> [:commit][:committer][:date]
           # 1. save dates by commit sha.
@@ -504,7 +520,7 @@ module Ossert
           #    date -> stale
         end
 
-        stargazers.each do |stargazer|
+        stargazers do |stargazer|
           login = stargazer[:user][:login].presence || generate_anonymous
           project.community.total.stargazers << login
           project.community.total.users_involved << login
@@ -513,18 +529,15 @@ module Ossert
           project.community.quarters[stargazer[:starred_at]].users_involved << login
         end
 
-        project.community.total.watchers.merge(watchers.map { |w| w[:login] })
-        project.community.total.users_involved.merge(project.community.total.watchers)
-        watchers.each do |watcher|
+        watchers do |watcher|
           login = watcher[:login].presence || generate_anonymous
           project.community.total.watchers << login
           project.community.total.users_involved << login
         end
 
-        project.community.total.forks.merge(forkers.map { |f| f[:owner][:login] })
-        project.community.total.users_involved.merge(project.community.total.forks)
-
-        forkers.each do |forker|
+        forkers do |forker|
+          project.community.total.forks << forker[:owner][:login]
+          project.community.total.users_involved << forker[:owner][:login]
           project.community.quarters[forker[:created_at]].forks << forker[:owner][:login]
           project.community.quarters[forker[:created_at]].users_involved << forker[:owner][:login]
         end
