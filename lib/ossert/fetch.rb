@@ -266,7 +266,7 @@ module Ossert
       end
 
       def contributors(&block)
-        request(:contributors, @repo_name, &block)
+        request(:contributors, @repo_name, anon: true, &block)
       end
 
       def stargazers(&block)
@@ -291,16 +291,16 @@ module Ossert
       end
 
       def last_year_commits
-        return @last_year_commits if @last_year_commits
+        last_year_commits = []
         retry_count = 3
-        while @last_year_commits.blank? && retry_count > 0
-          @last_year_commits ||= client.commit_activity_stats(@repo_name)
-          if @last_year_commits.blank?
+        while last_year_commits.blank? && retry_count > 0
+          last_year_commits ||= client.commit_activity_stats(@repo_name)
+          if last_year_commits.blank?
             sleep(15*retry_count)
             retry_count -= 1
           end
         end
-        @last_year_commits
+        last_year_commits
       end
 
       def commit(sha)
@@ -361,7 +361,10 @@ module Ossert
       def process
         # TODO: what to choose? !!!updated_at!!! vs created_at ???
         # we must track latest changes. so updated_at is correct
-        contributors { |c| project.community.total.contributors << c[:login] }#
+        contributors do |c|
+          login = c.try(:[], :login).presence || generate_anonymous
+          project.community.total.contributors << login
+        end#
         project.community.total.users_involved.merge(project.community.total.contributors)
         # @contributors.each do |contrib|
         #   # FUUUUU... no dates included !!!!
