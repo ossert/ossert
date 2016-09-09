@@ -33,6 +33,12 @@ module Ossert
       end
     end
 
+    def load_later_than(id)
+      repo.later_than(id).map do |stored_prj|
+        deserialize(stored_prj)
+      end
+    end
+
     def cleanup_referencies!
       repo.command(:update, repo.projects).call(reference: UNUSED_REFERENCE)
     end
@@ -121,6 +127,10 @@ class Projects < ROM::Relation[:sql]
     where(name: name)
   end
 
+  def later_than(id)
+    where('id >= ?', id)
+  end
+
   def referenced
     where('reference <> ?', Ossert::Saveable::UNUSED_REFERENCE)
   end
@@ -135,6 +145,10 @@ class ProjectRepo < ROM::Repository[:projects]
 
   def all
     projects.to_a
+  end
+
+  def later_than(id)
+    projects.later_than(id).to_a
   end
 
   def referenced
