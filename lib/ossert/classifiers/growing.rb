@@ -2,6 +2,7 @@ module Ossert
   module Classifiers
     class Growing
       CLASSES = %w(ClassA ClassB ClassC ClassD ClassE)
+      # TODO: replace with hash[classifier] => max_value
       SYNTETIC = [:download_divergence, :pr_active_percent, :issues_active_percent]
       REVERSED = [:issues_active_percent, :pr_active_percent,
                   :issues_actual_count, :pr_actual_count]

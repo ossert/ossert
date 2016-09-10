@@ -346,6 +346,11 @@ module Ossert
         end
       end
 
+      def process_issues_and_prs_processing_time
+        # TODO: go for each quarter data
+        # => how many quarters does it take in average, to close pr and issue
+      end
+
       def process_actual_prs_and_issues
         actual_prs, actual_issues = Set.new, Set.new
         project.agility.quarters.each_sorted do |quarter, data|
