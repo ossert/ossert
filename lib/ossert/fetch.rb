@@ -349,6 +349,24 @@ module Ossert
       def process_issues_and_prs_processing_time
         # TODO: go for each quarter data
         # => how many quarters does it take in average, to close pr and issue
+        issues_processing_periods = Hash.new { |h, k| h[k] = 0 }
+        pr_processing_periods = Hash.new { |h, k| h[k] = 0 }
+
+        project.agility.quarters.each_sorted do |quarter, data|
+          data.pr_actual.each { |pr| pr_processing_periods[pr] += 1 }
+          data.pr_open.each { |pr| pr_processing_periods[pr] += 1 }
+          periods = pr_processing_periods.values
+
+          data.issues_actual.each { |issue| issues_processing_periods[issue] += 1 }
+          data.issues_open.each { |issue| issues_processing_periods[issue] += 1 }
+          periods = issues_processing_periods.values
+        end
+
+        periods = pr_processing_periods.values
+        project.agility.total.pr_processed_in_avg = periods.empty? ? 0 : periods.sum / periods.count.to_d.to_f
+
+        periods = issues_processing_periods.values
+        project.agility.total.issues_processed_in_avg = periods.empty? ? 0 : periods.sum / periods.count.to_d.to_f
       end
 
       def process_actual_prs_and_issues
@@ -487,6 +505,8 @@ module Ossert
         end
 
         process_actual_prs_and_issues
+
+        process_issues_and_prs_processing_time
 
         @latest_release_date = nil
         tags do |tag|

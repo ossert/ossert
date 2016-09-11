@@ -4,12 +4,15 @@ module Ossert
       CLASSES = %w(ClassA ClassB ClassC ClassD ClassE)
       # TODO: replace with hash[classifier] => max_value
       SYNTETIC = [{download_divergence: 5},
+                  {issues_processed_in_avg: 3},
+                  {pr_processed_in_avg: 2},
                   {pr_active_percent: 90},
                   {pr_closed_percent: 90},
                   {issues_active_percent: 90},
                   {issues_closed_percent: 90}]
       REVERSED = [:issues_active_percent, :pr_active_percent,
-                  :issues_actual_count, :pr_actual_count]
+                  :issues_actual_count, :pr_actual_count,
+                  :issues_processed_in_avg, :pr_processed_in_avg]
 
       class << self
         attr_accessor :all
@@ -223,6 +226,7 @@ module Ossert
              :life_period, :last_changed, :issues_non_owner_percent, :pr_non_owner_percent,
              :pr_closed_percent, :issues_closed_percent, :pr_with_contrib_comments_percent,
              :pr_active_percent, :issues_active_percent,
+             :issues_processed_in_avg, :pr_processed_in_avg,
              :first_pr_date_int, :last_pr_date_int,
              :first_issue_date_int, :last_issue_date_int,
              :last_release_date_int, :commits_count_since_last_release_count,

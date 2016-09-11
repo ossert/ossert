@@ -31,6 +31,10 @@ module Ossert
       "#{value.to_i / 365}+ years"
     end
 
+    def months(value)
+      "#{(value.to_f.to_d * 3.0.to_d).round(2)} months"
+    end
+
     def downloads(value)
       value.to_s.gsub(/\d(?=(...)+$)/, '\0,')
     end
@@ -47,6 +51,13 @@ module Ossert
       when /(date|changed)/
         with_reference(
           date(value),
+          value,
+          metric,
+          type
+        )
+      when /processed_in/
+        with_reference(
+          months(value),
           value,
           metric,
           type

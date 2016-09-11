@@ -393,6 +393,7 @@ module Ossert
           :issues_closed_percent,
           :pr_active_percent, :pr_non_owner_percent, :pr_with_contrib_comments_percent, :pr_all_count,
           :pr_closed_percent,
+          :issues_processed_in_avg, :pr_processed_in_avg,
           :first_pr_date_int, :last_pr_date_int, :first_issue_date_int, :last_issue_date_int, :last_release_date_int,
           :releases_count, :commits_count_since_last_release_count,
           :last_year_commits, :life_period, :last_changed
@@ -406,13 +407,15 @@ module Ossert
     # - Issues "no:assignee" "no:milestone" to total count
     # - Amount of changes each quarter (Graph? -> Later)
     attr_accessor :issues_open, :issues_closed, :issues_owner, :issues_non_owner, :issues_with_contrib_comments, :issues_total,
+                  :issues_processed_in_avg,
                   :pr_open, :pr_merged, :pr_closed, :pr_owner, :pr_non_owner, :pr_with_contrib_comments, :pr_total,
+                  :pr_processed_in_avg,
                   :first_pr_date, :last_pr_date, :first_issue_date, :last_issue_date,
                   :releases_total_gh, :releases_total_rg, :last_release_date, :commits_count_since_last_release,
                   :last_year_commits, :stale_branches, :branches
 
     NON_SET_VARS = %w(first_pr_date last_pr_date first_issue_date last_issue_date last_release_date
-                      commits_count_since_last_release last_year_commits)
+                      commits_count_since_last_release last_year_commits issues_processed_in_avg pr_processed_in_avg)
     [
       :issues_closed, :issues_active, :issues_non_owner, :issues_with_contrib_comments,
       :pr_closed, :pr_active, :pr_non_owner, :pr_with_contrib_comments,
@@ -556,8 +559,8 @@ module Ossert
     # - Downloads divergence
     # - Downloads degradation per release ??
     # - Branches Count
-    attr_accessor :issues_open, :issues_closed, :issues_total, :issues_actual, :issues_processed_in,
-                  :pr_open, :pr_merged, :pr_closed, :pr_total, :pr_actual, :pr_pulls_in,
+    attr_accessor :issues_open, :issues_closed, :issues_total, :issues_actual,
+                  :pr_open, :pr_merged, :pr_closed, :pr_total, :pr_actual,
                   :releases,
                   :releases_total_gh, :branches, :releases_total_rg, :commits
 
