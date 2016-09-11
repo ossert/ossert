@@ -139,7 +139,7 @@ module Ossert
     end
 
     class Bestgems
-      # Agility
+      # Community
       # => Total
       #     :total_downloads
       #
@@ -173,20 +173,20 @@ module Ossert
         downloads_till_now = nil
         total_downloads.each do |total|
           downloads_till_now = total unless downloads_till_now
-          downloads_saved = project.agility.quarters[total['date']].total_downloads.to_i
-          project.agility.quarters[total['date']].total_downloads = [downloads_saved, total['total_downloads']].max
+          downloads_saved = project.community.quarters[total['date']].total_downloads.to_i
+          project.community.quarters[total['date']].total_downloads = [downloads_saved, total['total_downloads']].max
         end
-        project.agility.total.total_downloads = downloads_till_now['total_downloads']
+        project.community.total.total_downloads = downloads_till_now['total_downloads']
 
         daily_downloads.each do |daily|
-          downloads_saved = project.agility.quarters[daily['date']].delta_downloads.to_i
-          project.agility.quarters[daily['date']].delta_downloads = downloads_saved + daily['daily_downloads']
+          downloads_saved = project.community.quarters[daily['date']].delta_downloads.to_i
+          project.community.quarters[daily['date']].delta_downloads = downloads_saved + daily['daily_downloads']
         end
 
         prev_downloads_delta = 0
-        project.agility.quarters.each_sorted do |start_date, stat|
+        project.community.quarters.each_sorted do |start_date, stat|
           prev_downloads_delta  = stat.delta_downloads.to_i - prev_downloads_delta
-          project.agility.quarters[start_date].download_divergence = divergence(
+          project.community.quarters[start_date].download_divergence = divergence(
             prev_downloads_delta, downloads_till_now['total_downloads']
           )
         end

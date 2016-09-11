@@ -231,7 +231,8 @@ module Ossert
           :contributors_count, :watchers_count, :stargazers_count,
           :forks_count,
           :users_involved_count,
-          :users_involved_no_stars_count
+          :users_involved_no_stars_count,
+          :total_downloads
         ]
       end
     end
@@ -239,7 +240,8 @@ module Ossert
     # - Popularity Rating (https://www.ruby-toolbox.com/projects/delayed_job/popularity)
     attr_accessor :users_creating_issues, :users_commenting_issues, :users_creating_pr, :users_commenting_pr,
                   :contributors, :watchers, :stargazers, :forks,
-                  :owners_github, :owners_rubygems, :users_involved
+                  :owners_github, :owners_rubygems, :users_involved,
+                  :total_downloads, :delta_downloads
 
     [:users_creating_issues, :users_commenting_issues, :users_creating_pr,
     :users_commenting_pr, :contributors, :watchers, :stargazers, :forks,
@@ -251,9 +253,12 @@ module Ossert
       (users_involved - stargazers).count
     end
 
+    NON_SET_VARS = %w(total_downloads delta_downloads)
+
     # sets of users
     def initialize
       self.class.attributes.each do |var|
+        next if NON_SET_VARS.include?(var.to_s)
         send "#{var}=", Set.new
       end
     end
@@ -304,10 +309,12 @@ module Ossert
           :users_commenting_pr_count, :stargazers_count,
           :forks_count,
           # :contributors_count,
-          :users_involved_count, :users_involved_no_stars_count
+          :users_involved_count, :users_involved_no_stars_count,
+          :download_divergence, :total_downloads, :delta_downloads
         ]
       end
     end
+
 
     # #### Pulse, for last year/quarter/month (amount + delta from total)
     # - Users count writing issues
@@ -317,7 +324,8 @@ module Ossert
     # - Total users involved
     attr_accessor :users_creating_issues, :users_commenting_issues, :users_creating_pr, :users_commenting_pr,
                   :contributors, :stargazers, :forks, # NO DATES... FUUU... :watchers,
-                  :users_involved
+                  :users_involved,
+                  :download_divergence, :total_downloads, :delta_downloads
 
     [:users_creating_issues, :users_commenting_issues, :users_creating_pr,
     :users_commenting_pr, :contributors, :stargazers, :forks,
@@ -329,9 +337,12 @@ module Ossert
       (users_involved - stargazers).count
     end
 
+    NON_SET_VARS = %w(download_divergence total_downloads delta_downloads)
+
     # sets of users
     def initialize
       self.class.attributes.each do |var|
+        next if NON_SET_VARS.include?(var.to_s)
         send "#{var}=", Set.new
       end
     end
@@ -367,24 +378,6 @@ module Ossert
     end
   end
 
-  module OpenWithoutClosed
-    def issues_open
-      super - issues_closed
-    end
-
-    def pr_open
-      super - pr_closed
-    end
-
-    def issues_total
-      issues_open + issues_closed
-    end
-
-    def pr_total
-      pr_open + pr_closed
-    end
-  end
-
   class AgilityTotalStat
     class << self
       attr_accessor :attributes
@@ -402,7 +395,7 @@ module Ossert
           :pr_closed_percent,
           :first_pr_date_int, :last_pr_date_int, :first_issue_date_int, :last_issue_date_int, :last_release_date_int,
           :releases_count, :commits_count_since_last_release_count,
-          :last_year_commits, :total_downloads, :life_period, :last_changed
+          :last_year_commits, :life_period, :last_changed
         ]
       end
     end
@@ -416,10 +409,10 @@ module Ossert
                   :pr_open, :pr_merged, :pr_closed, :pr_owner, :pr_non_owner, :pr_with_contrib_comments, :pr_total,
                   :first_pr_date, :last_pr_date, :first_issue_date, :last_issue_date,
                   :releases_total_gh, :releases_total_rg, :last_release_date, :commits_count_since_last_release,
-                  :last_year_commits, :stale_branches, :branches, :total_downloads, :delta_downloads
+                  :last_year_commits, :stale_branches, :branches
 
     NON_SET_VARS = %w(first_pr_date last_pr_date first_issue_date last_issue_date last_release_date
-                      commits_count_since_last_release total_downloads delta_downloads last_year_commits)
+                      commits_count_since_last_release last_year_commits)
     [
       :issues_closed, :issues_active, :issues_non_owner, :issues_with_contrib_comments,
       :pr_closed, :pr_active, :pr_non_owner, :pr_with_contrib_comments,
@@ -552,8 +545,7 @@ module Ossert
           # :pr_active_count, :pr_closed_count,
           :issues_active_percent, :issues_closed_percent, :issues_all_count, :issues_actual_count,
           :pr_active_percent, :pr_closed_percent, :pr_all_count, :pr_actual_count,
-          :releases_count, :commits, :total_downloads, :download_divergence,
-          :delta_downloads
+          :releases_count, :commits
         ]
       end
     end
@@ -564,11 +556,10 @@ module Ossert
     # - Downloads divergence
     # - Downloads degradation per release ??
     # - Branches Count
-    attr_accessor :issues_open, :issues_closed, :issues_total, :issues_actual,
-                  :pr_open, :pr_merged, :pr_closed, :pr_total, :pr_actual,
+    attr_accessor :issues_open, :issues_closed, :issues_total, :issues_actual, :issues_processed_in,
+                  :pr_open, :pr_merged, :pr_closed, :pr_total, :pr_actual, :pr_pulls_in,
                   :releases,
-                  :releases_total_gh, :branches, :releases_total_rg, :commits,
-                  :download_divergence, :total_downloads, :delta_downloads
+                  :releases_total_gh, :branches, :releases_total_rg, :commits
 
     VARS_INITIALIZE = {
       issues_open: Set,
