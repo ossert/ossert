@@ -4,8 +4,8 @@ module Ossert
       CLASSES = %w(ClassA ClassB ClassC ClassD ClassE)
       # TODO: replace with hash[classifier] => max_value
       SYNTETIC = [{download_divergence: 5},
-                  {issues_processed_in_avg: 3},
-                  {pr_processed_in_avg: 2},
+                  {issues_processed_in_avg: 7},
+                  {pr_processed_in_avg: 5},
                   {pr_active_percent: 90},
                   {pr_closed_percent: 90},
                   {issues_active_percent: 90},
@@ -79,95 +79,62 @@ module Ossert
 
         half_metrics = [:issues_non_owner_percent, :pr_non_owner_percent,
                         :pr_closed_percent, :issues_closed_percent,
-                        :pr_with_contrib_comments_percent, :issues_with_contrib_comments_percent]
-
+                        :pr_with_contrib_comments_percent, :issues_with_contrib_comments_percent,
+                        :pr_processed_in_avg, :issues_processed_in_avg]
         full_metrics = [
-          # Absolute:
-          #   - Issues Total > X
-          #   - PR Total > 180
-          #   - Last year commits > 100
-          #   - Total Downloads > 2M
-          #   - Total Releases > 55
-          #
-          # Reference:
-          #   - (0.1) Time between first and last PR/Issue is 4+ years
-          #   - (0.1) Last Issue or PR creation date within last half of a year
-          #   - (0.05 + 0.05) Non-owner PRs > 60%, Issues > 60%
-          #   - (0.05 + 0.05) Open PRs < 5%, Issues < 10%
-          #   - (0.05 + 0.05) With contributors comments PRs > 12%, Issues > 78%
-          #
-          #
-          # Comunity.
-          # Each metric has absolute value and gives 0,1 probability:
-          #   - Users creating issues > 375
-          #   - Users commenting issues > 500
-          #   - Users creating pulls > 90
-          #   - Users commenting pulls > 24
-          #   - Users contributors > 70
-          #   - Users watchers > 50
-          #   - Users stargazers > 1000
-          #   - Users forks > 150
-          #   - Users total > 1200
-          #   - Users total without stargazers > 400
-          # :first_pr_date_int, :last_pr_date_int,
-          # :first_issue_date_int, :last_issue_date_int,
-          # :last_release_date_int, :commits_count_since_last_release_count,
-          # :pr_active_percent, :issues_active_percent,
-          # :watchers_count,
-          # :total_downloads, :download_divergence,
+          :issues_all_count, :pr_all_count, :releases_count, :last_year_commits,
+          :life_period, :last_changed
+        ]
+        all_metrics_agility = full_metrics + half_metrics
 
-
-
-          :issues_all_count, :pr_all_count, :total_downloads, :releases_count, :last_year_commits,
-          :life_period, :last_changed,
-
-          # :issues_non_owner_percent, :pr_non_owner_percent,
-          # :pr_closed_percent, :issues_closed_percent, :pr_with_contrib_comments_percent,
-          # :pr_active_percent, :issues_active_percent,
-          # :first_pr_date_int, :last_pr_date_int,
-          # :first_issue_date_int, :last_issue_date_int,
-          # :last_release_date_int, :commits_count_since_last_release_count,
-          # :issues_with_contrib_comments_percent,
-
-
-
+        all_metrics_community = [
           :users_creating_issues_count, :users_commenting_issues_count, :users_creating_pr_count,
           :users_commenting_pr_count, :contributors_count, :stargazers_count,
-          :watchers_count, :forks_count, :users_involved_count, :users_involved_no_stars_count
+          :watchers_count, :forks_count, :users_involved_count, :users_involved_no_stars_count,
+          :total_downloads
         ]
 
-        all_metrics = full_metrics + half_metrics
-
         agility_total_classifier.each_pair do |ref_class, metrics|
+          current_full_metrics_cnt = (full_metrics & metrics.keys).count
+          current_half_metrics_cnt = (half_metrics & metrics.keys).count / 2
+          current_gain = 1 / (current_full_metrics_cnt + current_half_metrics_cnt).to_d
+
           metrics.each_pair do |metric, values|
-            next unless all_metrics.include? metric
+            next unless all_metrics_agility.include? metric
             range = values[:range]
-            gain = half_metrics.include?(metric) ? 0.06 : 0.12
-            agility_total_results[ref_class] += gain if range.cover? project.agility.total.send(metric).to_f
+            gain = half_metrics.include?(metric) ? current_gain / 2.0.to_d : current_gain
+            agility_total_results[ref_class] += gain.to_f if range.cover? project.agility.total.send(metric).to_f
           end
         end
 
         agility_quarter_classifier.each_pair do |ref_class, metrics|
+          current_full_metrics_cnt = (full_metrics & metrics.keys).count
+          current_half_metrics_cnt = (half_metrics & metrics.keys).count / 2
+          current_gain = 1 / (current_full_metrics_cnt + current_half_metrics_cnt).to_d
+
           metrics.each_pair do |metric, values|
-            next unless all_metrics.include? metric
+            next unless all_metrics_agility.include? metric
             range = values[:range]
-            agility_quarter_results[ref_class] += 0.2 if range.cover? project.agility.quarters.last_year_as_hash[metric].to_f
+            gain = half_metrics.include?(metric) ? current_gain / 2.0.to_d : current_gain
+            agility_quarter_results[ref_class] += gain if range.cover? project.agility.quarters.last_year_as_hash[metric].to_f
           end
         end
 
+        community_gain = 1 / all_metrics_community.count.to_d
+
         community_total_classifier.each_pair do |ref_class, metrics|
           metrics.each_pair do |metric, values|
-            next unless all_metrics.include? metric
+            next unless all_metrics_community.include? metric
             range = values[:range]
-            community_total_results[ref_class] += 0.09 if range.cover? project.community.total.send(metric).to_f
+            community_total_results[ref_class] += community_gain if range.cover? project.community.total.send(metric).to_f
           end
         end
 
         community_quarter_classifier.each_pair do |ref_class, metrics|
           metrics.each_pair do |metric, values|
-            next unless all_metrics.include? metric
+            next unless all_metrics_community.include? metric
             range = values[:range]
-            community_quarter_results[ref_class] += 0.09 if range.cover? project.community.quarters.last_year_as_hash[metric].to_f
+            community_quarter_results[ref_class] += community_gain if range.cover? project.community.quarters.last_year_as_hash[metric].to_f
           end
         end
 
@@ -299,11 +266,6 @@ module Ossert
           [@agility_total_classifier, @agility_quarter_classifier,
            @community_total_classifier, @community_quarter_classifier].each do |classifier|
             classifier[ref_class].each_pair do |metric, value|
-              # higher_class_value = if (idx - 1) >= 0
-              #                        classifier[CLASSES[idx-1]][metric][:threshold]
-              #                      else
-              #                        :none
-              #                      end
               reversed = REVERSED.include? metric
               any_value_idx = reversed ? 0 : CLASSES.count - 1
 

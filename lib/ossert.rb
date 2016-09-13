@@ -425,7 +425,7 @@ module Ossert
         value = public_send(metric)
         total_count = public_send("#{type}_all").count
         return 0 if total_count.zero?
-        ((value.count.to_f / total_count.to_f) * 100).round(2)
+        ((value.count.to_d / total_count.to_d) * 100).round(2)
       end
     end
 
@@ -590,7 +590,7 @@ module Ossert
         value = public_send(metric)
         total_count = public_send("#{type}_all").count
         return 0 if total_count.zero?
-        ((value.count.to_f / total_count.to_f) * 100).round(2)
+        ((value.count.to_d / total_count.to_d) * 100).round(2)
       end
     end
 
@@ -600,7 +600,7 @@ module Ossert
     end
 
     def issues_active
-      issues_open - issues_closed + issues_actual
+      (issues_open + issues_actual) - issues_closed
     end
 
     def issues_all
@@ -608,7 +608,7 @@ module Ossert
     end
 
     def pr_active
-      pr_open - pr_closed + pr_actual
+      (pr_open + pr_actual) - pr_closed
     end
 
     def pr_all

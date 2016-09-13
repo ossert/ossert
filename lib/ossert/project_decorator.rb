@@ -28,7 +28,11 @@ module Ossert
     end
 
     def years(value)
-      "#{value.to_i / 365}+ years"
+      if (years = value.to_i / 365) > 0
+        "#{years}+ years"
+      else
+        "Less than a year"
+      end
     end
 
     def months(value)

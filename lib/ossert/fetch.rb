@@ -294,7 +294,7 @@ module Ossert
         last_year_commits = []
         retry_count = 3
         while last_year_commits.blank? && retry_count > 0
-          last_year_commits ||= client.commit_activity_stats(@repo_name)
+          last_year_commits = client.commit_activity_stats(@repo_name)
           if last_year_commits.blank?
             sleep(15*retry_count)
             retry_count -= 1
@@ -316,7 +316,8 @@ module Ossert
       def date_from_tag(sha)
         tag_info = tag_info(sha)
         return tag_info[:tagger][:date] if tag_info
-        commit(sha)[:commit][:committer][:date]
+        value = commit(sha)[:commit][:committer][:date]
+        DateTime.new(*value.split('-'.freeze).map(&:to_i)).to_i
       end
 
       def commits_since(date)
@@ -338,11 +339,19 @@ module Ossert
       end
 
       def process_last_release_date
-        tag = tags.first
+        latest_release_date = 0
 
-        if tag && (latest_release_date = date_from_tag(tag[:commit][:sha])).present?
-          project.agility.total.last_release_date = latest_release_date
-          project.agility.total.commits_count_since_last_release = commits_since(latest_release_date).length
+        tags do |tag|
+          tag_date = date_from_tag(tag[:commit][:sha])
+          latest_release_date = [latest_release_date, tag_date].max
+
+          project.agility.total.releases_total_gh << tag[:name]
+          project.agility.quarters[tag_date].releases_total_gh << tag[:name]
+        end
+
+        unless latest_release_date.zero?
+          project.agility.total.last_release_date = latest_release_date# wrong: last_release_commit[:commit][:committer][:date]
+          project.agility.total.commits_count_since_last_release = commits_since(Time.at(latest_release_date)).length
         end
       end
 
@@ -381,6 +390,17 @@ module Ossert
         end
       end
 
+      def process_pr_with_contrib_comments_fix
+        prev_prs = project.agility.total.pr_with_contrib_comments
+        project.agility.total.pr_with_contrib_comments = Set.new(
+          prev_prs.map { |pr_link| issue2pull_url(pr_link) }
+        )
+      end
+
+      def issue2pull_url(url)
+        url.gsub(/https:\/\/(\S+)\/(#{@repo_name})\/pull\/(\d+)/, 'https://api.\1/repos/\2/pulls/\3')
+      end
+
       def process
         # TODO: what to choose? !!!updated_at!!! vs created_at ???
         # we must track latest changes. so updated_at is correct
@@ -389,13 +409,6 @@ module Ossert
           project.community.total.contributors << login
         end#
         project.community.total.users_involved.merge(project.community.total.contributors)
-        # @contributors.each do |contrib|
-        #   # FUUUUU... no dates included !!!!
-        #   # total (+ by quarter)
-        #   # total_users_involved (+ by quarter)
-        #   # project.community.total_users_involved << contrib[:user][:login]
-        #   # project.community.quarters[issue[:updated_at]].total_users_involved << issue[:user][:login]
-        # end
 
         issues do |issue|
           next if issue.key? :pull_request
@@ -437,7 +450,7 @@ module Ossert
           issue_url = /\A(.*)#issuecomment.*\z/.match(issue_comment[:html_url])[1]
           if issue_url.include?('/pull/') # PR comments are stored as Issue comments. Sadness =(
             if project.community.total.contributors.include? login
-              project.agility.total.pr_with_contrib_comments << issue_url
+              project.agility.total.pr_with_contrib_comments << issue2pull_url(issue_url)
             end
 
             project.community.total.users_commenting_pr << login
@@ -508,30 +521,8 @@ module Ossert
 
         process_issues_and_prs_processing_time
 
-        @latest_release_date = nil
-        tags do |tag|
-          tag_date = if @latest_release_date.nil?
-            @latest_release_date = date_from_tag(tag[:commit][:sha])
-          else
-            date_from_tag(tag[:commit][:sha])
-          end
-          project.agility.total.releases_total_gh << tag[:name]
-          project.agility.quarters[tag_date].releases_total_gh << tag[:name]
-        end
+        process_last_release_date
 
-        # latest release = http://octokit.github.io/octokit.rb/Octokit/Client/Releases.html#latest_release-instance_method
-        # commits_count_since_last_release = http://octokit.github.io/octokit.rb/Octokit/Client/Commits.html#commits_since-instance_method
-        if @latest_release_date.present?
-          project.agility.total.last_release_date = @latest_release_date# wrong: last_release_commit[:commit][:committer][:date]
-          project.agility.total.commits_count_since_last_release = commits_since(@latest_release_date).length
-        end
-
-        # ... better to use just `git` ???
-        # @commits.each do |commit|
-        #   # by quarter
-        #   project.agility.commits << commit[:sha]
-        #   project.agility.quarters[???].commits << commit[:sha]
-        # end
         process_commits
 
         branches do |branch|
@@ -541,11 +532,11 @@ module Ossert
           branch_updated_at = commit(branch[:commit][:sha])[:commit][:committer][:date]
           stale_threshold = Time.now.beginning_of_quarter
 
+          # 2. date -> total by quarter
+          #    date -> stale
           project.agility.total.branches << branch[:name]
           project.agility.total.stale_branches << branch[:name] if branch_updated_at < stale_threshold
           project.agility.quarters[branch_updated_at].branches << branch[:name]
-          # 2. date -> total by quarter
-          #    date -> stale
         end
 
         stargazers do |stargazer|
@@ -569,24 +560,6 @@ module Ossert
           project.community.quarters[forker[:created_at]].forks << forker[:owner][:login]
           project.community.quarters[forker[:created_at]].users_involved << forker[:owner][:login]
         end
-
-        # Agility
-        # attr_accessor :issues_open, :issues_closed, :issues_owner, :issues_non_owner, :issues_with_contrib_comments, :issues_total,
-        #               :pr_open, :pr_merged, :pr_closed, :pr_owner, :pr_non_owner, :pr_with_contrib_comments, :pr_total,
-        #               :first_pr_date, :last_pr_date, :first_issue_date, :last_issue_date,
-        #               :releases_total_gh, :releases_total_rg, :last_release_date, :commits_count_since_last_release,
-        #               :stale_branches, :total_branches, :total_downloads
-        #
-        # attr_accessor :issues_open, :issues_closed, :pr_open, :pr_merged, :pr_closed, :releases,
-        #               :download_divergence, :branches
-
-        # Community
-        # attr_accessor :users_creating_issues, :users_commenting_issues, :users_creating_pr, :users_commenting_pr,
-        #               :contributors, :contributors, :watchers, :stargazers, :forks,
-        #               :owner_github, :owners_rubygems, :total_users_involved
-        #
-        # attr_accessor :users_writing_issues, :users_creating_pr, :contributors, # NO DATES. FUUUU... :watchers, :stargazers, :forks,
-        #               :total_users_involved
       rescue Octokit::NotFound => e
         raise "Github NotFound Error: #{e.inspect}"
       end
