@@ -89,10 +89,14 @@ module Ossert
 
         all_metrics_community = [
           :users_creating_issues_count, :users_commenting_issues_count, :users_creating_pr_count,
-          :users_commenting_pr_count, :contributors_count, :stargazers_count,
-          :watchers_count, :forks_count, :users_involved_count, :users_involved_no_stars_count,
+          :users_commenting_pr_count, :contributors_count, #:stargazers_count,
+          :watchers_count, :forks_count, #:users_involved_count,
+          :users_involved_no_stars_count,
           :total_downloads
         ]
+
+        quarter_metrics_community = all_metrics_community - [:stargazers_count, :users_involved_count, :watchers_count]
+
 
         agility_total_classifier.each_pair do |ref_class, metrics|
           current_full_metrics_cnt = (full_metrics & metrics.keys).count
@@ -130,9 +134,11 @@ module Ossert
           end
         end
 
+        community_gain = 1 / quarter_metrics_community.count.to_d
+
         community_quarter_classifier.each_pair do |ref_class, metrics|
           metrics.each_pair do |metric, values|
-            next unless all_metrics_community.include? metric
+            next unless quarter_metrics_community.include? metric
             range = values[:range]
             community_quarter_results[ref_class] += community_gain if range.cover? project.community.quarters.last_year_as_hash[metric].to_f
           end
