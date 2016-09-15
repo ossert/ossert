@@ -35,8 +35,19 @@ module Ossert
       end
     end
 
-    def months(value)
-      "#{(value.to_f.to_d * 3.0.to_d).round(2)} months"
+    def days(value)
+      case value
+      when 0
+        "not enough data"
+      when 1
+        "~#{value} day"
+      when 2..30
+        "~#{value} days"
+      when 31..61
+        "~#{value / 31} month"
+      else
+        "~#{value / 31} months"
+      end
     end
 
     def downloads(value)
@@ -61,7 +72,7 @@ module Ossert
         )
       when /processed_in/
         with_reference(
-          months(value),
+          days(value),
           value,
           metric,
           type

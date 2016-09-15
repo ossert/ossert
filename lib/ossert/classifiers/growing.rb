@@ -4,8 +4,8 @@ module Ossert
       CLASSES = %w(ClassA ClassB ClassC ClassD ClassE)
       # TODO: replace with hash[classifier] => max_value
       SYNTETIC = [{download_divergence: 5},
-                  {issues_processed_in_avg: 7},
-                  {pr_processed_in_avg: 5},
+                  # {issues_processed_in_avg: 7},
+                  # {pr_processed_in_avg: 5},
                   {pr_active_percent: 90},
                   {pr_closed_percent: 90},
                   {issues_active_percent: 90},

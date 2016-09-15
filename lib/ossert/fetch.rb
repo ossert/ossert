@@ -355,6 +355,41 @@ module Ossert
         end
       end
 
+      def process_issues_and_prs_processing_days
+        issues_processed_in_days = 0
+        issues_processed_count = 0
+        issues do |issue|
+          next if issue.key? :pull_request
+          next unless issue[:state] == 'closed'
+          next unless issue[:closed_at].present?
+          days_to_close = (Date.parse(issue[:closed_at]) - Date.parse(issue[:created_at])).to_i + 1
+          issues_processed_in_days += days_to_close
+          issues_processed_count += 1
+        end
+
+        project.agility.total.issues_processed_in_avg = if issues_processed_count.zero?
+                                                          0
+                                                        else
+                                                          issues_processed_in_days / issues_processed_count
+                                                        end
+
+        pulls_processed_in_days = 0
+        pulls_processed_count = 0
+        pulls do |pull|
+          next unless pull[:state] == 'closed'
+          next unless pull[:closed_at].present?
+          days_to_close = (Date.parse(pull[:closed_at]) - Date.parse(pull[:created_at])).to_i + 1
+          pulls_processed_in_days += days_to_close
+          pulls_processed_count += 1
+        end
+
+        project.agility.total.pr_processed_in_avg = if pulls_processed_count.zero?
+                                                      0
+                                                    else
+                                                      pulls_processed_in_days / pulls_processed_count
+                                                    end
+      end
+
       def process_issues_and_prs_processing_time
         # TODO: go for each quarter data
         # => how many quarters does it take in average, to close pr and issue
@@ -401,74 +436,19 @@ module Ossert
         url.gsub(/https:\/\/(\S+)\/(#{@repo_name})\/pull\/(\d+)/, 'https://api.\1/repos/\2/pulls/\3')
       end
 
-      def process
-        # TODO: what to choose? !!!updated_at!!! vs created_at ???
-        # we must track latest changes. so updated_at is correct
-        contributors do |c|
-          login = c.try(:[], :login).presence || generate_anonymous
-          project.community.total.contributors << login
-        end#
-        project.community.total.users_involved.merge(project.community.total.contributors)
-
-        issues do |issue|
-          next if issue.key? :pull_request
-          case issue[:state]
-          when 'open'
-            project.agility.total.issues_open << issue[:url]
-            project.agility.quarters[issue[:created_at]].issues_open << issue[:url]
-          when 'closed'
-            project.agility.total.issues_closed << issue[:url]
-            # if issue is closed for now, it also was opened somewhen
-            project.agility.quarters[issue[:created_at]].issues_open << issue[:url]
-            project.agility.quarters[issue[:closed_at]].issues_closed << issue[:url] if issue[:closed_at]
-          end
-
-          if issue[:user][:login] == @owner
-            project.agility.total.issues_owner << issue[:url]
-          else
-            project.agility.total.issues_non_owner << issue[:url]
-          end
-
-          project.agility.total.issues_total << issue[:url]
-          project.agility.quarters[issue[:created_at]].issues_total << issue[:url]
-          if project.agility.total.first_issue_date.nil? || issue[:created_at] < project.agility.total.first_issue_date
-            project.agility.total.first_issue_date = issue[:created_at]
-          end
-
-          if project.agility.total.last_issue_date.nil? || issue[:created_at] > project.agility.total.last_issue_date
-            project.agility.total.last_issue_date = issue[:created_at]
-          end
-
-          project.community.total.users_creating_issues << issue[:user][:login]
-          project.community.quarters[issue[:created_at]].users_creating_issues << issue[:user][:login]
-          project.community.total.users_involved << issue[:user][:login]
-          project.community.quarters[issue[:created_at]].users_involved << issue[:user][:login]
+      def fix_issues_and_prs_with_contrib_comments
+        project.agility.total.pr_with_contrib_comments.delete_if do |pr|
+          !(pr =~ %r{https://api.github.com/repos/#{@repo_name}/pulls/\d+})
         end
 
-        issues_comments do |issue_comment|
-          login = issue_comment[:user].try(:[], :login).presence || generate_anonymous
-          issue_url = /\A(.*)#issuecomment.*\z/.match(issue_comment[:html_url])[1]
-          if issue_url.include?('/pull/') # PR comments are stored as Issue comments. Sadness =(
-            if project.community.total.contributors.include? login
-              project.agility.total.pr_with_contrib_comments << issue2pull_url(issue_url)
-            end
-
-            project.community.total.users_commenting_pr << login
-            project.community.quarters[issue_comment[:created_at]].users_commenting_pr << login
-            project.community.total.users_involved << login
-            project.community.quarters[issue_comment[:created_at]].users_involved << login
-            next
-          end
-
-          if project.community.total.contributors.include? login
-            project.agility.total.issues_with_contrib_comments << issue_url
-          end
-
-          project.community.total.users_commenting_issues << login
-          project.community.quarters[issue_comment[:created_at]].users_commenting_issues << login
-          project.community.total.users_involved << login
-          project.community.quarters[issue_comment[:created_at]].users_involved << login
+        project.agility.total.issues_with_contrib_comments.delete_if do |issue|
+          !(issue =~ %r{https://github.com/#{@repo_name}/issues/\d+})
         end
+      end
+
+      def process_pulls
+        pulls_processed_in_days = 0
+        pulls_processed_count = 0
 
         pulls do |pull|
           case pull[:state]
@@ -480,6 +460,11 @@ module Ossert
             project.agility.quarters[pull[:created_at]].pr_open << pull[:url]
             project.agility.quarters[pull[:closed_at]].pr_closed << pull[:url] if pull[:closed_at]
             project.agility.quarters[pull[:merged_at]].pr_merged << pull[:url] if pull[:merged_at]
+            if pull[:closed_at].present?
+              days_to_close = (Date.parse(pull[:closed_at]) - Date.parse(pull[:created_at])).to_i + 1
+              pulls_processed_in_days += days_to_close
+              pulls_processed_count += 1
+            end
           end
 
           if pull[:user][:login] == @owner
@@ -505,6 +490,12 @@ module Ossert
           project.community.quarters[pull[:created_at]].users_involved << pull[:user][:login]
         end
 
+        project.agility.total.pr_processed_in_avg = if pulls_processed_count.zero?
+                                                      0
+                                                    else
+                                                      pulls_processed_in_days / pulls_processed_count
+                                                    end
+
         pulls_comments do |pull_comment|
           login = pull_comment[:user].try(:[], :login).presence || generate_anonymous
           if project.community.total.contributors.include? login
@@ -517,9 +508,98 @@ module Ossert
           project.community.quarters[pull_comment[:created_at]].users_involved << login
         end
 
-        process_actual_prs_and_issues
+      end
 
-        process_issues_and_prs_processing_time
+      def process_issues
+        issues_processed_in_days = 0
+        issues_processed_count = 0
+        issues do |issue|
+          next if issue.key? :pull_request
+          case issue[:state]
+          when 'open'
+            project.agility.total.issues_open << issue[:url]
+            project.agility.quarters[issue[:created_at]].issues_open << issue[:url]
+          when 'closed'
+            project.agility.total.issues_closed << issue[:url]
+            # if issue is closed for now, it also was opened somewhen
+            project.agility.quarters[issue[:created_at]].issues_open << issue[:url]
+            project.agility.quarters[issue[:closed_at]].issues_closed << issue[:url] if issue[:closed_at]
+
+            if issue[:closed_at].present?
+              days_to_close = (Date.parse(issue[:closed_at]) - Date.parse(issue[:created_at])).to_i + 1
+              issues_processed_in_days += days_to_close
+              issues_processed_count += 1
+            end
+          end
+
+          if issue[:user][:login] == @owner
+            project.agility.total.issues_owner << issue[:url]
+          else
+            project.agility.total.issues_non_owner << issue[:url]
+          end
+
+          project.agility.total.issues_total << issue[:url]
+          project.agility.quarters[issue[:created_at]].issues_total << issue[:url]
+          if project.agility.total.first_issue_date.nil? || issue[:created_at] < project.agility.total.first_issue_date
+            project.agility.total.first_issue_date = issue[:created_at]
+          end
+
+          if project.agility.total.last_issue_date.nil? || issue[:created_at] > project.agility.total.last_issue_date
+            project.agility.total.last_issue_date = issue[:created_at]
+          end
+
+          project.community.total.users_creating_issues << issue[:user][:login]
+          project.community.quarters[issue[:created_at]].users_creating_issues << issue[:user][:login]
+          project.community.total.users_involved << issue[:user][:login]
+          project.community.quarters[issue[:created_at]].users_involved << issue[:user][:login]
+        end
+
+        project.agility.total.issues_processed_in_avg = if issues_processed_count.zero?
+                                                          0
+                                                        else
+                                                          issues_processed_in_days / issues_processed_count
+                                                        end
+
+        issues_comments do |issue_comment|
+          login = issue_comment[:user].try(:[], :login).presence || generate_anonymous
+          issue_url = /\A(.*)#issuecomment.*\z/.match(issue_comment[:html_url])[1]
+          if issue_url.include?('/pull/') # PR comments are stored as Issue comments. Sadness =(
+            if project.community.total.contributors.include? login
+              project.agility.total.pr_with_contrib_comments << issue2pull_url(issue_url)
+            end
+
+            project.community.total.users_commenting_pr << login
+            project.community.quarters[issue_comment[:created_at]].users_commenting_pr << login
+            project.community.total.users_involved << login
+            project.community.quarters[issue_comment[:created_at]].users_involved << login
+            next
+          end
+
+          if project.community.total.contributors.include? login
+            project.agility.total.issues_with_contrib_comments << issue_url
+          end
+
+          project.community.total.users_commenting_issues << login
+          project.community.quarters[issue_comment[:created_at]].users_commenting_issues << login
+          project.community.total.users_involved << login
+          project.community.quarters[issue_comment[:created_at]].users_involved << login
+        end
+      end
+
+      def process
+        # TODO: what to choose? !!!updated_at!!! vs created_at ???
+        # we must track latest changes. so updated_at is correct
+        contributors do |c|
+          login = c.try(:[], :login).presence || generate_anonymous
+          project.community.total.contributors << login
+        end#
+        project.community.total.users_involved.merge(project.community.total.contributors)
+
+        process_issues
+
+        process_pulls
+
+        process_actual_prs_and_issues
 
         process_last_release_date
 
