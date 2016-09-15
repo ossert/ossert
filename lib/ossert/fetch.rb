@@ -432,8 +432,11 @@ module Ossert
         )
       end
 
-      def issue2pull_url(url)
-        url.gsub(/https:\/\/(\S+)\/(#{@repo_name})\/pull\/(\d+)/, 'https://api.\1/repos/\2/pulls/\3')
+      def issue2pull_url(html_url)
+        html_url.gsub(
+          %r{https://github.com/(#{@repo_name})/pull/(\d+)},
+          'https://api.github.com/repos/\2/pulls/\3'
+        )
       end
 
       def fix_issues_and_prs_with_contrib_comments

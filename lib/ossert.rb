@@ -396,7 +396,8 @@ module Ossert
           :issues_processed_in_avg, :pr_processed_in_avg,
           :first_pr_date_int, :last_pr_date_int, :first_issue_date_int, :last_issue_date_int, :last_release_date_int,
           :releases_count, :commits_count_since_last_release_count,
-          :last_year_commits, :life_period, :last_changed
+          :last_year_commits, :life_period, :last_changed,
+          :stale_branches_count
         ]
       end
     end
@@ -435,7 +436,7 @@ module Ossert
       define_method("#{metric}_int") { public_send(metric).to_i }
     end
 
-    [:issues_all, :pr_all].each do |metric|
+    [:issues_all, :pr_all, :stale_branches].each do |metric|
       define_method("#{metric}_count") { public_send(metric).count }
     end
 

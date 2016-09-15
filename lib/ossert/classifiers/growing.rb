@@ -6,11 +6,13 @@ module Ossert
       SYNTETIC = [{download_divergence: 5},
                   # {issues_processed_in_avg: 7},
                   # {pr_processed_in_avg: 5},
+                  {stale_branches_count: 15},
                   {pr_active_percent: 90},
                   {pr_closed_percent: 90},
                   {issues_active_percent: 90},
                   {issues_closed_percent: 90}]
-      REVERSED = [:issues_active_percent, :pr_active_percent,
+      REVERSED = [:stale_branches_count,
+                  :issues_active_percent, :pr_active_percent,
                   :issues_actual_count, :pr_actual_count,
                   :issues_processed_in_avg, :pr_processed_in_avg]
 
@@ -83,7 +85,8 @@ module Ossert
                         :pr_processed_in_avg, :issues_processed_in_avg]
         full_metrics = [
           :issues_all_count, :pr_all_count, :releases_count, :last_year_commits,
-          :life_period, :last_changed
+          :life_period, :last_changed,
+          :stale_branches_count
         ]
         all_metrics_agility = full_metrics + half_metrics
 
@@ -203,6 +206,7 @@ module Ossert
              :first_pr_date_int, :last_pr_date_int,
              :first_issue_date_int, :last_issue_date_int,
              :last_release_date_int, :commits_count_since_last_release_count,
+             :stale_branches_count,
              :issues_with_contrib_comments_percent].each do |metric|
               next_metric_val = project.agility.total.send(metric).to_f
               ((@agility_total_classifier[ref_class] ||= {})[metric] ||= []) << next_metric_val
