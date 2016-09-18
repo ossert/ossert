@@ -29,14 +29,15 @@ namespace :db do
     SQL
   end
 
-  task :create => [:drop] do
-    db = Sequel.connect(ENV.fetch("DATABASE_URL"))
-    db.run(<<-SQL)
-      CREATE SCHEMA public;
-      GRANT ALL ON SCHEMA public TO postgres;
-      GRANT ALL ON SCHEMA public TO public;
-      COMMENT ON SCHEMA public IS 'standard public schema';
-    SQL
+  task :create do
+    sh "createdb #{ENV.fetch("DATABASE_URL").split('/').last}"
+    # db = Sequel.connect(ENV.fetch("DATABASE_URL"))
+    # db.run(<<-SQL)
+    #   CREATE SCHEMA public;
+    #   GRANT ALL ON SCHEMA public TO postgres;
+    #   GRANT ALL ON SCHEMA public TO public;
+    #   COMMENT ON SCHEMA public IS 'standard public schema';
+    # SQL
   end
 
   desc 'Load the seed data from db/seeds.rb'
@@ -53,7 +54,7 @@ namespace :db do
     cmd = nil
     with_config do |app, db_url|
       file_name = Time.now.strftime("%Y%m%d%H%M%S") + "_" + app + '_db.' + dump_sfx
-      cmd = "pg_dump #{db_url} -F #{dump_fmt} -v -f #{backup_dir}/#{file_name}"
+      cmd = "pg_dump #{db_url} --no-owner --no-acl -F #{dump_fmt} -v -f #{backup_dir}/#{file_name}"
     end
     puts cmd
     sh cmd do
@@ -84,7 +85,7 @@ namespace :db do
           if fmt.nil?
             puts "No recognized dump file suffix: #{file}"
           else
-            cmd = "pg_restore -d '#{db_url}' -F #{fmt} -v -c -C #{file}"
+            cmd = "pg_restore -d '#{db_url}' -F #{fmt} -v -c #{file}"
           end
         else
           puts "Too many files match the pattern '#{args.pat}':"
@@ -114,7 +115,7 @@ namespace :db do
           if fmt.nil?
             puts "No recognized dump file suffix: #{file}"
           else
-            cmd = "pg_restore -d '#{db_url}' -F #{fmt} -v -c -C #{file}"
+            cmd = "pg_restore -d '#{db_url}' -F #{fmt} -v -c #{file}"
           end
         else
           puts "No backups found"
