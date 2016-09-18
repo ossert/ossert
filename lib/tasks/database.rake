@@ -31,9 +31,10 @@ namespace :db do
 
   task :create do
     sh "createdb #{ENV.fetch("DATABASE_URL").split('/').last}"
+    # FIXME: not working correct
     # db = Sequel.connect(ENV.fetch("DATABASE_URL"))
     # db.run(<<-SQL)
-    #   CREATE SCHEMA public;
+    #   CREATE SCHEMA IF NOT EXISTS public;
     #   GRANT ALL ON SCHEMA public TO postgres;
     #   GRANT ALL ON SCHEMA public TO public;
     #   COMMENT ON SCHEMA public IS 'standard public schema';

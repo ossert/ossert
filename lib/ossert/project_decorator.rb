@@ -9,6 +9,8 @@ module Ossert
     end
 
     def with_reference(text, value, metric, type)
+      return (text.to_i > 0 ? "+#{text}" : text).to_s if type.to_s =~ /delta/
+
       metric_by_ref = @reference[type][metric]
       reference = CLASSES.inject('NaN') do |acc, ref|
         metric_by_ref[ref][:range].cover?(value.to_f) ? ref : acc
@@ -117,9 +119,23 @@ module Ossert
 
     def agility_quarter(quarter)
       quarter = Time.at(quarter).to_date.to_time(:utc).beginning_of_quarter
+      prev_quarter = Time.at(quarter).to_date.to_time(:utc).beginning_of_quarter - 1.day
+      prev = @project.agility.quarters[prev_quarter].metrics_to_hash.each_with_object({}) do |(metric, value), res|
+        metric_name = metric.to_s.gsub(/(_percent|_int|_count)/, '')
+        res[metric_name] = value.to_i
+      end
       @project.agility.quarters[quarter].metrics_to_hash.each_with_object({}) do |(metric, value), res|
         metric_name = metric.to_s.gsub(/(_percent|_int|_count)/, '')
-        res[metric_name] = decorate_metric metric, value, :agility_quarter
+        res[metric_name] = decorate_metric(metric, value, :agility_quarter) + ' <> ' +
+                           decorate_metric(metric, value.to_i - prev[metric_name], :delta)
+      end
+    end
+
+    def agility_quarter_values(quarter)
+      quarter = Time.at(quarter).to_date.to_time(:utc).beginning_of_quarter
+      @project.agility.quarters[quarter].metrics_to_hash.each_with_object({}) do |(metric, value), res|
+        metric_name = metric.to_s.gsub(/(_percent|_int|_count)/, '')
+        res[metric_name] = value
       end
     end
 
@@ -132,9 +148,23 @@ module Ossert
 
     def community_quarter(quarter)
       quarter = Time.at(quarter).to_date.to_time(:utc).beginning_of_quarter
+      prev_quarter = Time.at(quarter).to_date.to_time(:utc).beginning_of_quarter - 1.day
+      prev = @project.community.quarters[prev_quarter].metrics_to_hash.each_with_object({}) do |(metric, value), res|
+        metric_name = metric.to_s.gsub(/(_percent|_int|_count)/, '')
+        res[metric_name] = value.to_i
+      end
       @project.community.quarters[quarter].metrics_to_hash.each_with_object({}) do |(metric, value), res|
         metric_name = metric.to_s.gsub(/(_percent|_int|_count)/, '')
-        res[metric_name] = decorate_metric metric, value, :community_quarter
+        res[metric_name] = decorate_metric(metric, value, :community_quarter) + ' <> ' +
+                           decorate_metric(metric, value.to_i - prev[metric_name], :delta)
+      end
+    end
+
+    def community_quarter_values(quarter)
+      quarter = Time.at(quarter).to_date.to_time(:utc).beginning_of_quarter
+      @project.community.quarters[quarter].metrics_to_hash.each_with_object({}) do |(metric, value), res|
+        metric_name = metric.to_s.gsub(/(_percent|_int|_count)/, '')
+        res[metric_name] = value
       end
     end
   end
