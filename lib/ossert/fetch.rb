@@ -119,8 +119,26 @@ module Ossert
         @info ||= client.get("gems/#{project.rg_alias}.json")
       end
 
+      def version_info
+        @info ||= client.get("versions/#{project.rg_alias}.json")
+      end
+
       def releases
         @releases ||= client.get("versions/#{project.rg_alias}.json")
+      end
+
+      def process_meta
+        project.meta[:homepage_url] = info['homepage_uri']
+        project.meta[:docs_url] = info['documentation_uri']
+        project.meta[:wiki_url] = info['wiki_uri']
+        project.meta[:source_url] = info['source_code_uri']
+        project.meta[:issue_tracker_url] = info['bug_tracker_uri']
+        project.meta[:authors] = info['authors']
+        project.meta[:description] = info['info']
+        project.meta[:current_version] = info['version']
+        project.meta[:mailing_list_url] = info['mailing_list_uri']
+        project.meta[:rubygems_url] = info['project_uri']
+        project.meta[:github_url] = "https://github.com/#{project.gh_alias}" # or exception!
       end
 
       def process
@@ -130,11 +148,12 @@ module Ossert
           project.gh_alias = "#{match[1]}/#{match[2]}" if match
         end
 
-        return if project.agility.total.releases_total_rg.present?
         releases.each do |release|
           project.agility.total.releases_total_rg << release['number']
           project.agility.quarters[release['created_at']].releases_total_rg << release['number']
         end
+
+        process_meta
       end
     end
 
@@ -303,6 +322,10 @@ module Ossert
         last_year_commits
       end
 
+      def top_contributors
+        client.contributors_stats(@repo_name, retry_timeout: 5, retry_wait: 1)
+      end
+
       def commit(sha)
         client.commit(@repo_name, sha)
       end
@@ -326,6 +349,14 @@ module Ossert
 
       def latest_release
         @latest_release ||= client.latest_release(@repo_name)
+      end
+
+      def process_top_contributors
+        top_contributors.last(10).reverse.each do |c|
+          login = c[:author][:login]
+          (project.meta[:top_10_contributors] ||= []) << "https://github.com/#{login}"
+        end
+        nil
       end
 
       def process_commits
@@ -607,6 +638,8 @@ module Ossert
         process_last_release_date
 
         process_commits
+
+        process_top_contributors
 
         branches do |branch|
           # stale and total

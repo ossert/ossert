@@ -83,7 +83,8 @@ module Ossert
         ),
         community: Ossert::Project::Community.new(
           quarters: community_quarters_stat, total: community_total_stat
-        )
+        ),
+        meta: stored_prj.meta_data.present? ? JSON.parse(stored_prj.meta_data) : {}
       )
     end
 

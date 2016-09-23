@@ -29,7 +29,8 @@ module Ossert
 
   class Project
     attr_accessor :name, :gh_alias, :rg_alias,
-                  :community, :agility, :reference
+                  :community, :agility, :reference,
+                  :meta
 
     def analyze_by_growing_classifier
       raise unless Classifiers::Growing.current.ready?
@@ -41,17 +42,48 @@ module Ossert
       Classifiers::DecisionTree.current.check(self)
     end
 
-    def initialize(name, gh_alias = nil, rg_alias = nil, reference = nil, agility: nil, community: nil)
+    def initialize(name, gh_alias = nil, rg_alias = nil, reference = nil, meta: nil, agility: nil, community: nil)
       @name = name.dup
       @gh_alias = gh_alias
       @rg_alias = (rg_alias || name).dup
       @agility = agility || Agility.new
       @community = community || Community.new
       @reference = reference.dup
+      @meta = meta || {
+        homepage_url: nil,
+        docs_url: nil,
+        wiki_url: nil,
+        source_url: nil,
+        issue_tracker_url: nil,
+        mailing_list_url: nil,
+        authors: nil,
+        top_10_contributors: Array.new,
+        description: nil,
+        current_version: nil,
+        rubygems_url: nil,
+        github_url: nil,
+      }
     end
 
     def repo
       ProjectRepo.new(Ossert.rom)
+    end
+
+    def meta_to_json
+      JSON.generate(meta)
+    end
+
+    def dump_meta # dump attribute
+      current_repo = repo
+      saved = current_repo[name]
+      if saved
+        current_repo.update(
+          name,
+          meta_data: meta_to_json,
+        )
+      else
+        raise 'Not saved yet, sorry!'
+      end
     end
 
     def dump
@@ -64,6 +96,7 @@ module Ossert
           github_name: gh_alias,
           rubygems_name: rg_alias,
           reference: reference,
+          meta_data: meta_to_json,
           agility_total_data: agility.total.to_json,
           agility_quarters_data: agility.quarters.to_json,
           community_total_data: community.total.to_json,
@@ -75,6 +108,7 @@ module Ossert
           github_name: gh_alias,
           rubygems_name: rg_alias,
           reference: reference,
+          meta_data: meta_to_json,
           agility_total_data: agility.total.to_json,
           agility_quarters_data: agility.quarters.to_json,
           community_total_data: community.total.to_json,
