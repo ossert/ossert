@@ -9,7 +9,7 @@ module Ossert
     end
 
     def with_reference(text, value, metric, type)
-      return (text.to_i > 0 ? "+#{text}" : text).to_s if type.to_s =~ /delta/
+      return (text.to_i > 0 ? "+#{text}" : text).to_s if type =~ /delta/
 
       metric_by_ref = @reference[type][metric]
       reference = CLASSES.inject('NaN') do |acc, ref|
@@ -113,6 +113,7 @@ module Ossert
     def agility_total
       @project.agility.total.metrics_to_hash.each_with_object({}) do |(metric, value), res|
         metric_name = metric.to_s.gsub(/(_percent|_int|_count)/, '')
+        next if metric =~ /active/
         res[metric_name] = decorate_metric metric, value, :agility_total
       end
     end
@@ -176,14 +177,15 @@ module Ossert
       quarters_end_date.to_i.step(quarters_start_date.to_i, -90.days.to_i) do |quarter|
         quarter = Time.at(quarter).to_date.to_time(:utc).beginning_of_quarter
         @project.community.quarters[quarter].metrics_to_hash.each_with_object(data) do |(metric, value), res|
-          res[metric] += value
+          next if metric =~ /total_downloads/
+          res[metric] += value.to_f
         end
       end
 
       data.each_with_object({}) do |(metric, value), h|
         metric_name = metric.to_s.gsub(/(_percent|_int|_count)/, '')
         value = metric =~ /divergence/ ? (value / 5.0.to_d) : value
-        h[metric_name] = decorate_metric(metric, value.ceil, :community_quarter)
+        h[metric_name] = decorate_metric(metric, value.ceil, :community_year)
         h
       end
     end
@@ -191,24 +193,55 @@ module Ossert
     def agility_last_year
       quarters_end_date = Time.current
       quarters_start_date = 1.year.ago
-      data = Hash.new { |h,k| h[k] = 0.0 }
+      data = Hash.new { |h,k| h[k] = 0 }
 
       quarters_start_date.to_i.step(quarters_end_date.to_i, 91.days.to_i) do |quarter|
         quarter = Time.at(quarter).to_date.to_time(:utc).beginning_of_quarter
         @project.agility.quarters[quarter].metrics_to_hash.each_with_object(data) do |(metric, value), res|
           case metric
-          when /(pr_actual|pr_all)/
-            res[metric] = value
+          when /processed/
+            res[metric] = Array.new unless res[metric].is_a? Array
+            res[metric] += @project.agility.quarters[quarter].send(metric.to_s.gsub(/in_avg/, 'in_days')).to_a
+          when /closed/
+            res[metric] = Set.new unless res[metric].is_a? Set
+            res[metric] += @project.agility.quarters[quarter].send(metric.to_s.gsub(/_percent/, ''))
+          when /active/
+            next
+          when /actual/
+            next
+          when /all/
+            res[metric] = Set.new unless res[metric].is_a? Set
+            res[metric] += @project.agility.quarters[quarter].send(metric.to_s.gsub(/_count/, ''))
           else
-            res[metric] += value
+            res[metric] += value.to_f
           end
         end
       end
 
-      data.inject({}) do |h, (metric, value)|
+      result = {
+        issues_legacy: @project.agility.quarters[quarters_start_date].issues_actual_count,
+        pr_legacy: @project.agility.quarters[quarters_start_date].pr_actual_count
+      }
+
+      data.inject(result) do |h, (metric, value)|
         metric_name = metric.to_s.gsub(/(_percent|_int|_count)/, '')
-        value = metric =~ /percent/ ? (value / 5.0.to_d) : value
-        h[metric_name] = decorate_metric(metric, value.ceil, :agility_quarter)
+        case metric
+        when /processed/
+          values = value.sort
+          value = if values.count.odd?
+                    values[values.count/2]
+                  elsif values.count.zero?
+                    0
+                  else
+                    (values[values.count/2 - 1] + values[values.count/2]) / 2.0
+                  end
+        when /percent/
+          count = data["#{metric.to_s.split('_').first}_all_count".to_sym].count
+          value = count.zero? ? 0 : (value.count * 100) / count.to_d
+        when /all/
+          value = value.count
+        end
+        h[metric_name] = decorate_metric(metric, value.to_i, :agility_year)
         h
       end
     end

@@ -386,63 +386,85 @@ module Ossert
         end
       end
 
-      def process_issues_and_prs_processing_days
-        issues_processed_in_days = 0
-        issues_processed_count = 0
+      def process_quarters_issues_and_prs_processing_days
         issues do |issue|
           next if issue.key? :pull_request
           next unless issue[:state] == 'closed'
           next unless issue[:closed_at].present?
           days_to_close = (Date.parse(issue[:closed_at]) - Date.parse(issue[:created_at])).to_i + 1
-          issues_processed_in_days += days_to_close
-          issues_processed_count += 1
+          (project.agility.quarters[issue[:closed_at]].issues_processed_in_days ||= []) << days_to_close
         end
 
-        project.agility.total.issues_processed_in_avg = if issues_processed_count.zero?
-                                                          0
-                                                        else
-                                                          issues_processed_in_days / issues_processed_count
-                                                        end
-
-        pulls_processed_in_days = 0
-        pulls_processed_count = 0
         pulls do |pull|
           next unless pull[:state] == 'closed'
           next unless pull[:closed_at].present?
           days_to_close = (Date.parse(pull[:closed_at]) - Date.parse(pull[:created_at])).to_i + 1
-          pulls_processed_in_days += days_to_close
-          pulls_processed_count += 1
+          (project.agility.quarters[pull[:closed_at]].pr_processed_in_days ||= []) << days_to_close
+        end
+      end
+
+      def process_issues_and_prs_processing_days
+        issues_processed_in_days = []
+        issues do |issue|
+          next if issue.key? :pull_request
+          next unless issue[:state] == 'closed'
+          next unless issue[:closed_at].present?
+          days_to_close = (Date.parse(issue[:closed_at]) - Date.parse(issue[:created_at])).to_i + 1
+          issues_processed_in_days << days_to_close
+          (project.agility.quarters[issue[:closed_at]].issues_processed_in_days ||= []) << days_to_close
         end
 
-        project.agility.total.pr_processed_in_avg = if pulls_processed_count.zero?
+        values = issues_processed_in_days.to_a.sort
+        project.agility.total.issues_processed_in_avg = if values.count.odd?
+                                                          values[values.count/2]
+                                                        elsif values.count.zero?
+                                                          0
+                                                        else
+                                                          ((values[values.count/2 - 1] + values[values.count/2]) / 2.0).to_i
+                                                        end
+
+
+        pulls_processed_in_days = []
+        pulls do |pull|
+          next unless pull[:state] == 'closed'
+          next unless pull[:closed_at].present?
+          days_to_close = (Date.parse(pull[:closed_at]) - Date.parse(pull[:created_at])).to_i + 1
+          pulls_processed_in_days << days_to_close
+          (project.agility.quarters[pull[:closed_at]].pr_processed_in_days ||= []) << days_to_close
+        end
+
+        values = pulls_processed_in_days.to_a.sort
+        project.agility.total.pr_processed_in_avg = if values.count.odd?
+                                                      values[values.count/2]
+                                                    elsif values.count.zero?
                                                       0
                                                     else
-                                                      pulls_processed_in_days / pulls_processed_count
+                                                      ((values[values.count/2 - 1] + values[values.count/2]) / 2.0).to_i
                                                     end
       end
 
-      def process_issues_and_prs_processing_time
-        # TODO: go for each quarter data
-        # => how many quarters does it take in average, to close pr and issue
-        issues_processing_periods = Hash.new { |h, k| h[k] = 0 }
-        pr_processing_periods = Hash.new { |h, k| h[k] = 0 }
-
-        project.agility.quarters.each_sorted do |quarter, data|
-          data.pr_actual.each { |pr| pr_processing_periods[pr] += 1 }
-          data.pr_open.each { |pr| pr_processing_periods[pr] += 1 }
-          periods = pr_processing_periods.values
-
-          data.issues_actual.each { |issue| issues_processing_periods[issue] += 1 }
-          data.issues_open.each { |issue| issues_processing_periods[issue] += 1 }
-          periods = issues_processing_periods.values
-        end
-
-        periods = pr_processing_periods.values
-        project.agility.total.pr_processed_in_avg = periods.empty? ? 0 : periods.sum / periods.count.to_d.to_f
-
-        periods = issues_processing_periods.values
-        project.agility.total.issues_processed_in_avg = periods.empty? ? 0 : periods.sum / periods.count.to_d.to_f
-      end
+      # def process_issues_and_prs_processing_time
+      #   # TODO: go for each quarter data
+      #   # => how many quarters does it take in average, to close pr and issue
+      #   issues_processing_periods = Hash.new { |h, k| h[k] = 0 }
+      #   pr_processing_periods = Hash.new { |h, k| h[k] = 0 }
+      #
+      #   project.agility.quarters.each_sorted do |quarter, data|
+      #     data.pr_actual.each { |pr| pr_processing_periods[pr] += 1 }
+      #     data.pr_open.each { |pr| pr_processing_periods[pr] += 1 }
+      #     periods = pr_processing_periods.values
+      #
+      #     data.issues_actual.each { |issue| issues_processing_periods[issue] += 1 }
+      #     data.issues_open.each { |issue| issues_processing_periods[issue] += 1 }
+      #     periods = issues_processing_periods.values
+      #   end
+      #
+      #   periods = pr_processing_periods.values
+      #   project.agility.total.pr_processed_in_avg = periods.empty? ? 0 : periods.sum / periods.count.to_d.to_f
+      #
+      #   periods = issues_processing_periods.values
+      #   project.agility.total.issues_processed_in_avg = periods.empty? ? 0 : periods.sum / periods.count.to_d.to_f
+      # end
 
       def process_actual_prs_and_issues
         actual_prs, actual_issues = Set.new, Set.new
@@ -481,8 +503,8 @@ module Ossert
       end
 
       def process_pulls
-        pulls_processed_in_days = 0
-        pulls_processed_count = 0
+        pulls_processed_in_days = []
+        # pulls_processed_count = 0
 
         pulls do |pull|
           case pull[:state]
@@ -496,8 +518,9 @@ module Ossert
             project.agility.quarters[pull[:merged_at]].pr_merged << pull[:url] if pull[:merged_at]
             if pull[:closed_at].present?
               days_to_close = (Date.parse(pull[:closed_at]) - Date.parse(pull[:created_at])).to_i + 1
-              pulls_processed_in_days += days_to_close
-              pulls_processed_count += 1
+              pulls_processed_in_days << days_to_close
+              # pulls_processed_count += 1
+              (project.agility.quarters[pull[:closed_at]].pr_processed_in_days ||= []) << days_to_close
             end
           end
 
@@ -524,10 +547,13 @@ module Ossert
           project.community.quarters[pull[:created_at]].users_involved << pull[:user][:login]
         end
 
-        project.agility.total.pr_processed_in_avg = if pulls_processed_count.zero?
+        values = pulls_processed_in_days.to_a.sort
+        project.agility.total.pr_processed_in_avg = if values.count.odd?
+                                                      values[values.count/2]
+                                                    elsif values.count.zero?
                                                       0
                                                     else
-                                                      pulls_processed_in_days / pulls_processed_count
+                                                      ((values[values.count/2 - 1] + values[values.count/2]) / 2.0).to_i
                                                     end
 
         pulls_comments do |pull_comment|
@@ -545,8 +571,9 @@ module Ossert
       end
 
       def process_issues
-        issues_processed_in_days = 0
-        issues_processed_count = 0
+        issues_processed_in_days = []
+        # issues_processed_count = 0
+
         issues do |issue|
           next if issue.key? :pull_request
           case issue[:state]
@@ -561,8 +588,8 @@ module Ossert
 
             if issue[:closed_at].present?
               days_to_close = (Date.parse(issue[:closed_at]) - Date.parse(issue[:created_at])).to_i + 1
-              issues_processed_in_days += days_to_close
-              issues_processed_count += 1
+              issues_processed_in_days << days_to_close
+              (project.agility.quarters[issue[:closed_at]].issues_processed_in_days ||= []) << days_to_close
             end
           end
 
@@ -588,10 +615,13 @@ module Ossert
           project.community.quarters[issue[:created_at]].users_involved << issue[:user][:login]
         end
 
-        project.agility.total.issues_processed_in_avg = if issues_processed_count.zero?
+        values = issues_processed_in_days.to_a.sort
+        project.agility.total.issues_processed_in_avg = if values.count.odd?
+                                                          values[values.count/2]
+                                                        elsif values.count.zero?
                                                           0
                                                         else
-                                                          issues_processed_in_days / issues_processed_count
+                                                          ((values[values.count/2 - 1] + values[values.count/2]) / 2.0).to_i
                                                         end
 
         issues_comments do |issue_comment|

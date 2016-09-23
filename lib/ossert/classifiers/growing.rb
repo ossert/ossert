@@ -68,8 +68,10 @@ module Ossert
         {
           agility_total: agility_total,
           agility_quarter: agility_quarter,
+          agility_year: agility_quarter,
           community_total: community_total,
-          community_quarter: community_quarter
+          community_quarter: community_quarter,
+          community_year: community_quarter
         }
       end
 
@@ -99,7 +101,6 @@ module Ossert
         ]
 
         quarter_metrics_community = all_metrics_community - [:stargazers_count, :users_involved_count, :watchers_count]
-
 
         agility_total_classifier.each_pair do |ref_class, metrics|
           current_full_metrics_cnt = (full_metrics & metrics.keys).count
@@ -214,6 +215,7 @@ module Ossert
 
             [:issues_closed_percent, :issues_active_percent, :issues_all_count, :issues_actual_count,
              :pr_closed_percent, :pr_active_percent, :pr_all_count, :pr_actual_count,
+             :issues_processed_in_avg, :pr_processed_in_avg,
              :releases_count, :commits].each do |metric|
               next_metric_val = project.agility.quarters.last_year_as_hash[metric].to_f
               ((@agility_quarter_classifier[ref_class] ||= {})[metric] ||= []) << next_metric_val
@@ -235,7 +237,15 @@ module Ossert
               next_metric_val = project.community.quarters.last_year_as_hash[metric].to_f
               ((@community_quarter_classifier[ref_class] ||= {})[metric] ||= []) << next_metric_val
             end
-
+            #
+            # [:users_creating_issues_count, :users_commenting_issues_count, :users_creating_pr_count,
+            #  :users_commenting_pr_count, :contributors_count, :stargazers_count,
+            #  :watchers_count,
+            #  :forks_count, :users_involved_count, :users_involved_no_stars_count,
+            #  :total_downloads, :delta_downloads, :download_divergence].each do |metric|
+            #   next_metric_val = project.community.quarters.last_year_as_hash[metric].to_f
+            #   ((@community_last_year_classifier[ref_class] ||= {})[metric] ||= []) << next_metric_val
+            # end
           end
         end
 

@@ -581,6 +581,7 @@ module Ossert
         [
           # :issues_active_count, :issues_closed_count,
           # :pr_active_count, :pr_closed_count,
+          :issues_processed_in_avg, :pr_processed_in_avg,
           :issues_active_percent, :issues_closed_percent, :issues_all_count, :issues_actual_count,
           :pr_active_percent, :pr_closed_percent, :pr_all_count, :pr_actual_count,
           :releases_count, :commits
@@ -596,8 +597,10 @@ module Ossert
     # - Branches Count
     attr_accessor :issues_open, :issues_closed, :issues_total, :issues_actual,
                   :pr_open, :pr_merged, :pr_closed, :pr_total, :pr_actual,
+                  :pr_processed_in_days,
                   :releases,
-                  :releases_total_gh, :branches, :releases_total_rg, :commits
+                  :releases_total_gh, :branches, :releases_total_rg, :commits,
+                  :issues_processed_in_days
 
     VARS_INITIALIZE = {
       issues_open: Set,
@@ -632,6 +635,28 @@ module Ossert
     [:issues_active, :pr_active, :issues_closed, :issues_actual,
      :pr_closed, :issues_all, :pr_all, :pr_actual].each do |metric|
       define_method("#{metric}_count") { public_send(metric).count }
+    end
+
+    def issues_processed_in_avg
+      values = issues_processed_in_days.to_a.sort
+      if values.count.odd?
+        values[values.count/2]
+      elsif values.count.zero?
+        0
+      else
+        ((values[values.count/2 - 1] + values[values.count/2]) / 2.0).to_i
+      end
+    end
+
+    def pr_processed_in_avg
+      values = pr_processed_in_days.to_a.sort
+      if values.count.odd?
+        values[values.count/2]
+      elsif values.count.zero?
+        0
+      else
+        ((values[values.count/2 - 1] + values[values.count/2]) / 2.0).to_i
+      end
     end
 
     def issues_active
