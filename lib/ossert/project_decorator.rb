@@ -167,5 +167,50 @@ module Ossert
         res[metric_name] = value
       end
     end
+
+    def community_last_year
+      quarters_end_date = Time.current
+      quarters_start_date = 1.year.ago
+      data = Hash.new { |h,k| h[k] = 0.0 }
+
+      quarters_end_date.to_i.step(quarters_start_date.to_i, -90.days.to_i) do |quarter|
+        quarter = Time.at(quarter).to_date.to_time(:utc).beginning_of_quarter
+        @project.community.quarters[quarter].metrics_to_hash.each_with_object(data) do |(metric, value), res|
+          res[metric] += value
+        end
+      end
+
+      data.each_with_object({}) do |(metric, value), h|
+        metric_name = metric.to_s.gsub(/(_percent|_int|_count)/, '')
+        value = metric =~ /divergence/ ? (value / 5.0.to_d) : value
+        h[metric_name] = decorate_metric(metric, value.ceil, :community_quarter)
+        h
+      end
+    end
+
+    def agility_last_year
+      quarters_end_date = Time.current
+      quarters_start_date = 1.year.ago
+      data = Hash.new { |h,k| h[k] = 0.0 }
+
+      quarters_start_date.to_i.step(quarters_end_date.to_i, 91.days.to_i) do |quarter|
+        quarter = Time.at(quarter).to_date.to_time(:utc).beginning_of_quarter
+        @project.agility.quarters[quarter].metrics_to_hash.each_with_object(data) do |(metric, value), res|
+          case metric
+          when /(pr_actual|pr_all)/
+            res[metric] = value
+          else
+            res[metric] += value
+          end
+        end
+      end
+
+      data.inject({}) do |h, (metric, value)|
+        metric_name = metric.to_s.gsub(/(_percent|_int|_count)/, '')
+        value = metric =~ /percent/ ? (value / 5.0.to_d) : value
+        h[metric_name] = decorate_metric(metric, value.ceil, :agility_quarter)
+        h
+      end
+    end
   end
 end
