@@ -1,22 +1,6 @@
-require 'rom-repository'
-require 'rom-sql'
-
 module Ossert
   module Saveable
-    # DB = Sequel.connect(ENV.fetch("DATABASE_URL")) # memory database, requires sqlite3
     UNUSED_REFERENCE = 'unused'.freeze
-
-    def filename
-      self.class.name
-    end
-
-    def read
-      fail NotImplementedError
-    end
-
-    def assign(saved_data)
-      fail NotImplementedError
-    end
 
     def repo
       ProjectRepo.new(Ossert.rom)
@@ -43,53 +27,18 @@ module Ossert
       repo.command(:update, repo.projects).call(reference: UNUSED_REFERENCE)
     end
 
-    def deserialize(stored_prj)
-      coerce_value = (->(value) {
-        return Set.new(value) if value.is_a? Array
-        return DateTime.parse(value) rescue value
-      })
-
-      agility_total_stat = AgilityTotalStat.new
-      JSON.parse(stored_prj.agility_total_data).each_pair do |metric, value|
-        agility_total_stat.send "#{metric}=", coerce_value.call(value)
-      end
-
-      agility_quarters_stat = QuartersStore.new(AgilityQuarterStat)
-      JSON.parse(stored_prj.agility_quarters_data).each_pair do |time, metrics|
-        metrics.each_with_object(agility_quarters_stat[time.to_i]) do |(metric, value), quarter|
-          quarter.send "#{metric}=", coerce_value.call(value)
-        end
-      end
-
-      community_total_stat = CommunityTotalStat.new
-      JSON.parse(stored_prj.community_total_data).each_pair do |metric, value|
-        community_total_stat.send "#{metric}=", coerce_value.call(value)
-      end
-
-      community_quarters_stat = QuartersStore.new(CommunityQuarterStat)
-      JSON.parse(stored_prj.community_quarters_data).each_pair do |time, metrics|
-        metrics.each_with_object(community_quarters_stat[time.to_i]) do |(metric, value), quarter|
-          quarter.send "#{metric}=", coerce_value.call(value)
-        end
-      end
-
+    def deserialize(stored_project)
       Ossert::Project.new(
-        stored_prj.name,
-        stored_prj.github_name,
-        stored_prj.rubygems_name,
-        stored_prj.reference,
-        agility: Ossert::Project::Agility.new(
-          quarters: agility_quarters_stat, total: agility_total_stat
-        ),
-        community: Ossert::Project::Community.new(
-          quarters: community_quarters_stat, total: community_total_stat
-        ),
-        meta: stored_prj.meta_data.present? ? JSON.parse(stored_prj.meta_data) : {}
+        stored_project.name,
+        stored_project.github_name,
+        stored_project.rubygems_name,
+        stored_project.reference,
+        Unpacker.new(stored_project).process
       )
     end
 
+    # TODO: Later we'll need pagination here!
     def load_all
-      # TODO: Later we'll need pagination here!
       repo.all.map do |stored_prj|
         deserialize(stored_prj)
       end
@@ -98,61 +47,112 @@ module Ossert
     def dump
       projects.each(&:dump)
     end
-  end
-end
 
-class Exceptions < ROM::Relation[:sql]
-  def by_name(name)
-    where(name: name)
-  end
-end
+    class Unpacker
+      def initialize(stored_project)
+        @stored_project = stored_project
+      end
 
-class ExceptionsRepo < ROM::Repository[:exceptions]
-  commands :create, update: :by_name, delete: :by_name
+      def process
+        result = {}
+        result[:meta] = if @stored_project.meta_data.present?
+                          JSON.parse(@stored_project.meta_data)
+                        else
+                          {}
+                        end
 
-  def [](name)
-    exceptions.by_name(name).one
-  end
+        [:agility, :community].each do |stats_type|
+          result[stats_type] = factory_project_stats(stats_type).new(
+            [Total, Quarter].each_with_object({}) do |section_type, stats_result|
+              section_unpacker = section_type.new(@stored_project, stats_type)
+              stats_result[section_unpacker.to_key] = section_unpacker.process
+            end
+          )
+        end
 
-  def all
-    exceptions.to_a
-  end
+        result
+      end
 
-  def all_by_names
-    all.index_by(&:name)
-  end
-end
+      private
 
-class Projects < ROM::Relation[:sql]
-  def by_name(name)
-    where(name: name)
-  end
+      def factory_project_stats(stats_type)
+        case stats_type
+        when :agility
+          Ossert::Project::Agility
+        when :community
+          Ossert::Project::Community
+        else
+          fail ArgumentError
+        end
+      end
 
-  def later_than(id)
-    where('id >= ?', id)
-  end
+      class Base
+        def initialize(stored_project, stats_type)
+          @stats_type = stats_type
+          @stored_project = stored_project
+        end
 
-  def referenced
-    where('reference <> ?', Ossert::Saveable::UNUSED_REFERENCE)
-  end
-end
+        def coerce_value(value)
+          return Set.new(value) if value.is_a? Array
+          return DateTime.parse(value) rescue value
+        end
 
-class ProjectRepo < ROM::Repository[:projects]
-  commands :create, update: :by_name, delete: :by_name
+        def stored_data
+          @stored_project.send("#{@stats_type}_#{to_key}_data")
+        end
+      end
 
-  def [](name)
-    projects.by_name(name).one
-  end
+      class Total < Base
+        def to_key
+          :total
+        end
 
-  def all
-    projects.to_a
-  end
+        def stored_data
+          @stored_project.send("#{@stats_type}_total_data")
+        end
 
-  def later_than(id)
-    projects.later_than(id).to_a
-  end
+        def new_stats_object
+          case @stats_type
+          when :agility
+            Stats::AgilityTotal.new
+          when :community
+            Stats::CommunityTotal.new
+          else
+            fail ArgumentError
+          end
+        end
 
-  def referenced
-    projects.referenced.to_a
+        def process
+          JSON.parse(stored_data).each_with_object(new_stats_object) do |(metric, value), stats_object|
+            stats_object.send "#{metric}=", coerce_value(value)
+          end
+        end
+      end
+
+      class Quarter < Base
+        def to_key
+          :quarters
+        end
+
+        def new_stats_object
+          case @stats_type
+          when :agility
+            Ossert::QuartersStore.new(Stats::AgilityQuarter)
+          when :community
+            Ossert::QuartersStore.new(Stats::CommunityQuarter)
+          else
+            fail ArgumentError
+          end
+        end
+
+        def process
+          JSON.parse(stored_data).each_with_object(new_stats_object) do |(time, metrics), quarter_store|
+            metrics.each_with_object(quarter_store[time.to_i]) do |(metric, value), quarter|
+              quarter.send "#{metric}=", coerce_value(value)
+            end
+          end
+        end
+      end
+    end
   end
 end

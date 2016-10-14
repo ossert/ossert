@@ -56,10 +56,10 @@ module Ossert
 
       def train
         grouped_projects = train_group
-        agility_total_attributes = AgilityQuarterStat.metrics
-        agility_quarters_attributes = AgilityTotalStat.metrics
-        community_total_attributes = CommunityTotalStat.metrics
-        community_quarters_attributes = CommunityQuarterStat.metrics
+        agility_total_attributes = Stats::AgilityQuarter.metrics
+        agility_quarters_attributes = Stats::AgilityTotal.metrics
+        community_total_attributes = Stats::CommunityTotal.metrics
+        community_quarters_attributes = Stats::CommunityQuarter.metrics
         agility_total_data, community_total_data, agility_last_year_data, community_last_year_data = [], [], [], []
 
         CLASSES.each_with_index do |ref_class, i|
