@@ -133,6 +133,8 @@ module Ossert
         @latest_release ||= client.latest_release(@repo_name)
       end
 
+      # Add class with processing types, e.g. top_contributors, commits and so on
+
       def process_top_contributors
         top_contributors.last(10).reverse.each do |c|
           login = c[:author][:login]
@@ -225,29 +227,6 @@ module Ossert
                                                     end
       end
 
-      # def process_issues_and_prs_processing_time
-      #   # TODO: go for each quarter data
-      #   # => how many quarters does it take in average, to close pr and issue
-      #   issues_processing_periods = Hash.new { |h, k| h[k] = 0 }
-      #   pr_processing_periods = Hash.new { |h, k| h[k] = 0 }
-      #
-      #   project.agility.quarters.each_sorted do |quarter, data|
-      #     data.pr_actual.each { |pr| pr_processing_periods[pr] += 1 }
-      #     data.pr_open.each { |pr| pr_processing_periods[pr] += 1 }
-      #     periods = pr_processing_periods.values
-      #
-      #     data.issues_actual.each { |issue| issues_processing_periods[issue] += 1 }
-      #     data.issues_open.each { |issue| issues_processing_periods[issue] += 1 }
-      #     periods = issues_processing_periods.values
-      #   end
-      #
-      #   periods = pr_processing_periods.values
-      #   project.agility.total.pr_processed_in_avg = periods.empty? ? 0 : periods.sum / periods.count.to_d.to_f
-      #
-      #   periods = issues_processing_periods.values
-      #   project.agility.total.issues_processed_in_avg = periods.empty? ? 0 : periods.sum / periods.count.to_d.to_f
-      # end
-
       def process_actual_prs_and_issues
         actual_prs, actual_issues = Set.new, Set.new
         agility.quarters.each_sorted do |quarter, data|
@@ -274,6 +253,7 @@ module Ossert
         )
       end
 
+      # FIXME: delete if temporary
       def fix_issues_and_prs_with_contrib_comments
         agility.total.pr_with_contrib_comments.delete_if do |pr|
           !(pr =~ %r{https://api.github.com/repos/#{@repo_name}/pulls/\d+})
@@ -286,7 +266,6 @@ module Ossert
 
       def process_pulls
         pulls_processed_in_days = []
-        # pulls_processed_count = 0
 
         pulls do |pull|
           case pull[:state]
@@ -301,7 +280,6 @@ module Ossert
             if pull[:closed_at].present?
               days_to_close = (Date.parse(pull[:closed_at]) - Date.parse(pull[:created_at])).to_i + 1
               pulls_processed_in_days << days_to_close
-              # pulls_processed_count += 1
               (agility.quarters[pull[:closed_at]].pr_processed_in_days ||= []) << days_to_close
             end
           end
@@ -331,12 +309,12 @@ module Ossert
 
         values = pulls_processed_in_days.to_a.sort
         agility.total.pr_processed_in_avg = if values.count.odd?
-                                                      values[values.count/2]
-                                                    elsif values.count.zero?
-                                                      0
-                                                    else
-                                                      ((values[values.count/2 - 1] + values[values.count/2]) / 2.0).to_i
-                                                    end
+                                              values[values.count/2]
+                                            elsif values.count.zero?
+                                              0
+                                            else
+                                              ((values[values.count/2 - 1] + values[values.count/2]) / 2.0).to_i
+                                            end
 
         pulls_comments do |pull_comment|
           login = pull_comment[:user].try(:[], :login).presence || generate_anonymous
@@ -349,12 +327,10 @@ module Ossert
           community.total.users_involved << login
           community.quarters[pull_comment[:created_at]].users_involved << login
         end
-
       end
 
       def process_issues
         issues_processed_in_days = []
-        # issues_processed_count = 0
 
         issues do |issue|
           next if issue.key? :pull_request
@@ -399,12 +375,12 @@ module Ossert
 
         values = issues_processed_in_days.to_a.sort
         agility.total.issues_processed_in_avg = if values.count.odd?
-                                                          values[values.count/2]
-                                                        elsif values.count.zero?
-                                                          0
-                                                        else
-                                                          ((values[values.count/2 - 1] + values[values.count/2]) / 2.0).to_i
-                                                        end
+                                                  values[values.count/2]
+                                                elsif values.count.zero?
+                                                  0
+                                                else
+                                                  ((values[values.count/2 - 1] + values[values.count/2]) / 2.0).to_i
+                                                end
 
         issues_comments do |issue_comment|
           login = issue_comment[:user].try(:[], :login).presence || generate_anonymous
@@ -490,6 +466,7 @@ module Ossert
         raise "Github NotFound Error: #{e.inspect}"
       end
 
+      # GitHub sometimes hides login, this is fallback
       def generate_anonymous
         @anonymous_count ||= 0
         @anonymous_count += 1

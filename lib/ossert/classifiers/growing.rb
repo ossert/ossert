@@ -53,7 +53,6 @@ module Ossert
       end
 
       # Maybe add syntetic attributes. Take maximum as a start and go less. from A to E... and reversed
-
       def reference_values_per_class
         agility_total, agility_quarter, community_total, community_quarter = [
           agility_total_classifier, agility_quarter_classifier,
@@ -75,16 +74,20 @@ module Ossert
         }
       end
 
+      # FIXME: Refactor this with config and maybe divide by classes Teacher and Evaluation
       def check(project)
         agility_total_results = CLASSES.each_with_object({}) { |klass, res| res[klass] = 0.0.to_d }
         community_total_results = agility_total_results.dup
         agility_quarter_results = agility_total_results.dup
         community_quarter_results = agility_total_results.dup
 
+
+        # FIXME: move metrics and weight to config
         half_metrics = [:issues_non_owner_percent, :pr_non_owner_percent,
                         :pr_closed_percent, :issues_closed_percent,
                         :pr_with_contrib_comments_percent, :issues_with_contrib_comments_percent,
                         :pr_processed_in_avg, :issues_processed_in_avg]
+
         full_metrics = [
           :issues_all_count, :pr_all_count, :releases_count, :last_year_commits,
           :life_period, :last_changed,
@@ -102,6 +105,7 @@ module Ossert
 
         quarter_metrics_community = all_metrics_community - [:stargazers_count, :users_involved_count, :watchers_count]
 
+        total_data = project.agility.total
         agility_total_classifier.each_pair do |ref_class, metrics|
           current_full_metrics_cnt = (full_metrics & metrics.keys).count
           current_half_metrics_cnt = (half_metrics & metrics.keys).count / 2
@@ -111,10 +115,11 @@ module Ossert
             next unless all_metrics_agility.include? metric
             range = values[:range]
             gain = half_metrics.include?(metric) ? current_gain / 2.0.to_d : current_gain
-            agility_total_results[ref_class] += gain.to_f if range.cover? project.agility.total.send(metric).to_f
+            agility_total_results[ref_class] += gain.to_f if range.cover? total_data.send(metric).to_f
           end
         end
 
+        last_year_data = project.agility.quarters.last_year_as_hash
         agility_quarter_classifier.each_pair do |ref_class, metrics|
           current_full_metrics_cnt = (full_metrics & metrics.keys).count
           current_half_metrics_cnt = (half_metrics & metrics.keys).count / 2
@@ -124,67 +129,40 @@ module Ossert
             next unless all_metrics_agility.include? metric
             range = values[:range]
             gain = half_metrics.include?(metric) ? current_gain / 2.0.to_d : current_gain
-            agility_quarter_results[ref_class] += gain if range.cover? project.agility.quarters.last_year_as_hash[metric].to_f
+            agility_quarter_results[ref_class] += gain if range.cover? last_year_data[metric].to_f
           end
         end
 
         community_gain = 1 / all_metrics_community.count.to_d
 
+        total_data = project.community.total
         community_total_classifier.each_pair do |ref_class, metrics|
           metrics.each_pair do |metric, values|
             next unless all_metrics_community.include? metric
             range = values[:range]
-            community_total_results[ref_class] += community_gain if range.cover? project.community.total.send(metric).to_f
+            community_total_results[ref_class] += community_gain if range.cover? total_data.send(metric).to_f
           end
         end
 
         community_gain = 1 / quarter_metrics_community.count.to_d
 
+        last_year_data = project.community.quarters.last_year_as_hash
         community_quarter_classifier.each_pair do |ref_class, metrics|
           metrics.each_pair do |metric, values|
             next unless quarter_metrics_community.include? metric
             range = values[:range]
-            community_quarter_results[ref_class] += community_gain if range.cover? project.community.quarters.last_year_as_hash[metric].to_f
+            community_quarter_results[ref_class] += community_gain if range.cover? last_year_data[metric].to_f
           end
-        end
-
-        agility_total_decision = 'ClassE'
-        community_total_decision = 'ClassE'
-        agility_quarter_decision = 'ClassE'
-        community_quarter_decision = 'ClassE'
-
-        agility_total_results.each_pair do |ref_class, gain|
-          next if gain <= 0.5
-          agility_total_decision = ref_class
-          break
-        end
-
-        community_total_results.each_pair do |ref_class, gain|
-          next if gain <= 0.5
-          community_total_decision = ref_class
-          break
-        end
-
-        agility_quarter_results.each_pair do |ref_class, gain|
-          next if gain <= 0.5
-          agility_quarter_decision = ref_class
-          break
-        end
-
-        community_quarter_results.each_pair do |ref_class, gain|
-          next if gain <= 0.5
-          community_quarter_decision = ref_class
-          break
         end
 
         {
           agility: {
-            total: agility_total_decision,
-            last_year: agility_quarter_decision
+            total: rate(agility_total_results),
+            last_year: rate(agility_quarter_results)
           },
           community: {
-            total: community_total_decision,
-            last_year: community_quarter_decision
+            total: rate(community_total_results),
+            last_year: rate(community_quarter_results)
           },
           agility_total_probs: agility_total_results,
           community_total_probs: community_total_results,
@@ -193,10 +171,36 @@ module Ossert
         }
       end
 
+      def rate(classifier_results)
+        grade = 'ClassE'
+        classifier_results.each_pair do |reference_klass, gain|
+          next if gain <= 0.5
+          grade = reference_klass
+          break
+        end
+        grade
+      end
+
       def train
         grouped_projects = train_group
         @agility_total_classifier, @community_total_classifier = {}, {}
         @agility_quarter_classifier, @community_quarter_classifier = {}, {}
+
+        process_collection(grouped_projects)
+
+        process_aggregation
+
+        # fix syntetics
+        process_syntetics
+
+        # replace values with ranges
+        process_values_to_ranges
+
+        # fix reversed
+        process_reversed
+      end
+
+      def process_collection(grouped_projects)
         CLASSES.each do |ref_class|
           grouped_projects[ref_class].each do |project|
             [:issues_all_count, :pr_all_count, :releases_count, :last_year_commits,
@@ -237,18 +241,11 @@ module Ossert
               next_metric_val = project.community.quarters.last_year_as_hash[metric].to_f
               ((@community_quarter_classifier[ref_class] ||= {})[metric] ||= []) << next_metric_val
             end
-            #
-            # [:users_creating_issues_count, :users_commenting_issues_count, :users_creating_pr_count,
-            #  :users_commenting_pr_count, :contributors_count, :stargazers_count,
-            #  :watchers_count,
-            #  :forks_count, :users_involved_count, :users_involved_no_stars_count,
-            #  :total_downloads, :delta_downloads, :download_divergence].each do |metric|
-            #   next_metric_val = project.community.quarters.last_year_as_hash[metric].to_f
-            #   ((@community_last_year_classifier[ref_class] ||= {})[metric] ||= []) << next_metric_val
-            # end
           end
         end
+      end
 
+      def process_aggregation
         CLASSES.each_with_index do |ref_class, idx|
           [@agility_total_classifier, @agility_quarter_classifier,
            @community_total_classifier, @community_quarter_classifier].each do |classifier|
@@ -264,8 +261,9 @@ module Ossert
             end
           end
         end
+      end
 
-        # fix syntetics
+      def process_syntetics
         [@agility_total_classifier, @agility_quarter_classifier,
           @community_total_classifier, @community_quarter_classifier].each do |classifier|
           SYNTETIC.each do |synt_metric|
@@ -280,8 +278,9 @@ module Ossert
             end
           end
         end
+      end
 
-        # replace values with ranges
+      def process_values_to_ranges
         CLASSES.each_with_index do |ref_class, idx|
           [@agility_total_classifier, @agility_quarter_classifier,
            @community_total_classifier, @community_quarter_classifier].each do |classifier|
@@ -303,8 +302,9 @@ module Ossert
             end
           end
         end
+      end
 
-        # fix reversed
+      def process_reversed
         [@agility_total_classifier, @agility_quarter_classifier,
           @community_total_classifier, @community_quarter_classifier].each do |classifier|
           REVERSED.each do |reversed_metric|
