@@ -20,6 +20,7 @@ module Ossert
           ]
         end
       end
+
       # #### Pulse, for last year/quarter/month (amount + delta from total)
       # - Opened and Closed Issues
       # - Opened and Merged PRs
@@ -49,7 +50,6 @@ module Ossert
         branches: Set,
         releases_total_rg: Set
       }
-      # NON_SET_VARS = %w()
 
       [
         :issues_active, :issues_closed,

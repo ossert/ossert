@@ -1,5 +1,3 @@
-require "ossert/project_decorator"
-
 module Ossert
   class Project
     attr_accessor :name, :gh_alias, :rg_alias,
@@ -42,7 +40,7 @@ module Ossert
     end
 
     def decorated
-      @decorated ||= Ossert::ProjectDecorator.new(self)
+      @decorated ||= Ossert::Decorators::Project.new(self)
     end
 
     def repo
