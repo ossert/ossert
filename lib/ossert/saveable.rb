@@ -1,53 +1,59 @@
 module Ossert
   module Saveable
     UNUSED_REFERENCE = 'unused'.freeze
+    ATTRIBUTE_EXTRACT_VALUE_MAP = {
+      agility_total_data: ->(project) { project.agility.total.to_json },
+      agility_quarters_data: ->(project) { project.agility.quarters.to_json },
+      community_total_data: ->(project) { project.community.total.to_json },
+      community_quarters_data: ->(project) { project.community.quarters.to_json },
+      meta_data: ->(project) { project.meta_to_json }
+    }
 
     def self.included(base)
       base.extend(ClassMethods)
     end
 
-    def dump_attribute(attriibute, value)
+    def dump_attribute(attriibute)
+      attriibute = attriibute.to_sym
+      value = ATTRIBUTE_EXTRACT_VALUE_MAP.fetch(attriibute).call(self)
+
       with_repo do |repo|
         if repo[name]
           repo.update(
             name,
-            attriibute.to_sym => value
+            attriibute => value,
+            updated_at: Time.now.utc
           )
         else
           raise 'Not saved yet, sorry!'
         end
       end
+      nil
     end
 
     def dump
       with_repo do |repo|
         if repo[name]
-          repo.update(
-            name,
-            name: name,
-            github_name: gh_alias,
-            rubygems_name: rg_alias,
-            reference: reference,
-            meta_data: meta_to_json,
-            agility_total_data: agility.total.to_json,
-            agility_quarters_data: agility.quarters.to_json,
-            community_total_data: community.total.to_json,
-            community_quarters_data: community.quarters.to_json
-          )
+          repo.update(name, attributes.merge(updated_at: Time.now.utc))
         else
-          repo.create(
-            name: name,
-            github_name: gh_alias,
-            rubygems_name: rg_alias,
-            reference: reference,
-            meta_data: meta_to_json,
-            agility_total_data: agility.total.to_json,
-            agility_quarters_data: agility.quarters.to_json,
-            community_total_data: community.total.to_json,
-            community_quarters_data: community.quarters.to_json
-          )
+          repo.create(attributes)
         end
       end
+      nil
+    end
+
+    def attributes
+      {
+        name: name,
+        github_name: gh_alias,
+        rubygems_name: rg_alias,
+        reference: reference,
+        meta_data: meta_to_json,
+        agility_total_data: agility.total.to_json,
+        agility_quarters_data: agility.quarters.to_json,
+        community_total_data: community.total.to_json,
+        community_quarters_data: community.quarters.to_json
+      }
     end
 
     def with_repo
@@ -94,13 +100,16 @@ module Ossert
       private
 
       def deserialize(stored_project)
-        Ossert::Project.new(
+        project = Ossert::Project.new(
           stored_project.name,
           stored_project.github_name,
           stored_project.rubygems_name,
           stored_project.reference,
+        )
+        project.assign_data(
           ProjectRepo::Unpacker.process(stored_project)
         )
+        project
       end
     end
   end

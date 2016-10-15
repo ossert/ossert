@@ -21,17 +21,14 @@ module Ossert
       github_url: nil,
     }
 
-
     class << self
       def fetch_all(name, reference = Ossert::Saveable::UNUSED_REFERENCE)
-        name = name.dup
-        reference = reference.dup
-        name_exception = ExceptionsRepo.new(Ossert.rom)[name]
-        if name_exception
+        if (name_exception = ExceptionsRepo.new(Ossert.rom)[name])
           project = new(name, name_exception.github_name, name, reference)
         else
           project = new(name, nil, name, reference)
         end
+
         Ossert::Fetch.all project
         project.dump
         nil
@@ -52,14 +49,21 @@ module Ossert
       Classifiers::DecisionTree.current.check(self)
     end
 
-    def initialize(name, gh_alias = nil, rg_alias = nil, reference = nil, meta: nil, agility: nil, community: nil)
+    def initialize(name, github_alias = nil, rubygems_alias = nil, reference = nil)
       @name = name.dup
-      @gh_alias = gh_alias
-      @rg_alias = (rg_alias || name).dup
-      @agility = agility || Agility.new
-      @community = community || Community.new
+      @gh_alias = github_alias
+      @rg_alias = (rubygems_alias || name).dup
       @reference = reference.dup
-      @meta = meta || META_STUB.dup
+
+      @agility = Agility.new
+      @community = Community.new
+      @meta = META_STUB.dup
+    end
+
+    def assign_data(meta:, agility:, community:)
+      @agility = agility
+      @community = community
+      @meta = meta
     end
 
     def decorated

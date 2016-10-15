@@ -7,7 +7,7 @@ namespace :db do
   end
 
   desc 'Create the database, load the schema, and initialize with the seed data (use db:reset to also drop the db first)'
-  task :setup => ['db:schema:load', :seed]
+  task :setup => ['db:schema:load']
 
   namespace :schema do
     desc 'Load a schema.rb file into the database'
@@ -39,12 +39,6 @@ namespace :db do
     #   GRANT ALL ON SCHEMA public TO public;
     #   COMMENT ON SCHEMA public IS 'standard public schema';
     # SQL
-  end
-
-  desc 'Load the seed data from db/seeds.rb'
-  task :seed do
-    # TODO: load latest backup if exists
-    puts '... db/seeds.rb should be loaded here ...'
   end
 
   desc "Dumps the database to backups"
@@ -132,7 +126,7 @@ namespace :db do
 
   private
 
-  def suffix_for_format suffix
+  def suffix_for_format(suffix)
       case suffix
       when 'c' then 'dump'
       when 'p' then 'sql'
@@ -142,7 +136,7 @@ namespace :db do
       end
   end
 
-  def format_for_file file
+  def format_for_file(file)
     case file
     when /\.dump$/ then 'c'
     when /\.sql$/  then 'p'
@@ -152,7 +146,7 @@ namespace :db do
     end
   end
 
-  def backup_directory create=false
+  def backup_directory(create=false)
     backup_dir = "db/backups"
     if create and not Dir.exists?(backup_dir)
       puts "Creating #{backup_dir} .."

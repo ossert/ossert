@@ -75,9 +75,9 @@ class ProjectRepo < ROM::Repository[:projects]
 
       [:agility, :community].each do |stats_type|
         result[stats_type] = factory_project_stats(stats_type).new(
-          [Total, Quarter].each_with_object({}) do |section_type, stats_result|
-            section_unpacker = section_type.new(@stored_project, stats_type)
-            stats_result[section_unpacker.to_key] = section_unpacker.process
+          [Total, Quarter].each_with_object({}) do |unpacker_type, stats_result|
+            section_unpacker = unpacker_type.new(@stored_project, stats_type)
+            stats_result[section_unpacker.section] = section_unpacker.process
           end
         )
       end
@@ -88,7 +88,7 @@ class ProjectRepo < ROM::Repository[:projects]
     private
 
     def factory_project_stats(stats_type)
-      Object.const_get("Ossert::Project::#{stats_type.to_s.capitalize}")
+      Object.const_get "Ossert::Project::#{stats_type.to_s.capitalize}"
     end
 
     class Base
@@ -108,10 +108,9 @@ class ProjectRepo < ROM::Repository[:projects]
     end
 
     class Total < Base
-      def to_key
+      def section
         :total
       end
-      alias_method :section, :to_key
 
       def stored_data
         @stored_project.send("#{@stats_type}_total_data")
@@ -131,14 +130,13 @@ class ProjectRepo < ROM::Repository[:projects]
     end
 
     class Quarter < Base
-      def to_key
+      def section
         :quarters
       end
-      alias_method :section, :to_key
 
       def new_stats_object
         Ossert::QuartersStore.new(
-          Object.const_get("Ossert::Stats::#{@stats_type.capitalize}Quarter")
+          Object.const_get "Ossert::Stats::#{@stats_type.capitalize}Quarter"
         )
       end
 
