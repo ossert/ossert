@@ -2,7 +2,7 @@ module Ossert
   class Project
     include Ossert::Saveable
 
-    attr_accessor :name, :gh_alias, :rg_alias,
+    attr_accessor :name, :github_alias, :rubygems_alias,
                   :community, :agility, :reference,
                   :meta
 
@@ -51,8 +51,8 @@ module Ossert
 
     def initialize(name, github_alias = nil, rubygems_alias = nil, reference = nil)
       @name = name.dup
-      @gh_alias = github_alias
-      @rg_alias = (rubygems_alias || name).dup
+      @github_alias = github_alias
+      @rubygems_alias = (rubygems_alias || name).dup
       @reference = reference.dup
 
       @agility = Agility.new
@@ -67,7 +67,7 @@ module Ossert
     end
 
     def decorated
-      @decorated ||= Ossert::Decorators::Project.new(self)
+      @decorated ||= Ossert::Presenters::Project.new(self)
     end
 
     def prepare_time_bounds!(extended_start: nil, extended_end: nil)

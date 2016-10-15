@@ -19,11 +19,7 @@ module Ossert
 
       with_repo do |repo|
         if repo[name]
-          repo.update(
-            name,
-            attriibute => value,
-            updated_at: Time.now.utc
-          )
+          repo.update(name, attriibute => value, updated_at: Time.now.utc)
         else
           raise 'Not saved yet, sorry!'
         end
@@ -45,8 +41,8 @@ module Ossert
     def attributes
       {
         name: name,
-        github_name: gh_alias,
-        rubygems_name: rg_alias,
+        github_name: github_alias,
+        rubygems_name: rubygems_alias,
         reference: reference,
         meta_data: meta_to_json,
         agility_total_data: agility.total.to_json,

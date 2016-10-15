@@ -1,5 +1,5 @@
 module Ossert
-  module Decorators
+  module Presenters
     class Project
       CLASSES = %w(ClassE ClassD ClassC ClassB ClassA)
       attr_reader :project

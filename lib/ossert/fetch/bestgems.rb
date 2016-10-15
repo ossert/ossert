@@ -34,19 +34,19 @@ module Ossert
       end
 
       def total_downloads
-        client.get("gems/#{project.rg_alias}/total_downloads.json")
+        client.get("gems/#{project.rubygems_alias}/total_downloads.json")
       end
 
       def daily_downloads
-        client.get("gems/#{project.rg_alias}/daily_downloads.json")
+        client.get("gems/#{project.rubygems_alias}/daily_downloads.json")
       end
 
       def total_ranking
-        client.get("gems/#{project.rg_alias}/total_ranking.json")
+        client.get("gems/#{project.rubygems_alias}/total_ranking.json")
       end
 
       def daily_ranking
-        client.get("gems/#{project.rg_alias}/daily_ranking.json")
+        client.get("gems/#{project.rubygems_alias}/daily_ranking.json")
       end
 
       def process

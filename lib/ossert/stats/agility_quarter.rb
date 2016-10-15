@@ -115,10 +115,6 @@ module Ossert
         VARS_INITIALIZE.each_pair do |var, type|
           send "#{var}=", type.new
         end
-        # self.class.attributes.each do |var|
-        #   next if NON_SET_VARS.include?(var.to_s)
-        #   send "#{var}=", Set.new
-        # end
       end
 
       def metric_values

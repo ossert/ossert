@@ -12,7 +12,7 @@ module Ossert
         client.auto_paginate = true
 
         @project = project
-        raise ArgumentError unless (@repo_name = project.gh_alias).present?
+        raise ArgumentError unless (@repo_name = project.github_alias).present?
         @owner = @repo_name.split('/')[0]
         @requests_count = 0
       end

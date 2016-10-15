@@ -12,15 +12,15 @@ module Ossert
       end
 
       def info
-        @info ||= client.get("gems/#{project.rg_alias}.json")
+        @info ||= client.get("gems/#{project.rubygems_alias}.json")
       end
 
       def version_info
-        @info ||= client.get("versions/#{project.rg_alias}.json")
+        @info ||= client.get("versions/#{project.rubygems_alias}.json")
       end
 
       def releases
-        @releases ||= client.get("versions/#{project.rg_alias}.json")
+        @releases ||= client.get("versions/#{project.rubygems_alias}.json")
       end
 
       def process_meta
@@ -34,14 +34,14 @@ module Ossert
         meta[:current_version] = info['version']
         meta[:mailing_list_url] = info['mailing_list_uri']
         meta[:rubygems_url] = info['project_uri']
-        meta[:github_url] = "https://github.com/#{project.gh_alias}" # or exception!
+        meta[:github_url] = "https://github.com/#{project.github_alias}" # or exception!
       end
 
       def process
-        if project.gh_alias.blank?
+        if project.github_alias.blank?
           match = info['source_code_uri'].try(:match, /github.com\/([a-zA-Z0-9\.\_\-]+)\/([a-zA-Z0-9\.\_\-]+)/)
           match ||= info['homepage_uri'].try(:match, /github.com\/([a-zA-Z0-9\.\_\-]+)\/([a-zA-Z0-9\.\_\-]+)/)
-          project.gh_alias = "#{match[1]}/#{match[2]}" if match
+          project.github_alias = "#{match[1]}/#{match[2]}" if match
         end
 
         releases.each do |release|

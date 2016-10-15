@@ -1,42 +1,82 @@
 module Ossert
+  # Public: Class for data divided by quarters. Each quarter instantiates some statistics class.
+  # Contains methods for quarters calculations, such as grouping, preview and other.
   class QuartersStore
-    attr_reader :quarters, :stat_klass, :start_date, :end_date
+    attr_reader :quarters, :data_klass, :start_date, :end_date
 
-    def initialize(stat_klass)
-      @stat_klass = stat_klass
+    # Public: Instantiate QuarterStore
+    #
+    # data_klass - the Object for quarter data storage, to be compatable it
+    #              should implement:
+    #                - class method #metrics returns Array of metric names;
+    #                - instance method #metric_values returns values of metrics
+    #                  in same order.
+    #
+    # Returns QuarterStore instance.
+    def initialize(data_klass)
+      @data_klass = data_klass
       @quarters = Hash.new
     end
 
+    # Public: Strict fetch of quarter for given date
+    #
+    # date - the String, Numeric or DateTime to seek begining of quarter for.
+    #
+    # Returns quarter Object or KeyError will be raised.
     def fetch(date)
       quarters.fetch date_to_start(date)
     end
 
+    # Public: Find or create quarter for given date.
+    #
+    # date - the String, Numeric or DateTime to seek begining of quarter for.
+    #
+    # Returns quarter Object.
     def find_or_create(date)
-      quarters[date_to_start(date)] ||= stat_klass.new
+      quarters[date_to_start(date)] ||= data_klass.new
     end
     alias_method :[], :find_or_create
 
-    def date_to_start(value)
-      if value.is_a? String
-        # DateTime.parse(value).beginning_of_quarter.to_i
-        DateTime.new(*value.split('-'.freeze).map(&:to_i)).beginning_of_quarter.to_i
+    # Public: Find closest begining of quarter for given date.
+    #
+    # date - the String, Numeric or DateTime to seek begining of quarter for.
+    #
+    # Returns begining of quarter DateTime.
+    def date_to_start(date)
+      if date.is_a? String
+        # Alternative, but more expensive: DateTime.parse(value).beginning_of_quarter.to_i
+        DateTime.new(*date.split('-'.freeze).map(&:to_i)).beginning_of_quarter.to_i
       else
-        Time.at(value).to_date.to_time(:utc).beginning_of_quarter.to_i
+        Time.at(date).to_date.to_time(:utc).beginning_of_quarter.to_i
       end
     end
 
+    # Public: Prepare quarters to preview.
+    #
+    # Returns sorted Hash of quarter date and its data.
     def preview
-      quarters.sort.map { |date_i, value| [Time.at(date_i), value] }.to_h
+      quarters.sort.map { |unix_timestamp, quarter| [Time.at(unix_timestamp), quarter] }.to_h
     end
 
+    # Public: Get quarters metric values aggregated for last year.
+    #
+    # Returns Array of quarter metric values aggregated for last year.
     def last_year_data
       quarters.sort.last(4).map { |_, quarter| quarter.metric_values }.transpose.map {|x| x.reduce(:+)}
     end
 
+    # Public: Get quarters metric values aggregated for last year.
+    #
+    # Returns Hash of quarter metrics and its values aggregated for last year.
     def last_year_as_hash
-      Hash[stat_klass.metrics.zip(last_year_data)]
+      Hash[data_klass.metrics.zip(last_year_data)]
     end
 
+    # Public: Fill quarter bounds and wholes in periods from first to last quarter.
+    # It will assign @start_date and @end_date of QuarterStore instance.
+    # Should be called after all data is gathered and we ready for data presentation.
+    #
+    # Returns nothing.
     def fullfill!
       if quarters.empty?
         @start_date = Time.now
@@ -54,21 +94,34 @@ module Ossert
       end
     end
 
+    # Public: Iterate (and yields) through quarters in descending order
+    #
+    # Yields the Numeric UNIX-timestamp beginning of quarter
+    #        the Object for quarter data
+    #
+    # Returns Array of sorted pairs of time and quarter object.
     def reverse_each_sorted
-      quarters.sort.reverse.map do |key,value|
-        yield(key, value)
-      end
+      quarters.sort.reverse.map { |time, quarter| yield(time, quarter) }
     end
 
+    # Public: Iterate (and yields) through quarters in ascending order
+    #
+    # Yields the Numeric UNIX-timestamp beginning of quarter
+    #        the Object for quarter data
+    #
+    # Returns Array of sorted pairs of time and quarter object.
     def each_sorted
-      quarters.sort.map do |key,value|
-        yield(key, value)
-      end
+      quarters.sort.map { |time, quarter| yield(time, quarter) }
     end
 
+    # Public: Generate JSON for current data structure.
+    #         Keys are UNIX-timestamps (beginning of each quarter),
+    #         values are quarter objects explicitly converted to Hash.
+    #
+    # Returns String contains valid JSON.
     def to_json
-      hash = quarters.each_with_object({}) do |(time, metrics), result|
-        result[time] = metrics.to_hash
+      hash = quarters.each_with_object({}) do |(time, quarter), result|
+        result[time] = quarter.to_hash
       end
       JSON.generate(hash)
     end
