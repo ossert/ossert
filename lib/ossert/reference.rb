@@ -7,6 +7,7 @@ module Ossert
     end
     module_function :prepare_projects!
 
+    # Most resource consuming method
     def collect_stats_for_refs!(refs)
       threads = []
       puts "==== COLLECTING REFERENCE PROJECTS ===="

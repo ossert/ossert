@@ -1,5 +1,7 @@
 module Ossert
   class Project
+    include Ossert::Saveable
+
     attr_accessor :name, :gh_alias, :rg_alias,
                   :community, :agility, :reference,
                   :meta
@@ -18,6 +20,27 @@ module Ossert
       rubygems_url: nil,
       github_url: nil,
     }
+
+
+    class << self
+      def fetch_all(name, reference = Ossert::Saveable::UNUSED_REFERENCE)
+        name = name.dup
+        reference = reference.dup
+        name_exception = ExceptionsRepo.new(Ossert.rom)[name]
+        if name_exception
+          project = new(name, name_exception.github_name, name, reference)
+        else
+          project = new(name, nil, name, reference)
+        end
+        Ossert::Fetch.all project
+        project.dump
+        nil
+      end
+
+      def projects_by_reference
+        load_referenced.group_by { |prj| prj.reference }
+      end
+    end
 
     def analyze_by_growing_classifier
       raise unless Classifiers::Growing.current.ready?
@@ -43,57 +66,39 @@ module Ossert
       @decorated ||= Ossert::Decorators::Project.new(self)
     end
 
-    def repo
-      ProjectRepo.new(Ossert.rom)
+    def prepare_time_bounds!(extended_start: nil, extended_end: nil)
+      config = {
+        base_value: {
+          start: Time.now.utc,
+          end: 20.years.ago
+        },
+        aggregation: {
+          start: :min,
+          end: :max
+        },
+        extended: {
+          start: (extended_start || 20.years.ago).to_datetime,
+          end: (extended_end || Time.now.utc).to_datetime
+        },
+      }
+
+      agility.quarters.fullfill!
+      community.quarters.fullfill!
+
+      [:start, :end].map do |time_bound|
+        [
+          config[:base_value][time_bound],
+          config[:extended][time_bound],
+          agility.quarters.send("#{time_bound}_date"),
+          community.quarters.send("#{time_bound}_date")
+        ].send(
+          config[:aggregation][time_bound]
+        )
+      end
     end
 
     def meta_to_json
       JSON.generate(meta)
-    end
-
-    # TODO: dump any attribute
-    def dump_meta
-      current_repo = repo
-      saved = current_repo[name]
-      if saved
-        current_repo.update(
-          name,
-          meta_data: meta_to_json,
-        )
-      else
-        raise 'Not saved yet, sorry!'
-      end
-    end
-
-    def dump
-      current_repo = repo
-      saved = current_repo[name]
-      if saved
-        current_repo.update(
-          name,
-          name: name,
-          github_name: gh_alias,
-          rubygems_name: rg_alias,
-          reference: reference,
-          meta_data: meta_to_json,
-          agility_total_data: agility.total.to_json,
-          agility_quarters_data: agility.quarters.to_json,
-          community_total_data: community.total.to_json,
-          community_quarters_data: community.quarters.to_json
-        )
-      else
-        current_repo.create(
-          name: name,
-          github_name: gh_alias,
-          rubygems_name: rg_alias,
-          reference: reference,
-          meta_data: meta_to_json,
-          agility_total_data: agility.total.to_json,
-          agility_quarters_data: agility.quarters.to_json,
-          community_total_data: community.total.to_json,
-          community_quarters_data: community.quarters.to_json
-        )
-      end
     end
 
     class Agility
@@ -111,28 +116,6 @@ module Ossert
       def initialize(quarters: nil, total: nil)
         @quarters = quarters || QuartersStore.new(Stats::CommunityQuarter)
         @total = total || Stats::CommunityTotal.new
-      end
-    end
-
-    class << self
-      include Ossert::Saveable
-
-      def fetch_all(name, reference = Ossert::Saveable::UNUSED_REFERENCE)
-        name = name.dup
-        reference = reference.dup
-        name_exception = ExceptionsRepo.new(Ossert.rom)[name]
-        if name_exception
-          prj = new(name, name_exception.github_name, name, reference)
-        else
-          prj = new(name, nil, name, reference)
-        end
-        Ossert::Fetch.all prj
-        prj.dump
-        nil
-      end
-
-      def projects_by_reference
-        load_referenced.group_by { |prj| prj.reference }
       end
     end
   end

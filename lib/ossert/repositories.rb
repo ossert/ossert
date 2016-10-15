@@ -88,14 +88,7 @@ class ProjectRepo < ROM::Repository[:projects]
     private
 
     def factory_project_stats(stats_type)
-      case stats_type
-      when :agility
-        Ossert::Project::Agility
-      when :community
-        Ossert::Project::Community
-      else
-        fail ArgumentError
-      end
+      Object.const_get("Ossert::Project::#{stats_type.to_s.capitalize}")
     end
 
     class Base
@@ -110,7 +103,7 @@ class ProjectRepo < ROM::Repository[:projects]
       end
 
       def stored_data
-        @stored_project.send("#{@stats_type}_#{to_key}_data")
+        @stored_project.send("#{@stats_type}_#{section}_data")
       end
     end
 
@@ -118,24 +111,20 @@ class ProjectRepo < ROM::Repository[:projects]
       def to_key
         :total
       end
+      alias_method :section, :to_key
 
       def stored_data
         @stored_project.send("#{@stats_type}_total_data")
       end
 
       def new_stats_object
-        case @stats_type
-        when :agility
-          Ossert::Stats::AgilityTotal.new
-        when :community
-          Ossert::Stats::CommunityTotal.new
-        else
-          fail ArgumentError
-        end
+        Object.const_get("Ossert::Stats::#{@stats_type.capitalize}Total").new
       end
 
       def process
-        JSON.parse(stored_data).each_with_object(new_stats_object) do |(metric, value), stats_object|
+        JSON.parse(
+          stored_data
+        ).each_with_object(new_stats_object) do |(metric, value), stats_object|
           stats_object.send "#{metric}=", coerce_value(value)
         end
       end
@@ -145,20 +134,18 @@ class ProjectRepo < ROM::Repository[:projects]
       def to_key
         :quarters
       end
+      alias_method :section, :to_key
 
       def new_stats_object
-        case @stats_type
-        when :agility
-          Ossert::QuartersStore.new(Ossert::Stats::AgilityQuarter)
-        when :community
-          Ossert::QuartersStore.new(Ossert::Stats::CommunityQuarter)
-        else
-          fail ArgumentError
-        end
+        Ossert::QuartersStore.new(
+          Object.const_get("Ossert::Stats::#{@stats_type.capitalize}Quarter")
+        )
       end
 
       def process
-        JSON.parse(stored_data).each_with_object(new_stats_object) do |(time, metrics), quarter_store|
+        JSON.parse(
+          stored_data
+        ).each_with_object(new_stats_object) do |(time, metrics), quarter_store|
           metrics.each_with_object(quarter_store[time.to_i]) do |(metric, value), quarter|
             quarter.send "#{metric}=", coerce_value(value)
           end
