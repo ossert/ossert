@@ -9,6 +9,8 @@ require 'json'
 require 'oj'
 
 require 'weakref'
+require "ossert/config"
+Ossert::Config.load
 require "ossert/repositories"
 require "ossert/stats"
 require "ossert/quarters_store"

@@ -1,55 +1,9 @@
 module Ossert
   module Stats
-    class AgilityQuarter
-      class << self
-        attr_accessor :attributes
-
-        def attr_accessor *attrs
-          self.attributes = Array attrs
-          super
-        end
-
-        def metrics
-          [
-            # :issues_active_count, :issues_closed_count,
-            # :pr_active_count, :pr_closed_count,
-            :issues_processed_in_avg, :pr_processed_in_avg,
-            :issues_active_percent, :issues_closed_percent, :issues_all_count, :issues_actual_count,
-            :pr_active_percent, :pr_closed_percent, :pr_all_count, :pr_actual_count,
-            :releases_count, :commits
-          ]
-        end
-      end
-
-      # #### Pulse, for last year/quarter/month (amount + delta from total)
-      # - Opened and Closed Issues
-      # - Opened and Merged PRs
-      # - Releases Count
-      # - Downloads divergence
-      # - Downloads degradation per release ??
-      # - Branches Count
-      attr_accessor :issues_open, :issues_closed, :issues_total, :issues_actual,
-                    :pr_open, :pr_merged, :pr_closed, :pr_total, :pr_actual,
-                    :pr_processed_in_days,
-                    :releases,
-                    :releases_total_gh, :branches, :releases_total_rg, :commits,
-                    :issues_processed_in_days
-
-      VARS_INITIALIZE = {
-        issues_open: Set,
-        issues_closed: Set,
-        issues_total: Set,
-        issues_actual: Set,
-        pr_open: Set,
-        pr_merged: Set,
-        pr_closed: Set,
-        pr_total: Set,
-        pr_actual: Set,
-        releases: Set,
-        releases_total_gh: Set,
-        branches: Set,
-        releases_total_rg: Set
-      }
+    class AgilityQuarter < Base
+      self.section = 'agility'
+      self.section_type = 'quarter'
+      create_attributes_accessors
 
       [
         :issues_active, :issues_closed,
@@ -65,7 +19,7 @@ module Ossert
       end
 
       [:issues_active, :pr_active, :issues_closed, :issues_actual,
-      :pr_closed, :issues_all, :pr_all, :pr_actual].each do |metric|
+       :pr_closed, :issues_all, :pr_all, :pr_actual].each do |metric|
         define_method("#{metric}_count") { public_send(metric).count }
       end
 
@@ -112,8 +66,8 @@ module Ossert
       end
 
       def initialize
-        VARS_INITIALIZE.each_pair do |var, type|
-          send "#{var}=", type.new
+        self.class.config['attributes'].each_pair do |var, type|
+          send "#{var}=", Kernel.const_get(type).new if type
         end
       end
 
@@ -137,8 +91,7 @@ module Ossert
 
       def to_hash
         self.class.attributes.each_with_object({}) do |var, result|
-          value = send(var)
-          if value.is_a? Set
+          if (value = send(var)).is_a? Set
             result[var] = value.to_a
           else
             result[var] = value

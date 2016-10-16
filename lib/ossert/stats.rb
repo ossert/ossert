@@ -1,3 +1,4 @@
+require "ossert/stats/base"
 require "ossert/stats/agility_total"
 require "ossert/stats/agility_quarter"
 require "ossert/stats/community_total"

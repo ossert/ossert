@@ -3,18 +3,18 @@ module Ossert
     class Growing
       CLASSES = %w(ClassA ClassB ClassC ClassD ClassE)
       # TODO: replace with hash[classifier] => max_value
-      SYNTETIC = [{download_divergence: 5},
-                  # {issues_processed_in_avg: 7},
-                  # {pr_processed_in_avg: 5},
-                  {stale_branches_count: 15},
-                  {pr_active_percent: 90},
-                  {pr_closed_percent: 90},
-                  {issues_active_percent: 90},
-                  {issues_closed_percent: 90}]
-      REVERSED = [:stale_branches_count,
-                  :issues_active_percent, :pr_active_percent,
-                  :issues_actual_count, :pr_actual_count,
-                  :issues_processed_in_avg, :pr_processed_in_avg]
+      # SYNTETIC = [{download_divergence: 5},
+      #             # {issues_processed_in_avg: 7},
+      #             # {pr_processed_in_avg: 5},
+      #             {stale_branches_count: 15},
+      #             {pr_active_percent: 90},
+      #             {pr_closed_percent: 90},
+      #             {issues_active_percent: 90},
+      #             {issues_closed_percent: 90}]
+      # REVERSED = [:stale_branches_count,
+      #             :issues_active_percent, :pr_active_percent,
+      #             :issues_actual_count, :pr_actual_count,
+      #             :issues_processed_in_avg, :pr_processed_in_avg]
 
       class << self
         attr_accessor :all
@@ -25,6 +25,18 @@ module Ossert
 
         def current
           all.last
+        end
+
+        def config
+          @config ||= Settings['classifiers']['growth']
+        end
+
+        def syntetics
+          @syntetics ||= config['syntetics']
+        end
+
+        def reversed
+          @reversed ||= config['reversed']
         end
       end
 

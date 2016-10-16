@@ -12,7 +12,7 @@ module Ossert
       def with_reference(text, value, metric, type)
         return (text.to_i > 0 ? "+#{text}" : text).to_s if type =~ /delta/
 
-        metric_by_ref = @reference[type][metric]
+        metric_by_ref = @reference[type][metric.to_sym]
         reference = CLASSES.inject('NaN') do |acc, ref|
           metric_by_ref[ref][:range].cover?(value.to_f) ? ref : acc
         end
@@ -237,7 +237,7 @@ module Ossert
                       (values[values.count/2 - 1] + values[values.count/2]) / 2.0
                     end
           when /percent/
-            count = data["#{metric.to_s.split('_').first}_all_count".to_sym].count
+            count = data["#{metric.to_s.split('_').first}_all_count"].count
             value = count.zero? ? 0 : (value.count * 100) / count.to_d
           when /all/
             value = value.count

@@ -1,0 +1,81 @@
+classifiers:
+  growth:
+    syntetics:
+      download_divergence: 5
+      stale_branches_count: 15
+      pr_active_percent: 90
+      pr_closed_percent: 90
+      issues_active_percent: 90
+      issues_closed_percent: 90
+    reversed:
+      - stale_branches_count
+      - issues_active_percent
+      - pr_active_percent
+      - issues_actual_count
+      - pr_actual_count
+      - issues_processed_in_avg
+      - pr_processed_in_avg
+    metrics:
+      community:
+        last_year:
+        total:
+      agility:
+        last_year:
+        total:
+
+stats:
+  agility:
+    total:
+      metrics:
+        - a
+        - b
+      attributes:
+        - a
+        - b
+    quarter:
+      metrics:
+        - issues_processed_in_avg
+        - pr_processed_in_avg
+        - issues_active_percent
+        - issues_closed_percent
+        - issues_all_count
+        - issues_actual_count
+        - pr_active_percent
+        - pr_closed_percent
+        - pr_all_count
+        - pr_actual_count
+        - releases_count
+        - commits
+      attributes:
+        issues_open: Set
+        issues_closed: Set
+        issues_total: Set
+        issues_actual: Set
+        pr_open: Set
+        pr_merged: Set
+        pr_closed: Set
+        pr_total: Set
+        pr_actual: Set
+        branches: Set
+        releases: Set
+        releases_total_gh: Set
+        releases_total_rg: Set
+        commits:
+        issues_processed_in_days:
+        pr_processed_in_days:
+  community:
+    total:
+      metrics:
+        - a
+        - b
+      attributes:
+        - a
+        - b
+    quarter:
+      metrics:
+        - a
+        - b
+      attributes:
+        - a
+        - b
+
