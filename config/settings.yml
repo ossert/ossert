@@ -16,19 +16,120 @@ classifiers:
       - issues_processed_in_avg
       - pr_processed_in_avg
     metrics:
-      community:
+      popularity:
         last_year:
+          users_creating_issues_count: 1
+          users_commenting_issues_count: 1
+          users_creating_pr_count: 1
+          users_commenting_pr_count: 1
+          stargazers_count: 1
+          forks_count: 1
+          users_involved_count: 1
+          users_involved_no_stars_count: 1
+          delta_downloads: 1
         total:
-      agility:
+          users_creating_issues_count: 1
+          users_commenting_issues_count: 1
+          users_creating_pr_count: 1
+          users_commenting_pr_count: 1
+          watchers_count: 1
+          forks_count: 1
+          users_involved_no_stars_count: 1
+          total_downloads: 1
+      maintenance:
         last_year:
+          issues_processed_in_avg: 0.5
+          issues_closed_percent: 0.5
+          issues_all_count: 0.5
+          pr_processed_in_avg: 0.5
+          pr_closed_percent: 0.5
+          pr_all_count: 0.5
+          releases_count: 1
+          commits: 1
         total:
+          issues_closed_percent: 0.5
+          issues_non_owner_percent: 0.5
+          issues_with_contrib_comments_percent: 0.5
+          issues_all_count: 0.5
+          issues_processed_in_avg: 0.5
+          pr_closed_percent: 0.5
+          pr_non_owner_percent: 0.5
+          pr_with_contrib_comments_percent: 0.5
+          pr_all_count: 0.5
+          pr_processed_in_avg: 0.5
+          last_year_commits: 1
+          releases_count: 1
+          stale_branches_count: 1
+          life_period: 1
+          last_changed: 1
+      maturity:
+        last_year:
+          users_creating_issues_count: 1
+          users_commenting_issues_count: 1
+          users_creating_pr_count: 1
+          users_commenting_pr_count: 1
+          stargazers_count: 1
+          forks_count: 1
+          users_involved_count: 1
+          users_involved_no_stars_count: 1
+          delta_downloads: 1
+          issues_processed_in_avg: 0.5
+          issues_closed_percent: 0.5
+          issues_all_count: 0.5
+          pr_processed_in_avg: 0.5
+          pr_closed_percent: 0.5
+          pr_all_count: 0.5
+          releases_count: 1
+          commits: 1
+        total:
+          users_creating_issues_count: 1
+          users_commenting_issues_count: 1
+          users_creating_pr_count: 1
+          users_commenting_pr_count: 1
+          watchers_count: 1
+          forks_count: 1
+          users_involved_no_stars_count: 1
+          total_downloads: 1
+          issues_closed_percent: 0.5
+          issues_non_owner_percent: 0.5
+          issues_with_contrib_comments_percent: 0.5
+          issues_all_count: 0.5
+          issues_processed_in_avg: 0.5
+          pr_closed_percent: 0.5
+          pr_non_owner_percent: 0.5
+          pr_with_contrib_comments_percent: 0.5
+          pr_all_count: 0.5
+          pr_processed_in_avg: 0.5
+          last_year_commits: 1
+          releases_count: 1
+          stale_branches_count: 1
+          life_period: 1
+          last_changed: 1
 
 stats:
   agility:
     total:
       metrics:
-        - a
-        - b
+        - issues_closed_percent
+        - issues_non_owner_percent
+        - issues_with_contrib_comments_percent
+        - issues_all_count
+        - issues_processed_in_avg
+        - pr_closed_percent
+        - pr_non_owner_percent
+        - pr_with_contrib_comments_percent
+        - pr_all_count
+        - pr_processed_in_avg
+        - first_pr_date_int
+        - last_pr_date_int
+        - first_issue_date_int
+        - last_issue_date_int
+        - last_release_date_int
+        - releases_count
+        - commits_count_since_last_release_count
+        - stale_branches_count
+        - life_period
+        - last_changed
       attributes:
         - a
         - b

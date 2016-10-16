@@ -2,19 +2,6 @@ module Ossert
   module Classifiers
     class Growing
       CLASSES = %w(ClassA ClassB ClassC ClassD ClassE)
-      # TODO: replace with hash[classifier] => max_value
-      # SYNTETIC = [{download_divergence: 5},
-      #             # {issues_processed_in_avg: 7},
-      #             # {pr_processed_in_avg: 5},
-      #             {stale_branches_count: 15},
-      #             {pr_active_percent: 90},
-      #             {pr_closed_percent: 90},
-      #             {issues_active_percent: 90},
-      #             {issues_closed_percent: 90}]
-      # REVERSED = [:stale_branches_count,
-      #             :issues_active_percent, :pr_active_percent,
-      #             :issues_actual_count, :pr_actual_count,
-      #             :issues_processed_in_avg, :pr_processed_in_avg]
 
       class << self
         attr_accessor :all
@@ -48,7 +35,7 @@ module Ossert
 
       attr_reader :train_group
       attr_reader :agility_total_classifier, :community_total_classifier,
-                  :agility_quarter_classifier, :community_quarter_classifier
+                  :agility_last_year_classifier, :community_last_year_classifier
 
       def ready?
         agility_total_classifier.keys == CLASSES && community_total_classifier.keys == CLASSES
@@ -67,8 +54,8 @@ module Ossert
       # Maybe add syntetic attributes. Take maximum as a start and go less. from A to E... and reversed
       def reference_values_per_class
         agility_total, agility_quarter, community_total, community_quarter = [
-          agility_total_classifier, agility_quarter_classifier,
-          community_total_classifier, community_quarter_classifier
+          agility_total_classifier, agility_last_year_classifier,
+          community_total_classifier, community_last_year_classifier
         ].map do |classifier|
           classifier.each_with_object({}) do |(ref_class, metrics), res|
             metrics.each do |metric, value|
@@ -88,98 +75,91 @@ module Ossert
 
       # FIXME: Refactor this with config and maybe divide by classes Teacher and Evaluation
       def check(project)
-        agility_total_results = CLASSES.each_with_object({}) { |klass, res| res[klass] = 0.0.to_d }
-        community_total_results = agility_total_results.dup
-        agility_quarter_results = agility_total_results.dup
-        community_quarter_results = agility_total_results.dup
+        popularity_rates = CLASSES.each_with_object({}) { |klass, res| res[klass] = 0.0.to_d }
+        maintenance_rates = agility_total_results.dup
+        maturity_rates = agility_total_results.dup
 
+        popularity_metrics = config['metrics']['popularity']
+        maintenance_metrics = config['metrics']['maintenance']
+        maturity_metrics = config['metrics']['maturity']
 
-        # FIXME: move metrics and weight to config
-        half_metrics = [:issues_non_owner_percent, :pr_non_owner_percent,
-                        :pr_closed_percent, :issues_closed_percent,
-                        :pr_with_contrib_comments_percent, :issues_with_contrib_comments_percent,
-                        :pr_processed_in_avg, :issues_processed_in_avg]
-
-        full_metrics = [
-          :issues_all_count, :pr_all_count, :releases_count, :last_year_commits,
-          :life_period, :last_changed,
-          :stale_branches_count
-        ]
-        all_metrics_agility = full_metrics + half_metrics
-
-        all_metrics_community = [
-          :users_creating_issues_count, :users_commenting_issues_count, :users_creating_pr_count,
-          :users_commenting_pr_count, :contributors_count, #:stargazers_count,
-          :watchers_count, :forks_count, #:users_involved_count,
-          :users_involved_no_stars_count,
-          :total_downloads
-        ]
-
-        quarter_metrics_community = all_metrics_community - [:stargazers_count, :users_involved_count, :watchers_count]
-
-        total_data = project.agility.total
-        agility_total_classifier.each_pair do |ref_class, metrics|
-          current_full_metrics_cnt = (full_metrics & metrics.keys).count
-          current_half_metrics_cnt = (half_metrics & metrics.keys).count / 2
-          current_gain = 1 / (current_full_metrics_cnt + current_half_metrics_cnt).to_d
-
-          metrics.each_pair do |metric, values|
-            next unless all_metrics_agility.include? metric
-            range = values[:range]
-            gain = half_metrics.include?(metric) ? current_gain / 2.0.to_d : current_gain
-            agility_total_results[ref_class] += gain.to_f if range.cover? total_data.send(metric).to_f
-          end
-        end
-
-        last_year_data = project.agility.quarters.last_year_as_hash
-        agility_quarter_classifier.each_pair do |ref_class, metrics|
-          current_full_metrics_cnt = (full_metrics & metrics.keys).count
-          current_half_metrics_cnt = (half_metrics & metrics.keys).count / 2
-          current_gain = 1 / (current_full_metrics_cnt + current_half_metrics_cnt).to_d
-
-          metrics.each_pair do |metric, values|
-            next unless all_metrics_agility.include? metric
-            range = values[:range]
-            gain = half_metrics.include?(metric) ? current_gain / 2.0.to_d : current_gain
-            agility_quarter_results[ref_class] += gain if range.cover? last_year_data[metric].to_f
-          end
-        end
-
-        community_gain = 1 / all_metrics_community.count.to_d
+        # populariity
+        max_gain = popularity_metrics['last_year'].values.sum + popularity_metrics['total'].values.sum
 
         total_data = project.community.total
-        community_total_classifier.each_pair do |ref_class, metrics|
-          metrics.each_pair do |metric, values|
-            next unless all_metrics_community.include? metric
-            range = values[:range]
-            community_total_results[ref_class] += community_gain if range.cover? total_data.send(metric).to_f
+        community_total_classifier.each_pair do |grade, metrics|
+          popularity_metrics['total'].each_pair do |metric, weight|
+            gain = weight.to_d / max_gain.to_d
+            popularity_rates[grade] += gain if range.cover? total_data.send(metric).to_f
           end
         end
 
-        community_gain = 1 / quarter_metrics_community.count.to_d
-
-        last_year_data = project.community.quarters.last_year_as_hash
-        community_quarter_classifier.each_pair do |ref_class, metrics|
-          metrics.each_pair do |metric, values|
-            next unless quarter_metrics_community.include? metric
-            range = values[:range]
-            community_quarter_results[ref_class] += community_gain if range.cover? last_year_data[metric].to_f
+        rate = (->(rates, metrics, data, classifiers) {
+          classifier.each_pair do |grade, qualified_metrics|
+            metrics.each_pair do |metric, checks|
+              range = qualified_metrics[metric][:range]
+              rates[grade] += (weight.to_d / max_gain.to_d) if range.cover? data.send(metric).to_f
+            end
           end
-        end
+        })
+        # Popularity
+        rate.(
+          popularity_rates,
+          popularity_metrics['last_year'],
+          project.community.quarters.last_year_as_hash,
+          community_last_year_classifier
+        )
+        rate.(
+          popularity_rates,
+          popularity_metrics['total'],
+          project.community.total,
+          community_total_classifier
+        )
+
+        # Maintenance
+        rate.(
+          maintenance_rates,
+          maintenance_metrics['last_year'],
+          project.agility.quarters.last_year_as_hash,
+          agility_last_year_classifier
+        )
+        rate.(
+          maintenance_rates,
+          maintenance_metrics['total'],
+          project.agility.total,
+          agility_total_classifier
+        )
+
+        # Maturity
+        rate.(
+          maturity_rates,
+          maturity_metrics['last_year'],
+          project.agility.quarters.last_year_as_hash,
+          agility_last_year_classifier
+        )
+        rate.(
+          maturity_rates,
+          maturity_metrics['last_year'],
+          project.agility.quarters.last_year_as_hash,
+          community_last_year_classifier
+        )
+        rate.(
+          maturity_rates,
+          maturity_metrics['total'],
+          project.agility.total,
+          agility_total_classifier
+        )
+        rate.(
+          maturity_rates,
+          maturity_metrics['total'],
+          project.agility.total,
+          community_total_classifier
+        )
 
         {
-          agility: {
-            total: rate(agility_total_results),
-            last_year: rate(agility_quarter_results)
-          },
-          community: {
-            total: rate(community_total_results),
-            last_year: rate(community_quarter_results)
-          },
-          agility_total_probs: agility_total_results,
-          community_total_probs: community_total_results,
-          agility_quarter_probs: agility_quarter_results,
-          community_quarter_probs: community_quarter_results
+          popularity: rate(popularity_rates),
+          maintenance: rate(maintenance_rates),
+          maturity: rate(maturity_rates)
         }
       end
 
@@ -196,7 +176,7 @@ module Ossert
       def train
         grouped_projects = train_group
         @agility_total_classifier, @community_total_classifier = {}, {}
-        @agility_quarter_classifier, @community_quarter_classifier = {}, {}
+        @agility_last_year_classifier, @community_last_year_classifier = {}, {}
 
         process_collection(grouped_projects)
 
@@ -234,7 +214,7 @@ module Ossert
              :issues_processed_in_avg, :pr_processed_in_avg,
              :releases_count, :commits].each do |metric|
               next_metric_val = project.agility.quarters.last_year_as_hash[metric].to_f
-              ((@agility_quarter_classifier[ref_class] ||= {})[metric] ||= []) << next_metric_val
+              ((@agility_last_year_classifier[ref_class] ||= {})[metric] ||= []) << next_metric_val
             end
 
             [:users_creating_issues_count, :users_commenting_issues_count, :users_creating_pr_count,
@@ -251,7 +231,7 @@ module Ossert
              :forks_count, :users_involved_count, :users_involved_no_stars_count,
              :total_downloads, :delta_downloads, :download_divergence].each do |metric|
               next_metric_val = project.community.quarters.last_year_as_hash[metric].to_f
-              ((@community_quarter_classifier[ref_class] ||= {})[metric] ||= []) << next_metric_val
+              ((@community_last_year_classifier[ref_class] ||= {})[metric] ||= []) << next_metric_val
             end
           end
         end
@@ -259,8 +239,8 @@ module Ossert
 
       def process_aggregation
         CLASSES.each_with_index do |ref_class, idx|
-          [@agility_total_classifier, @agility_quarter_classifier,
-           @community_total_classifier, @community_quarter_classifier].each do |classifier|
+          [@agility_total_classifier, @agility_last_year_classifier,
+           @community_total_classifier, @community_last_year_classifier].each do |classifier|
             classifier[ref_class].each_pair do |metric, values|
               sibling_class_values = if (idx + 1) < CLASSES.count
                                         classifier[CLASSES[idx+1]][metric]
@@ -276,9 +256,9 @@ module Ossert
       end
 
       def process_syntetics
-        [@agility_total_classifier, @agility_quarter_classifier,
-          @community_total_classifier, @community_quarter_classifier].each do |classifier|
-          SYNTETIC.each do |synt_metric|
+        [@agility_total_classifier, @agility_last_year_classifier,
+          @community_total_classifier, @community_last_year_classifier].each do |classifier|
+          self.class.syntetics.each do |synt_metric|
             synt_metric, best_value = synt_metric.first if synt_metric.is_a? Hash
             real_values = classifier.values.map { |metrics| metrics[synt_metric] }.compact
             best_value ||= real_values.max
@@ -294,10 +274,10 @@ module Ossert
 
       def process_values_to_ranges
         CLASSES.each_with_index do |ref_class, idx|
-          [@agility_total_classifier, @agility_quarter_classifier,
-           @community_total_classifier, @community_quarter_classifier].each do |classifier|
+          [@agility_total_classifier, @agility_last_year_classifier,
+           @community_total_classifier, @community_last_year_classifier].each do |classifier|
             classifier[ref_class].each_pair do |metric, value|
-              reversed = REVERSED.include? metric
+              reversed = self.class.reversed.include? metric
               any_value_idx = reversed ? 0 : CLASSES.count - 1
 
               if idx == any_value_idx
@@ -317,9 +297,9 @@ module Ossert
       end
 
       def process_reversed
-        [@agility_total_classifier, @agility_quarter_classifier,
-          @community_total_classifier, @community_quarter_classifier].each do |classifier|
-          REVERSED.each do |reversed_metric|
+        [@agility_total_classifier, @agility_last_year_classifier,
+          @community_total_classifier, @community_last_year_classifier].each do |classifier|
+          self.class.reversed.each do |reversed_metric|
             CLASSES.first((CLASSES.count / 2.0).ceil).each_with_index do |ref_class, idx|
               next unless classifier[ref_class][reversed_metric].present?
               previous_value = classifier[reversed(ref_class)][reversed_metric]
