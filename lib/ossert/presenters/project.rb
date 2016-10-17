@@ -6,13 +6,13 @@ module Ossert
 
       def initialize(project)
         @project = project
-        @reference = Ossert::Classifiers::Growing.current.reference_values_per_class
+        @reference = Ossert::Classifiers::Growing.current.reference_values_per_grade
       end
 
       def with_reference(text, value, metric, type)
         return (text.to_i > 0 ? "+#{text}" : text).to_s if type =~ /delta/
 
-        metric_by_ref = @reference[type][metric.to_sym]
+        metric_by_ref = @reference[type][metric.to_s]
         reference = CLASSES.inject('NaN') do |acc, ref|
           metric_by_ref[ref][:range].cover?(value.to_f) ? ref : acc
         end
@@ -99,6 +99,13 @@ module Ossert
             downloads(value),
             value,
             metric,
+            type
+          )
+        when /legacy/
+          with_reference(
+            value,
+            value,
+            metric.to_s.sub(/legacy/,'actual') + "_count",
             type
           )
         else
@@ -220,8 +227,16 @@ module Ossert
         end
 
         result = {
-          issues_legacy: @project.agility.quarters[quarters_start_date].issues_actual_count,
-          pr_legacy: @project.agility.quarters[quarters_start_date].pr_actual_count
+          issues_legacy: decorate_metric(
+            :issues_legacy,
+            @project.agility.quarters[quarters_start_date].issues_actual_count,
+            :agility_year
+          ),
+          pr_legacy: decorate_metric(
+            :pr_legacy,
+            @project.agility.quarters[quarters_start_date].pr_actual_count,
+            :agility_year
+          )
         }
 
         data.inject(result) do |h, (metric, value)|

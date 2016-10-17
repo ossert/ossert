@@ -1,5 +1,9 @@
 classifiers:
   growth:
+    checks:
+      - popularity
+      - maintenance
+      - maturity
     syntetics:
       download_divergence: 5
       stale_branches_count: 15
@@ -131,17 +135,39 @@ stats:
         - life_period
         - last_changed
       attributes:
-        - a
-        - b
+        issues_open: Set
+        issues_closed: Set
+        issues_owner: Set
+        issues_non_owner: Set
+        issues_with_contrib_comments: Set
+        issues_total: Set
+        issues_processed_in_avg: Set
+        pr_open: Set
+        pr_merged: Set
+        pr_closed: Set
+        pr_owner: Set
+        pr_non_owner: Set
+        pr_with_contrib_comments: Set
+        pr_total: Set
+        pr_processed_in_avg: Set
+        releases_total_gh: Set
+        releases_total_rg: Set
+        stale_branches: Set
+        branches: Set
+        first_pr_date:
+        last_pr_date:
+        first_issue_date:
+        last_issue_date:
+        last_release_date:
+        commits_count_since_last_release:
+        last_year_commits:
     quarter:
       metrics:
         - issues_processed_in_avg
-        - pr_processed_in_avg
-        - issues_active_percent
         - issues_closed_percent
         - issues_all_count
         - issues_actual_count
-        - pr_active_percent
+        - pr_processed_in_avg
         - pr_closed_percent
         - pr_all_count
         - pr_actual_count
@@ -167,16 +193,52 @@ stats:
   community:
     total:
       metrics:
-        - a
-        - b
+        - users_creating_issues_count
+        - users_commenting_issues_count
+        - users_creating_pr_count
+        - users_commenting_pr_count
+        - watchers_count
+        - stargazers_count
+        - forks_count
+        - users_involved_count
+        - users_involved_no_stars_count
+        - total_downloads
       attributes:
-        - a
-        - b
+        users_creating_issues: Set
+        users_commenting_issues: Set
+        users_creating_pr: Set
+        users_commenting_pr: Set
+        contributors: Set
+        watchers: Set
+        stargazers: Set
+        forks: Set
+        users_involved: Set
+        owners_github: Set
+        owners_rubygems: Set
+        total_downloads:
+        delta_downloads:
     quarter:
       metrics:
-        - a
-        - b
+        - users_creating_issues_count
+        - users_commenting_issues_count
+        - users_creating_pr_count
+        - users_commenting_pr_count
+        - stargazers_count
+        - forks_count
+        - users_involved_count
+        - users_involved_no_stars_count
+        - download_divergence
+        - total_downloads
+        - delta_downloads
       attributes:
-        - a
-        - b
-
+        users_creating_issues: Set
+        users_commenting_issues: Set
+        users_creating_pr: Set
+        users_commenting_pr: Set
+        contributors: Set
+        stargazers: Set
+        forks: Set
+        users_involved: Set
+        download_divergence:
+        total_downloads:
+        delta_downloads:
