@@ -82,7 +82,7 @@ module Ossert
         repo.command(:update, repo.projects).call(reference: UNUSED_REFERENCE)
       end
 
-      # TODO: Later we'll need pagination here!
+      # TODO: Danger! Later we'll need pagination here!
       def load_all
         repo.all.map do |stored_prj|
           deserialize(stored_prj)

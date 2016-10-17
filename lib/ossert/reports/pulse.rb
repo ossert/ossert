@@ -1,16 +1,7 @@
 module Ossert
   module Reports
-    class Pulse # Prepare data for Graph
-      # COMMUNITY_METRICS = [
-      #   :users_creating_issues, :users_commenting_issues, :users_creating_pr, :users_commenting_pr,
-      #   :stargazers, :forks, # NO DATES... FUUU... :watchers,
-      #   :users_involved
-      # ]
-      # AGILITY_METRICS = [
-      #   :issues_open, :issues_closed, :issues_total, :pr_open, :pr_closed, :pr_total,
-      #   :releases_total_gh, :branches, :releases_total_rg, :commits,
-      #   :download_divergence, :total_downloads, :delta_downloads
-      # ]
+    # FIXME: temporary class. Do we need that export?
+    class Pulse
       COMMUNITY_METRICS = [
         :users_creating_issues_count, :users_commenting_issues_count,
         :users_creating_pr_count, :users_commenting_pr_count,

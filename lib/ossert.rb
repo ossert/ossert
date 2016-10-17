@@ -1,9 +1,6 @@
 require "ossert/version"
 require 'gems'
 require 'sequel'
-# interesting... https://rubygems.org/pages/data
-# https://github.com/xmisao/bestgems.org/wiki/BestGems-API-v1-Specification
-# http://bestgems.org/gems/gon
 require 'active_support/all' # remove later, we use only quarters and index_by here
 require 'json'
 require 'oj'

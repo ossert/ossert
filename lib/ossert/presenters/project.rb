@@ -1,5 +1,6 @@
 module Ossert
   module Presenters
+    # FIXME: Temporary version. Will be changed when new design uppear
     class Project
       CLASSES = %w(ClassE ClassD ClassC ClassB ClassA)
       attr_reader :project

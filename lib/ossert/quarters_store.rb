@@ -62,14 +62,14 @@ module Ossert
     #
     # Returns Array of quarter metric values aggregated for last year.
     def last_year_data
-      quarters.sort.last(4).map { |_, quarter| quarter.metric_values }.transpose.map {|x| x.reduce(:+)}
+      quarters.sort.last(4).map { |_, quarter| quarter.metric_values }.transpose.map { |x| x.reduce(:+) }
     end
 
     # Public: Get quarters metric values aggregated for last year.
     #
     # Returns Hash of quarter metrics and its values aggregated for last year.
     def last_year_as_hash
-      Hash[data_klass.metrics.zip(last_year_data)]
+      data_klass.metrics.zip(last_year_data).to_h
     end
 
     # Public: Fill quarter bounds and wholes in periods from first to last quarter.

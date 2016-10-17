@@ -13,16 +13,13 @@ namespace :ossert do
     rescue
       Rake::Task["db:restore:last"].invoke
     end
-    # Ossert::Project.dump
-    # Rake::Task["db:dump"].invoke
   end
 
-  desc 'Add or Replace project name exception'
+  desc 'Add or replace project name exception'
   task :exception, [:name, :github_name] do |t, args|
     raise "Arguments name and GitHub name expected" unless args.name.present? && args.github_name.present?
     exceptions_repo = ExceptionsRepo.new(Ossert.rom)
-    saved = exceptions_repo[args.name]
-    if saved
+    if exceptions_repo[args.name]
       exceptions_repo.update(
         args.name,
         name: args.name,

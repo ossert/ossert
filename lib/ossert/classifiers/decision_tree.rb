@@ -4,7 +4,7 @@ require 'decisiontree'
 module Ossert
   module Classifiers
     class DecisionTree
-      CLASSES = %w(ClassA ClassB ClassC ClassD ClassE)
+      GRADES = %w(ClassA ClassB ClassC ClassD ClassE)
 
       class << self
         attr_accessor :all
@@ -62,15 +62,15 @@ module Ossert
         community_quarters_attributes = Stats::CommunityQuarter.metrics
         agility_total_data, community_total_data, agility_last_year_data, community_last_year_data = [], [], [], []
 
-        CLASSES.each_with_index do |ref_class, i|
-          grouped_projects[ref_class].each do |project|
-            agility_total_data << (project.agility.total.metric_values << ref_class)
-            community_total_data << (project.community.total.metric_values << ref_class)
+        GRADES.each_with_index do |grade, i|
+          grouped_projects[grade].each do |project|
+            agility_total_data << (project.agility.total.metric_values << grade)
+            community_total_data << (project.community.total.metric_values << grade)
             if (last_year_data = project.agility.quarters.last_year_data).present?
-              agility_last_year_data << (project.agility.quarters.last_year_data << ref_class)
+              agility_last_year_data << (project.agility.quarters.last_year_data << grade)
             end
             if (last_year_data = project.community.quarters.last_year_data).present?
-              community_last_year_data << (project.community.quarters.last_year_data << ref_class)
+              community_last_year_data << (project.community.quarters.last_year_data << grade)
             end
           end
         end

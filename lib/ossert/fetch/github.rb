@@ -24,9 +24,6 @@ module Ossert
       # end
 
       def request(endpoint, *args)
-        # raise 'Requests limit reached' if @requests_count % 500 == 0 && client.rate_limit![:remaining] < 30
-        # @requests_count += 1
-        # client.send(endpoint, *args, &block)
         first_response_data = client.paginate(url(endpoint, args.shift), *args) do |_, last_response|
           last_response.data.each { |data| yield data }
         end

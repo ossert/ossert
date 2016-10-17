@@ -117,7 +117,7 @@ class ProjectRepo < ROM::Repository[:projects]
       end
 
       def new_stats_object
-        Object.const_get("Ossert::Stats::#{@stats_type.capitalize}Total").new
+        Kernel.const_get("Ossert::Stats::#{@stats_type.capitalize}Total").new
       end
 
       def process

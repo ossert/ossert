@@ -44,11 +44,6 @@ module Ossert
       Classifiers::Growing.current.grade(self)
     end
 
-    def check_by_growing_classifier
-      raise unless Classifiers::Growing.current.ready?
-      Classifiers::Growing.current.check(self)
-    end
-
     def analyze_by_decisision_tree
       raise unless Classifiers::DecisionTree.current.ready?
       Classifiers::DecisionTree.current.check(self)
