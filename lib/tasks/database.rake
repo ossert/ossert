@@ -1,4 +1,25 @@
 namespace :db do
+  namespace :test do
+    task :prepare do
+      require 'rom-sql'
+      require 'rom-repository'
+
+      test_database_url = ENV.fetch("TEST_DATABASE_URL")
+
+      $rom_conf = ROM::Configuration.new(:sql, test_database_url)
+
+      sh "dropdb #{test_database_url.split('/').last}" do
+        # Ignore errors
+      end
+
+      sh "createdb #{test_database_url.split('/').last}" do
+        # Ignore errors
+      end
+
+      ROM::SQL::RakeSupport.run_migrations
+    end
+  end
+
   task :load_config do
     require 'rom-sql'
     require 'rom-repository'

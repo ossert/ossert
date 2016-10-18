@@ -70,9 +70,11 @@ module Ossert
     # Returns Hash of quarter metrics and its values aggregated for last year.
     def last_year_as_hash
       last_year_metrics = data_klass.metrics.zip(
-        quarters.sort[-5..-2].map { |_, quarter| quarter.metric_values }
-                             .transpose
-                             .map { |x| x.reduce(:+) }
+        quarters.sort.last(5)
+                     .take(4)
+                     .map { |_, quarter| quarter.metric_values }
+                     .transpose
+                     .map { |x| x.reduce(:+) }
       ).to_h
 
       data_klass.aggregated_metrics.each do |metric|

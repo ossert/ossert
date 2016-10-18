@@ -39,10 +39,11 @@ module Ossert
       end
     end
 
-    def analyze_by_growing_classifier
+    def grade_by_growing_classifier
       raise unless Classifiers::Growing.current.ready?
       Classifiers::Growing.current.grade(self)
     end
+    alias_method :grade_by_classifier, :grade_by_growing_classifier
 
     def analyze_by_decisision_tree
       raise unless Classifiers::DecisionTree.current.ready?
@@ -97,7 +98,7 @@ module Ossert
           community.quarters.send("#{time_bound}_date")
         ].send(
           config[:aggregation][time_bound]
-        )
+        ).to_date
       end
     end
 

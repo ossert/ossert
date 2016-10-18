@@ -2,7 +2,7 @@ module Ossert
   module Classifiers
     class Growing
       class Check
-        GRADES = %w(ClassA ClassB ClassC ClassD ClassE)
+        GRADES = %w(A B C D E)
 
         def self.check(config, project, classifiers)
           checks_rates = config['checks'].map do |check_name|
@@ -85,7 +85,7 @@ module Ossert
           end
 
           def grade
-            grade = 'ClassE'
+            grade = 'E'
             check.each_pair do |current_grade, gain|
               next if gain <= trusted_probability
               grade = current_grade
@@ -102,7 +102,8 @@ module Ossert
 
           def rate(rates, metrics, data, classifier)
             classifier.each_pair do |grade, qualified_metrics|
-            metrics = metrics.slice(*data.keys)
+              grade = grade.sub(/Class/,'')
+              metrics = metrics.slice(*data.keys)
               metrics.each_pair do |metric, weight|
                 range = qualified_metrics[metric.to_s][:range]
                 rates[grade] += weight.to_d / max_gain.to_d if range.cover? data[metric].to_f
