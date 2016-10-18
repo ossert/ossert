@@ -7,7 +7,7 @@ require 'oj'
 
 require 'weakref'
 require "ossert/config"
-Ossert::Config.load
+Ossert::Config.load [:stats, :classifiers, :translations]
 require "ossert/repositories"
 require "ossert/stats"
 require "ossert/quarters_store"
@@ -29,4 +29,16 @@ module Ossert
     @rom = ROM.container(conf)
   end
   module_function :rom
+
+  def translate(key)
+    translations.fetch(key.to_s, "Translation for '#{key}' - not found")
+  end
+  module_function :translate
+  alias_method :t, :translate
+  module_function :t
+
+  def translations
+    @translations ||= ::Settings['translations']
+  end
+  module_function :translations
 end

@@ -5,10 +5,10 @@ module Ossert
         GRADES = %w(ClassA ClassB ClassC ClassD ClassE)
 
         def self.check(config, project, classifiers)
-          checks_rates = config['checks'].map do |check|
+          checks_rates = config['checks'].map do |check_name|
             [
-              check.to_sym,
-              check_class_for(check).new(
+              check_name.to_sym,
+              check_class_by(check_name).new(
                 config, project, classifiers
               ).check
             ]
@@ -17,10 +17,10 @@ module Ossert
         end
 
         def self.grade(config, project, classifiers)
-          checks_rates = config['checks'].map do |check|
+          checks_rates = config['checks'].map do |check_name|
             [
-              check.to_sym,
-              check_class_for(check).new(
+              check_name.to_sym,
+              check_class_by(check_name).new(
                 config, project, classifiers
               ).grade
             ]
@@ -28,9 +28,9 @@ module Ossert
           checks_rates.to_h
         end
 
-        def self.check_class_for(check)
+        def self.check_class_by(check_name)
           Kernel.const_get(
-            "Ossert::Classifiers::Growing::Check::#{check.capitalize}"
+            "Ossert::Classifiers::Growing::Check::#{check_name.capitalize}"
           )
         end
 
@@ -87,7 +87,7 @@ module Ossert
           def grade
             grade = 'ClassE'
             check.each_pair do |current_grade, gain|
-              next if gain <= 0.5
+              next if gain <= trusted_probability
               grade = current_grade
               break
             end
@@ -96,12 +96,16 @@ module Ossert
 
           protected
 
+          def trusted_probability
+            @trusted_probability ||= @config['trusted_probability']
+          end
+
           def rate(rates, metrics, data, classifier)
             classifier.each_pair do |grade, qualified_metrics|
             metrics = metrics.slice(*data.keys)
               metrics.each_pair do |metric, weight|
                 range = qualified_metrics[metric.to_s][:range]
-                rates[grade] += (weight.to_d / max_gain.to_d) if range.cover? data[metric].to_f
+                rates[grade] += weight.to_d / max_gain.to_d if range.cover? data[metric].to_f
               end
             end
           end

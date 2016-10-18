@@ -1,5 +1,6 @@
 classifiers:
   growth:
+    trusted_probability: 0.66
     checks:
       - popularity
       - maintenance
@@ -7,10 +8,24 @@ classifiers:
     syntetics:
       download_divergence: 5
       stale_branches_count: 15
+      pr_actual_count: 100
       pr_active_percent: 90
       pr_closed_percent: 90
+      issues_actual_count: 200
       issues_active_percent: 90
       issues_closed_percent: 90
+      first_issue_date_int:
+        - 1161160504 # Best
+        - 1476783369 # Worst
+      first_pr_date_int:
+        - 1161160504 # Best
+        - 1476783369 # Worst
+      issues_processed_in_avg:
+        - 7
+        - 120
+      pr_processed_in_avg:
+        - 1
+        - 90
     reversed:
       - stale_branches_count
       - issues_active_percent
@@ -19,18 +34,20 @@ classifiers:
       - pr_actual_count
       - issues_processed_in_avg
       - pr_processed_in_avg
+      - first_issue_date_int
+      - first_pr_date_int
     metrics:
       popularity:
         last_year:
-          users_creating_issues_count: 1
-          users_commenting_issues_count: 1
-          users_creating_pr_count: 1
-          users_commenting_pr_count: 1
-          stargazers_count: 1
-          forks_count: 1
-          users_involved_count: 1
-          users_involved_no_stars_count: 1
-          delta_downloads: 1
+          users_creating_issues_count: 3
+          users_commenting_issues_count: 3
+          users_creating_pr_count: 3
+          users_commenting_pr_count: 3
+          stargazers_count: 3
+          forks_count: 3
+          users_involved_count: 3
+          users_involved_no_stars_count: 3
+          delta_downloads: 3
         total:
           users_creating_issues_count: 1
           users_commenting_issues_count: 1
@@ -42,14 +59,14 @@ classifiers:
           total_downloads: 1
       maintenance:
         last_year:
-          issues_processed_in_avg: 0.5
-          issues_closed_percent: 0.5
-          issues_all_count: 0.5
-          pr_processed_in_avg: 0.5
-          pr_closed_percent: 0.5
-          pr_all_count: 0.5
-          releases_count: 1
-          commits: 1
+          issues_processed_in_avg: 2
+          issues_closed_percent: 2
+          issues_all_count: 2
+          pr_processed_in_avg: 2
+          pr_closed_percent: 2
+          pr_all_count: 2
+          releases_count: 4
+          commits: 4
         total:
           issues_closed_percent: 0.5
           issues_non_owner_percent: 0.5
@@ -68,23 +85,23 @@ classifiers:
           last_changed: 1
       maturity:
         last_year:
-          users_creating_issues_count: 1
-          users_commenting_issues_count: 1
-          users_creating_pr_count: 1
-          users_commenting_pr_count: 1
-          stargazers_count: 1
-          forks_count: 1
-          users_involved_count: 1
-          users_involved_no_stars_count: 1
-          delta_downloads: 1
-          issues_processed_in_avg: 0.5
-          issues_closed_percent: 0.5
-          issues_all_count: 0.5
-          pr_processed_in_avg: 0.5
-          pr_closed_percent: 0.5
-          pr_all_count: 0.5
-          releases_count: 1
-          commits: 1
+          users_creating_issues_count: 2
+          users_commenting_issues_count: 2
+          users_creating_pr_count: 2
+          users_commenting_pr_count: 2
+          stargazers_count: 2
+          forks_count: 2
+          users_involved_count: 2
+          users_involved_no_stars_count: 2
+          delta_downloads: 2
+          issues_processed_in_avg: 2
+          issues_closed_percent: 1
+          issues_all_count: 1
+          pr_processed_in_avg: 1
+          pr_closed_percent: 1
+          pr_all_count: 1
+          releases_count: 2
+          commits: 2
         total:
           users_creating_issues_count: 1
           users_commenting_issues_count: 1

@@ -66,6 +66,17 @@ module Ossert
         )
       end
 
+      def check(project)
+        Check.check(
+          self.class.config,
+          project,
+          agility_total: agility_total_classifier,
+          community_total: community_total_classifier,
+          agility_last_year: agility_last_year_classifier,
+          community_last_year: community_last_year_classifier
+        )
+      end
+
       def train
         classifiers = ClassifiersInitializer.new(train_group).run
         classifiers.each do |name, classifier|

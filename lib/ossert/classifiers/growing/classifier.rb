@@ -42,36 +42,102 @@ module Ossert
         end
 
         def run_syntetics
-          config['syntetics'].each do |synt_metric, best_value|
+          config['syntetics'].each do |synt_metric, values_range|
             real_values = classifier.values.map { |metrics| metrics[synt_metric] }.compact
             next if real_values.empty?
 
-            best_value ||= real_values.max
+            values_range = Array.wrap(values_range)
+            values_range = values_range.reverse if reversed_metrics.include? synt_metric
 
-            growth = (best_value / GRADES.count.to_f).round(2)
+            max_value, min_value = values_range
+            min_value = min_value.to_i
+            max_value = max_value.to_i
+
+            growth = ((max_value - min_value) / GRADES.count.to_f).round(2)
+
             GRADES.reverse.each_with_index do |grade, idx|
-              classifier[grade][synt_metric] = (growth * (idx + 1)).round(2)
+              classifier[grade][synt_metric] = (growth * (idx + 1)).round(2) + min_value
             end
           end
         end
 
         def run_values_to_ranges
-          GRADES.each_with_index do |grade, idx|
+          GRADES.each do |grade|
             classifier[grade].each_pair do |metric, value|
-              reversed = reversed_metrics.include? metric
-              any_value_idx = reversed ? 0 : GRADES.count - 1
-
-              if idx == any_value_idx
-                start_value, end_value = -Float::INFINITY, Float::INFINITY
-              else
-                start_value = reversed ? -Float::INFINITY : value
-                end_value = reversed ? value : Float::INFINITY
-              end
-
               classifier[grade][metric] = {
                 threshold: value,
-                range: start_value...end_value
+                range: ThresholdToRange.range_for(metric, value, grade)
               }
+            end
+          end
+        end
+
+        class ThresholdToRange
+          def self.range_for(metric, value, grade)
+            new(metric, value, grade).range
+          end
+
+          def initialize(metric, value, grade)
+            @metric, @value, @grade = metric, value, grade
+          end
+
+          def range
+            if reversed_metrics.include?(@metric)
+              Reversed.new(@value, @grade).range
+            else
+              Base.new(@value, @grade).range
+            end
+          end
+
+          def reversed_metrics
+            @reversed_metrics ||= Ossert::Classifiers::Growing.config['reversed']
+          end
+
+          class Base
+            def initialize(value, grade)
+              @value = value
+              @full_range = (grade == last_grade)
+            end
+
+            def range
+              return full_range if full_range?
+              start_value...end_value
+            end
+
+            private
+
+            def full_range?
+              @full_range
+            end
+
+            def last_grade
+              GRADES.last
+            end
+
+            def full_range
+              -Float::INFINITY...Float::INFINITY
+            end
+
+            def start_value
+              @value
+            end
+
+            def end_value
+              Float::INFINITY
+            end
+          end
+
+          class Reversed < Base
+            def last_grade
+              GRADES.first
+            end
+
+            def start_value
+              -Float::INFINITY
+            end
+
+            def end_value
+              @value
             end
           end
         end

@@ -1,6 +1,15 @@
 stats:
   agility:
     total:
+      aggregated_metrics:
+        - issues_closed_percent
+        - issues_non_owner_percent
+        - issues_with_contrib_comments_percent
+        - issues_processed_in_avg
+        - pr_closed_percent
+        - pr_non_owner_percent
+        - pr_with_contrib_comments_percent
+        - pr_processed_in_avg
       metrics:
         - issues_closed_percent
         - issues_non_owner_percent
@@ -50,6 +59,11 @@ stats:
         commits_count_since_last_release:
         last_year_commits:
     quarter:
+      aggregated_metrics:
+        - issues_closed_percent
+        - issues_processed_in_avg
+        - pr_closed_percent
+        - pr_processed_in_avg
       metrics:
         - issues_processed_in_avg
         - issues_closed_percent
@@ -80,6 +94,7 @@ stats:
         pr_processed_in_days:
   community:
     total:
+      aggregated_metrics: []
       metrics:
         - users_creating_issues_count
         - users_commenting_issues_count
@@ -106,6 +121,8 @@ stats:
         total_downloads:
         delta_downloads:
     quarter:
+      aggregated_metrics:
+        - download_divergence
       metrics:
         - users_creating_issues_count
         - users_commenting_issues_count

@@ -64,7 +64,6 @@ module Ossert
       def releases_count
         [releases_total_rg.count, releases_total_gh.count].max
       end
-
     end
   end
 end

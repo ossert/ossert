@@ -3,19 +3,6 @@ module Ossert
     class Total
       attr_reader :projects
 
-      # COMMUNITY_METRICS = [
-      #   :users_creating_issues, :users_commenting_issues, :users_creating_pr, :users_commenting_pr,
-      #   :contributors, :watchers, :stargazers, :forks,
-      #   :owners_github, :owners_rubygems, :users_involved
-      # ]
-      # AGILITY_METRICS = [
-      #   :issues_open, :issues_closed, :issues_owner, :issues_non_owner, :issues_with_contrib_comments, :issues_total,
-      #   :pr_open, :pr_merged, :pr_closed, :pr_owner, :pr_non_owner, :pr_with_contrib_comments, :pr_total,
-      #   :first_pr_date, :last_pr_date, :first_issue_date, :last_issue_date,
-      #   :releases_total_gh, :releases_total_rg, :last_release_date, :commits_count_since_last_release,
-      #   :last_year_commits, :stale_branches, :branches, :total_downloads
-      # ]
-
       # 'Downloads Count', 'Releases Count', 'Issues Count', 'Pulls Count', 'Issues Open %', 'Pulls Open %', 'First to last issue period (in months)', 'Last Year Commits Count',
       #
       # 'Users Creating Issues Count', 'Users Commenting Issues Count', 'Users Creating Pulls Count', 'Users Commenting Pulls Count', 'Total Users Involved Count'

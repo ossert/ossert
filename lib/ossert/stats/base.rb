@@ -12,6 +12,10 @@ module Ossert
           @attributes ||= config['attributes'].keys
         end
 
+        def aggregated_metrics
+          @aggregated_metrics ||= config['aggregated_metrics']
+        end
+
         def metrics
           @metrics ||= config['metrics']
         end
@@ -20,7 +24,6 @@ module Ossert
           attr_accessor(*attributes)
         end
       end
-
 
       def initialize
         self.class.config['attributes'].each do |var, type|
@@ -32,11 +35,10 @@ module Ossert
         self.class.metrics.map { |metric| public_send(metric).to_f }
       end
 
-
       def metric_values
         self.class.metrics.map do |metric|
-          value = public_send(metric).to_f
-          metric.to_s =~ /percent/ ? value / 3.0 : value
+          public_send(metric).to_f
+          # metric.to_s =~ /(percent|avg)/ ? value / 3.0 : value
         end
       end
 
