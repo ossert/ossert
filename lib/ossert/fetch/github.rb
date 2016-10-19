@@ -163,7 +163,7 @@ module Ossert
 
         unless latest_release_date.zero?
           agility.total.last_release_date = latest_release_date# wrong: last_release_commit[:commit][:committer][:date]
-          agility.total.commits_count_since_last_release = commits_since(Time.at(latest_release_date)).length
+          agility.total.commits_count_since_last_release = commits_since(Time.at(latest_release_date).utc).length
         end
       end
 

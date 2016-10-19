@@ -1,8 +1,6 @@
 Code quality? Checked by [RuboCop](https://github.com/bbatsov/rubocop/) (crowdsourced code quality metrics)
-
 What about library support?
-
-Introducing **Ossert**! Crowdsourced project support metrics.
+Introducing **Ossert**! Crowdsourced project support and availablity metrics.
 
 # ossert (OSS cERTificate)
 
@@ -11,46 +9,21 @@ formal in estimation of projects' risks, value and ability to use. Also system i
 community are appreciated.
 
 The simple structure is:
-- Checks DataSources (such as Github, BitBucket, Rubygems and so on) each provides a set of "attributes"
-- Validity Checks based on "attributes", they provide just values which can be compared to other projects.
+- Checks DataSources (such as Github, Bestgems, Rubygems and so on) each provides a set of "attributes"
+- Validity checks based on "attributes", they provide just values which can be compared to other projects.
   Their goal is not to say "Bad" or "Good" something is, but to provide some more detailed info about projects' legacy
-- We have "profile" page for each project, which shows values for Selected Validity Checks, as they were previously calculated
+- We have "profile" page for each project, which shows values for some set of validity checks, as they were previously calculated
   and could be refreshed on demand.
-- Also we have feature to compare several projects on same Selected Validity Checks and see any deviations from relatively best or
+- Also we have feature to compare several projects on same validity checks and see any deviations from relatively best or
   worst of them
 
 Any subset of Validity Checks could be marked by Tag, if you want to reuse those checks later. Btw, there are configured
 Community Certificates, those are same subset of checks but they are defined and approved by community as best in some cases.
 For example for some technologies stack or for language.
 
-Checks DataSources (CDS) could be Remote or Local. Remote are accesses by some remote API and Local are try to use projects' code (e.g. run some tool on code and gather results).
-CDS should provide simple unified JSON API to make extending more simple, and also to separate development of DataSources from Validity Checks.
-CDS API:
-```JSON
-POST <Checks DateSources>/api/v1/prepare_attributes:
-{
-  "data_sources": [
-    {"name": "Github", "project_name": "someone/project_best", "attributes": ["stars", "forks", "watch"]},
-    {"name": "Rubygems", "project_name": "project-best", "attributes": ["total_downloads", "downloads_for_current_version"]}
-  ]
-}
-
-GET <Checks DateSources>/api/v1/attributes/<CDS name>/<project name> e.g. /api/v1/attributes/Github/someone/project_best:
-{
-  "actual_time": 1234154353,
-  "attributes": {
-    "stars": "123",
-    "forks": "1023"
-  },
-  "not_collected": ["watch"]
-}
-
-```
-Validity Check (VC) is identified by meaningful name and should be stored along with CDS and their attributes used in formula.
-
 ## Metrics
 
-I choose to start with following Basic Validity Checks
+I choose to start with following basic validity checks
 
 ### Community Metrics
 
@@ -74,12 +47,11 @@ I choose to start with following Basic Validity Checks
 - Opened and Closed Issues
 - Opened, Merged and Closed PRs
 - Opened non-author Issues, "with author comments" and total count
-- Issues no:assignee no:milestone to Total Count
 - Time since first/last PR and Issue
 - Releases Count
 - Last Release Date
 - Commits count since last release
-- Amount of changes each quarter (Graph? -> Later)
+- Amount of changes each quarter
 - Stale and Total branches count
 
 #### Pulse, for last year/quarter/month (amount + delta from total)
@@ -87,12 +59,12 @@ I choose to start with following Basic Validity Checks
 - Opened and Merged PRs
 - Releases Count
 - Downloads divergence
-- Downloads degradation per release ??
+- Downloads degradation per release (Comes later)
 - Branches Count
 
 ## OSSert Project Profile
 Somewhat like that https://gemnasium.com/razum2um/lurker, but about support quality.
-OSSert-profile for project contains:
+OsSert-profile for project contains:
 - Links from gemspec
   - Website
   - RDoc
@@ -103,6 +75,9 @@ OSSert-profile for project contains:
 - Project metrics described above
 
 ## Existining alternatives
+
+### RecordNotFound.com
+Interesting overview by commits and pull requests activity, not very detailed
 
 ### Github Archive (https://www.githubarchive.org/#bigquery)
 
@@ -171,48 +146,6 @@ OSSert-profile for project contains:
 - Code frequency (Additions/Deletions amount on timeline)
 - Punch card (Days and Hours of most activity)
 
-### What metrics to use. Place for "think about it":
-- Releases Count for life time (Rubygems, Git, Github)
-- Downloads divergence
-- Regular releases
-- Time since last release
-- Time since first release
-- "AVG" distince in time btw releases
-- Branches Stale Count / Total Count Stale branches percent
-- Downloads degradation per release
-- Pull Requests: (GH)
-  - Open comments-author count
-  - Open without labels/assignee/milestone
-  - Open / Total
-  - How often opened/closed
-  - Time since first/last
-- Issues: (GH)
-  - no:assignee no:milestone
-  - Open comments-author count
-  - Open without labels
-  - Open / Total
-  - How often opened/closed
-  - Time since first/last
-- Lifetime contributors count ???
-- Contributors Count
-- Non-contributor Issues open/closed
-- Non-contributor Pull Requests open/closed
-- Date of latest Issue
-- Date of latest PR
-- Commits / Lifetime
-- Readme, License, Changelog existance
-- Watch, Stars, Forks from best (RubyToolbox Popularity)
-- Time since last release
-- Releases whithin 2 years since last release
-- Milestones Exists, Milestones Open, Milestones Closed
-- Rubygems reverse_dependencies
-- Rubygems versions???? created_at -> downloads_count...
-- Rubygems, owners ?
-- [Later] Lines of Code
-- Small contributions better
-- More Issues is better. Even better then PRs!
-- https://github.com/pengwynn/flint
-
 ## Installation
 
 Add this line to your application's Gemfile:
@@ -229,6 +162,24 @@ Or install it yourself as:
 
     $ gem install ossert
 
+After that you should set ENV variables:
+
+   $ export GITHUB_TOKEN xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+   $ export DATABASE_URL postrgres://localhost/ossert
+   $ export TEST_DATABASE_URL postrgres://localhost/ossert_test
+
+Then you can run:
+
+```ruby
+bundle exec rake db:setup
+```
+
+Or if you have previous dumps of data:
+
+```ruby
+bundle exec rake db:restore:last
+```
+
 ## Usage
 
 TODO: Write usage instructions here
@@ -241,8 +192,7 @@ To install this gem onto your local machine, run `bundle exec rake install`. To 
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/ossert.
-
+Bug reports and pull requests are welcome on GitHub at https://github.com/ossert/ossert.
 
 ## License
 

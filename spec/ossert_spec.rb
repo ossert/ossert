@@ -9,7 +9,7 @@ describe Ossert do
     let(:projectE) { Ossert::Project.load_by_name(@E_project) }
 
     let(:project_A_time_range) do
-      [Date.parse('19/10/1996'), Date.parse('18/10/2016')]
+      [Date.parse('19/10/1996'), Date.parse('19/10/2016')]
     end
 
     it { expect(Ossert::Project.load_by_name('Not Exists')).to be_nil }

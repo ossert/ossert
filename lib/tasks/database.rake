@@ -1,18 +1,16 @@
 namespace :db do
   namespace :test do
     task :prepare do
-      require 'rom-sql'
-      require 'rom-repository'
-
       test_database_url = ENV.fetch("TEST_DATABASE_URL")
+      database_name = test_database_url.split('/').last
 
-      $rom_conf = ROM::Configuration.new(:sql, test_database_url)
+      ROM::Configuration.new(:sql, test_database_url)
 
-      sh "dropdb #{test_database_url.split('/').last}" do
+      sh "dropdb #{database_name}" do
         # Ignore errors
       end
 
-      sh "createdb #{test_database_url.split('/').last}" do
+      sh "createdb #{database_name}" do
         # Ignore errors
       end
 
@@ -21,45 +19,27 @@ namespace :db do
   end
 
   task :load_config do
-    require 'rom-sql'
-    require 'rom-repository'
-
-    $rom_conf = ROM::Configuration.new(:sql, ENV.fetch("DATABASE_URL"))
+    ROM::Configuration.new(:sql, ENV.fetch("DATABASE_URL"))
   end
 
   desc 'Create the database, load the schema, and initialize with the seed data (use db:reset to also drop the db first)'
-  task :setup => ['db:schema:load']
+  task :setup do
+    Rake::Task['db:create'].invoke
+    Rake::Task['db:load_config'].invoke
 
-  namespace :schema do
-    desc 'Load a schema.rb file into the database'
-    task :load => [:load_config] do
-      file = ENV['SCHEMA']
-
-      if File.exist?(file)
-        load(file)
-      else
-        abort %{#{file} doesn't exist yet. Run `rake db:migrate` to create it, then try again. If you do not intend to use a database, you should instead alter #{Rails.root}/config/application.rb to limit the frameworks that will be loaded.}
-      end
-    end
+    ROM::SQL::RakeSupport.run_migrations
   end
 
   task :drop do
-    db = Sequel.connect(ENV.fetch("DATABASE_URL"))
-    db.run(<<-SQL)
-      DROP SCHEMA public CASCADE;
-    SQL
+    sh "dropdb #{ENV.fetch("DATABASE_URL").split('/').last}" do
+      # Ignore errors
+    end
   end
 
   task :create do
-    sh "createdb #{ENV.fetch("DATABASE_URL").split('/').last}"
-    # FIXME: not working correct
-    # db = Sequel.connect(ENV.fetch("DATABASE_URL"))
-    # db.run(<<-SQL)
-    #   CREATE SCHEMA IF NOT EXISTS public;
-    #   GRANT ALL ON SCHEMA public TO postgres;
-    #   GRANT ALL ON SCHEMA public TO public;
-    #   COMMENT ON SCHEMA public IS 'standard public schema';
-    # SQL
+    sh "createdb #{ENV.fetch("DATABASE_URL").split('/').last}" do
+      # Ignore errors
+    end
   end
 
   desc "Dumps the database to backups"
@@ -131,7 +111,7 @@ namespace :db do
           if fmt.nil?
             puts "No recognized dump file suffix: #{file}"
           else
-            cmd = "pg_restore -d '#{db_url}' -F #{fmt} -v -c #{file}"
+            cmd = "pg_restore -d '#{db_url}' -F #{fmt} -v #{file}"
           end
         else
           puts "No backups found"
@@ -139,6 +119,7 @@ namespace :db do
       end
       unless cmd.nil?
         Rake::Task["db:drop"].invoke
+        Rake::Task["db:create"].invoke
         puts cmd
         exec cmd << " || exit 0"
       end
