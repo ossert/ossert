@@ -2,7 +2,7 @@ Code quality? Checked by [RuboCop](https://github.com/bbatsov/rubocop/) (crowdso
 What about library support?
 Introducing **Ossert**! Crowdsourced project support and availablity metrics.
 
-# ossert (OSS cERTificate)
+# ossert (OSS cERTificate) [![Build Status](https://travis-ci.org/ossert/ossert.svg?branch=master)](https://travis-ci.org/ossert/ossert)
 
 The main goal of project is to provide "certificate" for open-source software with different validity check, just to be more
 formal in estimation of projects' risks, value and ability to use. Also system is designed as open one, so any new checks and validations from
