@@ -6,4 +6,7 @@
 /doc/
 /pkg/
 /spec/reports/
+/db/backups/*.psql
+/db/backups/*.sql
+/db/backups/*.dump
 /tmp/

@@ -6,6 +6,6 @@ require 'bundler'
 Bundler.require
 
 RSpec::Core::RakeTask.new(:spec)
-Dir.glob('lib/tasks/*.rake').each {|r| import r}
+Dir.glob('lib/ossert/tasks/*.rake').each {|r| import r}
 
 task :default => :spec

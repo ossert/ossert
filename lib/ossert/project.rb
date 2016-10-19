@@ -82,8 +82,8 @@ module Ossert
           end: :max
         },
         extended: {
-          start: (extended_start || 20.years.ago).to_datetime,
-          end: (extended_end || Time.now.utc).to_datetime
+          start: (extended_start || Time.now.utc).to_datetime,
+          end: (extended_end || 20.years.ago).to_datetime
         },
       }
 

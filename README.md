@@ -2,7 +2,7 @@ Code quality? Checked by [RuboCop](https://github.com/bbatsov/rubocop/) (crowdso
 What about library support?
 Introducing **Ossert**! Crowdsourced project support and availablity metrics.
 
-# ossert (OSS cERTificate) [![Build Status](https://travis-ci.org/ossert/ossert.svg?branch=master)](https://travis-ci.org/ossert/ossert)
+# ossert (OSS cERTificate) [![Build Status](https://travis-ci.org/ossert/ossert.svg?branch=master)](https://travis-ci.org/ossert/ossert) [![Inline docs](http://inch-ci.org/github/ossert/ossert.svg)](http://inch-ci.org/github/ossert/ossert)
 
 The main goal of project is to provide "certificate" for open-source software with different validity check, just to be more
 formal in estimation of projects' risks, value and ability to use. Also system is designed as open one, so any new checks and validations from
@@ -17,15 +17,11 @@ The simple structure is:
 - Also we have feature to compare several projects on same validity checks and see any deviations from relatively best or
   worst of them
 
-Any subset of Validity Checks could be marked by Tag, if you want to reuse those checks later. Btw, there are configured
-Community Certificates, those are same subset of checks but they are defined and approved by community as best in some cases.
-For example for some technologies stack or for language.
-
 ## Metrics
 
 I choose to start with following basic validity checks
 
-### Community Metrics
+### Project Community Metrics
 
 #### Stats, total for all time
 - Users count writing issues
@@ -41,7 +37,7 @@ I choose to start with following basic validity checks
 - Contributors count
 - Watchers, Stargazers, Forks
 
-### Project Metrics
+### Project Agility Metrics
 
 #### Stats, total for all time
 - Opened and Closed Issues
@@ -71,8 +67,8 @@ OsSert-profile for project contains:
   - Wiki
   - Source Code
   - Bug Tracker
-- Projects' Community metrics described above
-- Project metrics described above
+- Project Community metrics described above
+- Project Agility metrics described above
 
 ## Existining alternatives
 
@@ -164,9 +160,11 @@ Or install it yourself as:
 
 After that you should set ENV variables:
 
-   $ export GITHUB_TOKEN xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-   $ export DATABASE_URL postrgres://localhost/ossert
-   $ export TEST_DATABASE_URL postrgres://localhost/ossert_test
+```
+$ export GITHUB_TOKEN xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+$ export DATABASE_URL postrgres://localhost/ossert
+$ export TEST_DATABASE_URL postrgres://localhost/ossert_test
+```
 
 Then you can run:
 
