@@ -43,6 +43,54 @@ describe Ossert do
         expect(projectD.grade_by_classifier).to eq(grades_D)
         expect(projectE.grade_by_classifier).to eq(grades_E)
       end
+
+      it { expect(projectA.agility.quarters.last_year_as_hash).to be_a_kind_of(Hash) }
+      it { expect(projectA.agility.quarters.last_year_as_hash(3)).to be_a_kind_of(Hash) }
+      it { expect(projectA.agility.quarters.last_year_as_hash(5)).to be_a_kind_of(Hash) }
+      it { expect(projectA.agility.quarters.last_year_data).to be_a_kind_of(Array) }
+      it { expect(projectA.agility.quarters.last_year_data(3)).to be_a_kind_of(Array) }
+      it { expect(projectA.agility.quarters.last_year_data(5)).to be_a_kind_of(Array) }
+
+      context 'when project is decorated' do
+        let(:project) { projectE.decorated }
+        let(:call_references) do
+          project.preview_reference_values_for(metric_name, section)
+        end
+
+        describe "#reference_values_per_grade" do
+          context "when agility_total metric given" do
+            let(:section) { :agility_total }
+
+            context "when growing metric given" do
+              let(:metric_name) { "issues_all_count" }
+
+              it do
+                expect(call_references).to eq({
+                  "A" => "> 92",
+                  "B" => "> 67",
+                  "C" => "> 19",
+                  "D" => "> 10",
+                  "E" => "> 2",
+                })
+              end
+            end
+
+            context "when lowering metric given" do
+              let(:metric_name) { "stale_branches_count" }
+
+              it do
+                expect(call_references).to eq({
+                  "A" => "< 3",
+                  "B" => "< 6",
+                  "C" => "< 9",
+                  "D" => "< 12",
+                  "E" => "< 15",
+                })
+              end
+            end
+          end
+        end
+      end
     end
 
     context 'when classifiers are not ready' do

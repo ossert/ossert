@@ -16,12 +16,12 @@ module Ossert
           checks_rates.to_h
         end
 
-        def self.grade(config, project, classifiers)
+        def self.grade(config, project, classifiers, last_year_offset = 1)
           checks_rates = config['checks'].map do |check_name|
             [
               check_name.to_sym,
               check_class_by(check_name).new(
-                config, project, classifiers
+                config, project, classifiers, last_year_offset
               ).grade
             ]
           end
@@ -35,10 +35,11 @@ module Ossert
         end
 
         class Base
-          def initialize(config, project, classifiers)
+          def initialize(config, project, classifiers, last_year_offset = 1)
             @config = config
             @project = project
             @classifiers = classifiers
+            @last_year_offset = last_year_offset
           end
 
           def metrics_type
@@ -54,7 +55,7 @@ module Ossert
           end
 
           def community_last_year_data
-            @community_last_year_data ||= @project.community.quarters.last_year_as_hash
+            @community_last_year_data ||= @project.community.quarters.last_year_as_hash(@last_year_offset)
           end
 
           def community_total_data
@@ -62,7 +63,7 @@ module Ossert
           end
 
           def agility_last_year_data
-            @agility_last_year_data ||= @project.agility.quarters.last_year_as_hash
+            @agility_last_year_data ||= @project.agility.quarters.last_year_as_hash(@last_year_offset)
           end
 
           def agility_total_data

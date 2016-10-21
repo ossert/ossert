@@ -51,11 +51,28 @@ RSpec.configure do |config|
     @E_project = 'reifier'
 
     VCR.use_cassette 'fetch_all_projects' do
-      Ossert::Project.fetch_all(@A_project, 'ClassA')
-      Ossert::Project.fetch_all(@B_project, 'ClassB')
-      Ossert::Project.fetch_all(@C_project, 'ClassC')
-      Ossert::Project.fetch_all(@D_project, 'ClassD')
-      Ossert::Project.fetch_all(@E_project, 'ClassE')
+      threads = []
+      threads << Thread.new do
+        Ossert::Project.fetch_all(@A_project, 'ClassA')
+      end
+      threads << Thread.new do
+        Ossert::Project.fetch_all(@B_project, 'ClassB')
+      end
+      threads << Thread.new do
+        Ossert::Project.fetch_all(@C_project, 'ClassC')
+      end
+      threads << Thread.new do
+        Ossert::Project.fetch_all(@D_project, 'ClassD')
+      end
+      threads << Thread.new do
+        Ossert::Project.fetch_all(@E_project, 'ClassE')
+      end
+      threads.each(&:join) # not stable solution...
+        # Ossert::Project.fetch_all(@A_project, 'ClassA')
+        # Ossert::Project.fetch_all(@B_project, 'ClassB')
+        # Ossert::Project.fetch_all(@C_project, 'ClassC')
+        # Ossert::Project.fetch_all(@D_project, 'ClassD')
+        # Ossert::Project.fetch_all(@E_project, 'ClassE')
     end
   end
   config.after(:all) do

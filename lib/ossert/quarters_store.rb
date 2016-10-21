@@ -60,17 +60,21 @@ module Ossert
 
     # Public: Get quarters metric values aggregated for last year.
     #
+    # offset - the Numeric (default: 1) in quarters for offset of when "last year" should ends
+    #
     # Returns Array of quarter metric values aggregated for last year.
-    def last_year_data
+    def last_year_data(offset = 1)
       last_year_as_hash.values
     end
 
     # Public: Get quarters metric values aggregated for last year.
     #
+    # offset - the Numeric (default: 1) in quarters for offset of when "last year" should ends
+    #
     # Returns Hash of quarter metrics and its values aggregated for last year.
-    def last_year_as_hash
+    def last_year_as_hash(offset = 1)
       last_year_metrics = data_klass.metrics.zip(
-        quarters.sort.last(5)
+        quarters.sort.last(4 + offset)
                      .take(4)
                      .map { |_, quarter| quarter.metric_values }
                      .transpose

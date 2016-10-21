@@ -10,6 +10,16 @@ module Ossert
         @reference = Ossert::Classifiers::Growing.current.reference_values_per_grade
       end
 
+      def preview_reference_values_for(metric, section) # maybe automatically find section?
+        metric_by_grades = @reference[section][metric.to_s]
+        grades = CLASSES.reverse
+        sign = metric_by_grades[grades.first][:range].include?(-Float::INFINITY) ? '<' : '>'
+
+        grades.each_with_object({}) do |grade, preview|
+          preview[grade.sub(/Class/, '')] = "#{sign} #{metric_by_grades[grade][:threshold].to_i}"
+        end
+      end
+
       def with_reference(text, value, metric, type)
         return (text.to_i > 0 ? "+#{text}" : text).to_s if type =~ /delta/
 
