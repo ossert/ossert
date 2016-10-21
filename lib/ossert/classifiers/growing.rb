@@ -55,25 +55,31 @@ module Ossert
         }
       end
 
-      def grade(project)
+      def grade(project, last_year_offset = 1)
         Check.grade(
           self.class.config,
           project,
-          agility_total: agility_total_classifier,
-          community_total: community_total_classifier,
-          agility_last_year: agility_last_year_classifier,
-          community_last_year: community_last_year_classifier
+          {
+            agility_total: agility_total_classifier,
+            community_total: community_total_classifier,
+            agility_last_year: agility_last_year_classifier,
+            community_last_year: community_last_year_classifier,
+          },
+          last_year_offset
         )
       end
 
-      def check(project)
+      def check(project, last_year_offset = 1)
         Check.check(
           self.class.config,
           project,
-          agility_total: agility_total_classifier,
-          community_total: community_total_classifier,
-          agility_last_year: agility_last_year_classifier,
-          community_last_year: community_last_year_classifier
+          {
+            agility_total: agility_total_classifier,
+            community_total: community_total_classifier,
+            agility_last_year: agility_last_year_classifier,
+            community_last_year: community_last_year_classifier
+          },
+          last_year_offset
         )
       end
 

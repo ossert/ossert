@@ -1,7 +1,11 @@
+require 'ossert/presenters/project_v2'
+
 module Ossert
   module Presenters
     # FIXME: Temporary version. Will be changed when new design uppear
     class Project
+      include Ossert::Presenters::ProjectV2
+
       CLASSES = %w(ClassE ClassD ClassC ClassB ClassA)
       attr_reader :project
 
@@ -27,7 +31,12 @@ module Ossert
         reference = CLASSES.inject('NaN') do |acc, ref|
           metric_by_ref[ref][:range].cover?(value.to_f) ? ref : acc
         end
-        "#{text} (#{reference.gsub(/Class/, '')})"
+
+        mark = reference.gsub(/Class/, '')
+        {
+          text: "#{text}&nbsp;#{mark}",
+          mark: mark.downcase
+        }
       rescue => e
         puts "NO DATA FOR METRIC: '#{metric}'"
         raise e
@@ -38,7 +47,7 @@ module Ossert
       end
 
       def date(value)
-        Time.at(value).strftime('%d-%m-%Y')
+        Time.at(value).strftime('%d/%m/%y')
       end
 
       def years(value)
@@ -54,18 +63,37 @@ module Ossert
         when 0
           "not enough data"
         when 1
-          "~#{value} day"
+          "~#{value.ceil} day"
         when 2..30
-          "~#{value} days"
+          "~#{value.ceil} days"
         when 31..61
-          "~#{value / 31} month"
+          "~#{(value / 31).ceil} month"
         else
-          "~#{value / 31} months"
+          "~#{(value / 31).ceil} months"
         end
       end
 
       def downloads(value)
         value.to_s.gsub(/\d(?=(...)+$)/, '\0,')
+      end
+
+      def decorate_value(metric, value)
+        case metric.to_s
+        when /(percent|divergence)/
+          percent(value)
+        when /(date|changed)/
+          date(value)
+        when /processed_in/
+          days(value)
+        when /period/
+          years(value)
+        when /count/
+          value.to_i
+        when /downloads/
+          downloads(value)
+        else
+          value
+        end
       end
 
       def decorate_metric(metric, value, type)
@@ -132,13 +160,13 @@ module Ossert
       def agility_total
         @project.agility.total.metrics_to_hash.each_with_object({}) do |(metric, value), res|
           next if metric =~ /active/
-          res[Ossert.t(metric)] = decorate_metric metric, value, :agility_total
+          res[metric] = decorate_metric metric, value, :agility_total
         end
       end
 
       def community_total
         @project.community.total.metrics_to_hash.each_with_object({}) do |(metric, value), res|
-          res[Ossert.t(metric)] = decorate_metric metric, value, :community_total
+          res[metric] = decorate_metric metric, value, :community_total
         end
       end
 
@@ -186,13 +214,13 @@ module Ossert
 
       def community_last_year
         @project.community.quarters.last_year_as_hash.each_with_object({}) do |(metric, value), result|
-          result[Ossert.t(metric)] = decorate_metric(metric, value.to_i, :community_year)
+          result[metric] = decorate_metric(metric, value.to_i, :community_year)
         end
       end
 
       def agility_last_year
         @project.agility.quarters.last_year_as_hash.each_with_object({}) do |(metric, value), result|
-          result[Ossert.t(metric)] = decorate_metric(metric, value.to_i, :agility_year)
+          result[metric] = decorate_metric(metric, value.to_i, :agility_year)
         end
       end
     end

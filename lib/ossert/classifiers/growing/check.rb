@@ -4,13 +4,13 @@ module Ossert
       class Check
         GRADES = %w(A B C D E)
 
-        def self.check(config, project, classifiers)
+        def self.check(config, project, classifiers, last_year_offset = 1)
           checks_rates = config['checks'].map do |check_name|
             [
               check_name.to_sym,
               check_class_by(check_name).new(
-                config, project, classifiers
-              ).check
+                config, project, classifiers, last_year_offset
+              ).grade_as_hash
             ]
           end
           checks_rates.to_h
@@ -90,6 +90,17 @@ module Ossert
             check.each_pair do |current_grade, gain|
               next if gain <= trusted_probability
               grade = current_grade
+              break
+            end
+            grade
+          end
+
+          def grade_as_hash
+            grade = {gain: 0, mark: 'E'}
+            max = GRADES.count
+            check.each_with_index do |(current_grade, gain), decrease|
+              next if gain <= trusted_probability
+              grade = {gain: gain * (max - decrease), mark: current_grade}
               break
             end
             grade

@@ -1,0 +1,40 @@
+descriptions:
+  # Agility
+  issues_closed_percent: Percent of closed issues from the total number
+  issues_non_owner_percent: Percent of issues created by non-owners of the repo from the total number
+  issues_with_contrib_comments_percent: Percent of issues with contributor comments from the total number
+  issues_all_count: Total number of issues with any status
+  issues_processed_in_avg: Average time to close issue up to day
+  first_issue_date_int: Date when first issue was created
+  last_issue_date_int:  Date when last issue was created
+  pr_closed_percent: Percent of closed pull requests from the total number
+  pr_non_owner_percent: Percent of pull requests created by non-owners of the repo from the total number
+  pr_with_contrib_comments_percent: Percent of pull requests with contributor comments from the total number
+  pr_all_count: Total number of pull requests with any status
+  pr_processed_in_avg: Average time to close pull request up to day
+  first_pr_date_int: Date when first pull requests was created
+  last_pr_date_int: Date when last pull requests was created
+  pr_actual_count: Number of pull requests that were open on the start of the period
+  last_release_date_int: Date of latest release of the project
+  releases_count: Total number of releases for period
+  commits_count_since_last_release_count: How many commits where made since the last project release
+  stale_branches_count: Number of stale branches, where stale means that the branch was not updated for whole quarter
+  life_period: Time period since the moment of first action till the last one
+  last_changed: Date of last change of the project
+  issues_actual_count: Number of issues that were open on the start of the period
+  commits: How many commits where made during the period
+
+  # Community
+  users_creating_issues_count: Number of unique users that created issues
+  users_commenting_issues_count: Number of unique users that commented any issue
+  users_creating_pr_count: Number of unique users that requested a pull
+  users_commenting_pr_count: Number of unique users commented any pull request
+  watchers_count: Number of unique watchers on Github
+  stargazers_count: Number of unique users that starred the project
+  forks_count: Number of unique users that forked the project
+  users_involved_count: Number of unique users made any action for the project like leaving comment or requesting a pull
+  users_involved_no_stars_count:
+    Number of unique users that made any action for project excluding users that only give a Star on Github
+  total_downloads: Total number of downloads since first day of the project
+  delta_downloads: Number of downloads that were made during period
+  download_divergence: Downloads Growth From Previous Period %

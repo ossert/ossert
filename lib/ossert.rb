@@ -5,9 +5,8 @@ require 'active_support/all' # remove later, we use only quarters and index_by h
 require 'json'
 require 'oj'
 
-require 'weakref'
 require "ossert/config"
-Ossert::Config.load [:stats, :classifiers, :translations]
+Ossert::Config.load(:stats, :classifiers, :translations, :descriptions)
 
 require "ossert/repositories"
 require "ossert/stats"
@@ -31,10 +30,20 @@ module Ossert
   end
   module_function :rom
 
+  def description(key)
+    descriptions.fetch(key.to_s, "Description for '#{key}' - not found")
+  end
+  alias_method :descr, :description
+  module_function :descr
+
+  def descriptions
+    @descriptions ||= ::Settings['descriptions']
+  end
+  module_function :descriptions
+
   def translate(key)
     translations.fetch(key.to_s, "Translation for '#{key}' - not found")
   end
-  module_function :translate
   alias_method :t, :translate
   module_function :t
 
