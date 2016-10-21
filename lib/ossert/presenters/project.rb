@@ -43,7 +43,7 @@ module Ossert
       end
 
       def percent(value)
-        "#{value}%"
+        "#{value.ceil}%"
       end
 
       def date(value)
@@ -74,7 +74,7 @@ module Ossert
       end
 
       def downloads(value)
-        value.to_s.gsub(/\d(?=(...)+$)/, '\0,')
+        value.ceil.to_s.gsub(/\d(?=(...)+$)/, '\0,')
       end
 
       def decorate_value(metric, value)
