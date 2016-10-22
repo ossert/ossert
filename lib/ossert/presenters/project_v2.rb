@@ -86,7 +86,10 @@ module Ossert
 
         @fast_preview_graph_data = {popularity: [], maintenance: [], maturity: []} # replace with config
 
-        check_results.each_with_index do |check_result, offset|
+        max = check_results.count
+        check_results.each_with_index do |check_result, index|
+
+          offset = max - index
           check_result.each do |check, results|
             gain = results[:gain].to_f.round(2)
             @fast_preview_graph_data[check] << {
@@ -95,7 +98,11 @@ module Ossert
               values: [gain]
             }
 
-            @fast_preview_graph_data[check][offset - 1][:values] << gain if offset > 0
+            if index > 0
+              @fast_preview_graph_data[check][index - 1][:values] << gain
+            else
+              @fast_preview_graph_data[check][index][:values] << gain
+            end
           end
         end
 
