@@ -10,3 +10,7 @@
 /db/backups/*.sql
 /db/backups/*.dump
 /tmp/
+/data/
+/reports/
+NOTES.md
+
