@@ -20,6 +20,9 @@ classifiers:
       first_pr_date_int:
         - 1161160504 # Best
         - 1476783369 # Worst
+      last_release_date_int:
+        - 1476783369  # Best
+        - 1161160504 # Worst
       issues_processed_in_avg:
         - 7
         - 120
