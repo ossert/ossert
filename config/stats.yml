@@ -133,7 +133,6 @@ stats:
         - users_involved_count
         - users_involved_no_stars_count
         - download_divergence
-        - total_downloads
         - delta_downloads
       attributes:
         users_creating_issues: Set
