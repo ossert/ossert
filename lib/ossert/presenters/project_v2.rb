@@ -100,6 +100,7 @@ module Ossert
 
 
             @fast_preview_graph_data[check][index - 1][:values] << gain if index > 0
+            @fast_preview_graph_data[check][index][:values] << gain if index == max - 1
           end
         end
 
