@@ -61,9 +61,13 @@ stats:
     quarter:
       aggregated_metrics:
         - issues_closed_percent
+        - issues_all_count
         - issues_processed_in_avg
+        - issues_actual_count
         - pr_closed_percent
+        - pr_all_count
         - pr_processed_in_avg
+        - pr_actual_count
       metrics:
         - issues_processed_in_avg
         - issues_closed_percent

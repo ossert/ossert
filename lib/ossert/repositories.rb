@@ -24,6 +24,10 @@ class ExceptionsRepo < ROM::Repository[:exceptions]
 end
 
 class Projects < ROM::Relation[:sql]
+  def random(count = 10)
+    where('random() < ?', count * 0.01).limit(count)
+  end
+
   def by_name(name)
     where(name: name)
   end
@@ -54,6 +58,10 @@ class ProjectRepo < ROM::Repository[:projects]
 
   def referenced
     projects.referenced.to_a
+  end
+
+  def random(count = 10)
+    projects.random(count).to_a
   end
 
   class Unpacker

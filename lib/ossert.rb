@@ -18,6 +18,7 @@ require "ossert/fetch"
 require "ossert/reports"
 require "ossert/reference"
 require "ossert/classifiers"
+require "ossert/jobs"
 require 'octokit'
 
 module Ossert

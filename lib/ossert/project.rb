@@ -22,6 +22,10 @@ module Ossert
     }
 
     class << self
+      def random(count = 10)
+        ::ProjectRepo.new(Ossert.rom).random(count)
+      end
+
       def fetch_all(name, reference = Ossert::Saveable::UNUSED_REFERENCE)
         if (name_exception = ExceptionsRepo.new(Ossert.rom)[name])
           project = new(name, name_exception.github_name, name, reference)
