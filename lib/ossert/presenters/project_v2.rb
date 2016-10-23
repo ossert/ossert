@@ -98,11 +98,8 @@ module Ossert
               values: [gain]
             }
 
-            if index > 0
-              @fast_preview_graph_data[check][index - 1][:values] << gain
-            else
-              @fast_preview_graph_data[check][index][:values].unshift gain
-            end
+
+            @fast_preview_graph_data[check][index - 1][:values] << gain if index > 0
           end
         end
 
