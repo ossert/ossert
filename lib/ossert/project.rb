@@ -34,6 +34,7 @@ module Ossert
         end
 
         Ossert::Fetch.all project
+        project.prepare_time_bounds!
         project.dump
         nil
       end

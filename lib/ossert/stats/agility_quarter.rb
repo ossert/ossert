@@ -13,7 +13,7 @@ module Ossert
         define_method("#{metric}_percent") do
           value = public_send(metric)
           total_count = public_send("#{type}_all").count
-          return 0 if total_count.zero?
+          return 100.0 if total_count.zero?
           ((value.count.to_d / total_count.to_d) * 100).round(2)
         end
       end
