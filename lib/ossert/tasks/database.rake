@@ -27,6 +27,11 @@ namespace :db do
     Rake::Task['db:create'].invoke
     Rake::Task['db:load_config'].invoke
 
+    ROM::SQL::Gateway.instance.migrator.instance_variable_set(
+      :@path,
+      File.expand_path('../../../../db/migrate', __FILE__)
+    )
+
     ROM::SQL::RakeSupport.run_migrations
   end
 

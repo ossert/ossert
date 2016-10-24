@@ -13,13 +13,6 @@ Sequel.migration do
       json :community_total_data
       json :community_quarters_data
     end
-
-    # WDYT?
-    # create_table(:references) do
-    #   primary_key :id
-    #   references :project
-    #   String :type, null: false
-    # end
   end
 
   down do

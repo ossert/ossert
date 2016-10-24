@@ -5,7 +5,7 @@ Sequel.migration do
   end
 
   down do
-    drop_column :projects, :meta_data
-    drop_column :projects, :meta_data
+    drop_column :projects, :created_at
+    drop_column :projects, :updated_at
   end
 end

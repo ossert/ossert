@@ -25,8 +25,9 @@ module Ossert
   def rom(database_url = nil)
     return @rom if defined? @rom
     conf = ROM::Configuration.new(:sql, database_url || ENV.fetch("DATABASE_URL"))
-    conf.register_relation(Projects)
-    conf.register_relation(Exceptions)
+    conf.register_relation(::Projects)
+    conf.register_relation(::Classifiers)
+    conf.register_relation(::Exceptions)
     @rom = ROM.container(conf)
   end
   module_function :rom

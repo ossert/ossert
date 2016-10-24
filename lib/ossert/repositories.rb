@@ -23,6 +23,28 @@ class ExceptionsRepo < ROM::Repository[:exceptions]
   end
 end
 
+class Classifiers < ROM::Relation[:sql]
+  def by_section(section)
+    where(section: section)
+  end
+end
+
+class ClassifiersRepo < ROM::Repository[:classifiers]
+  commands :create, update: :by_section, delete: :by_section
+
+  def [](section)
+    classifiers.by_section(section).one
+  end
+
+  def actual?
+    classifiers.where('updated_at > ?', 1.month.ago).to_a.count > 0
+  end
+
+  def cleanup
+    command(:delete, classifiers).call
+  end
+end
+
 class Projects < ROM::Relation[:sql]
   def random(count = 10)
     where('random() < ?', count * 0.01).limit(count)
@@ -74,7 +96,10 @@ class ProjectRepo < ROM::Repository[:projects]
     end
 
     def process
-      result = {}
+      result = {
+        created_at: @stored_project.created_at,
+        updated_at: @stored_project.updated_at
+      }
       result[:meta] = if @stored_project.meta_data.present?
                         JSON.parse(@stored_project.meta_data)
                       else

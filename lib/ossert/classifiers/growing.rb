@@ -9,10 +9,6 @@ module Ossert
       class << self
         attr_accessor :all
 
-        def for_current_projects
-          new(Project.projects_by_reference)
-        end
-
         def current
           all.last
         end
@@ -22,9 +18,7 @@ module Ossert
         end
       end
 
-      def initialize(train_group)
-        @train_group = train_group
-
+      def initialize
         (self.class.all ||= []) << self
       end
 
@@ -84,7 +78,7 @@ module Ossert
       end
 
       def train
-        classifiers = ClassifiersInitializer.new(train_group).run
+        classifiers = ClassifiersInitializer.load_or_create.run
         classifiers.each do |name, classifier|
           instance_variable_set(
             "@#{name}_classifier",
@@ -101,8 +95,25 @@ module Ossert
           community_last_year: ->(project) { project.community.quarters.last_year_as_hash }
         }
 
-        def initialize(grouped_projects)
+        def self.load_or_create
+          repo = ClassifiersRepo.new(Ossert.rom)
+          if repo.actual?
+            new.load(repo)
+          else
+            new(Project.projects_by_reference)
+          end
+        end
+
+        def initialize(grouped_projects = nil)
           @projects = grouped_projects
+        end
+
+        def load(repo)
+          @classifiers = {}
+          CLASSIFIERS_METRICS.keys.each do |section|
+            @classifiers[section] = JSON.parse(repo[section.to_s].reference_values)
+          end
+          self
         end
 
         def merge_metrics(storage, metrics)
@@ -115,16 +126,29 @@ module Ossert
           storage
         end
 
+        def save
+          repo = ClassifiersRepo.new(Ossert.rom)
+          repo.cleanup
+
+          @classifiers.each do |section, reference_values|
+            repo.create(
+              section: section.to_s,
+              reference_values: JSON.generate(reference_values)
+            )
+          end
+        end
+
         def run
-          classifiers = CLASSIFIERS_METRICS.keys.map { |type| [type, {}] }.to_h
+          return @classifiers if @classifiers.present?
+          @classifiers = CLASSIFIERS_METRICS.keys.map { |type| [type, {}] }.to_h
 
           GRADES.each do |grade|
             @projects[grade].each do |project|
               CLASSIFIERS_METRICS.each do |type, metrics|
-                classifiers[type].store(
+                @classifiers[type].store(
                   grade,
                   merge_metrics(
-                    classifiers[type][grade].to_h,
+                    @classifiers[type][grade].to_h,
                     metrics.call(project)
                   )
                 )
@@ -132,7 +156,8 @@ module Ossert
             end
           end
 
-          classifiers
+          save
+          @classifiers
         end
       end
     end

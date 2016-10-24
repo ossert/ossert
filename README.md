@@ -1,4 +1,4 @@
-Code quality? Checked by [RuboCop](https://github.com/bbatsov/rubocop/) (crowdsourced code quality metrics)
+Code style? Checked by [RuboCop](https://github.com/bbatsov/rubocop/) (crowdsourced code style metrics)
 What about library support?
 Introducing **Ossert**! Crowdsourced project support and availablity metrics.
 

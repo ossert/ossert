@@ -4,7 +4,7 @@ module Ossert
 
     attr_accessor :name, :github_alias, :rubygems_alias,
                   :community, :agility, :reference,
-                  :meta
+                  :meta, :created_at, :updated_at
 
     META_STUB = {
       homepage_url: nil,
@@ -66,10 +66,12 @@ module Ossert
       @meta = META_STUB.dup
     end
 
-    def assign_data(meta:, agility:, community:)
+    def assign_data(meta:, agility:, community:, created_at: , updated_at:)
       @agility = agility
       @community = community
       @meta = meta
+      @created_at = created_at
+      @updated_at = updated_at
     end
 
     def decorated
