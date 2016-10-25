@@ -50,7 +50,8 @@ classifiers:
           forks_count: 3
           users_involved_count: 3
           users_involved_no_stars_count: 3
-          delta_downloads: 3
+          # delta_downloads: 3
+          total_downloads: 3
         total:
           users_creating_issues_count: 1
           users_commenting_issues_count: 1

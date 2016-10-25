@@ -1,4 +1,13 @@
 namespace :ossert do
+  namespace :cache do
+    desc 'Reset data cache'
+    task :reset do
+      require 'ossert'
+      ClassifiersRepo.new(Ossert.rom).cleanup
+      Ossert::Classifiers::Growing.new.train
+    end
+  end
+
   desc 'Collect reference projects'
   task :collect => ['db:dump'] do |t, args|
     begin
