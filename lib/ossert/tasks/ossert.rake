@@ -9,7 +9,7 @@ namespace :ossert do
   end
 
   desc 'Collect reference projects'
-  task :collect => ['db:dump'] do |t, args|
+  task :collect => ['db:dump'] do
     begin
       puts "Run collecting process"
       time = Benchmark.realtime do
@@ -25,7 +25,7 @@ namespace :ossert do
   end
 
   desc 'Add or replace project name exception'
-  task :exception, [:name, :github_name] do |t, args|
+  task :exception, [:name, :github_name] do |_, args|
     raise "Arguments name and GitHub name expected" unless args.name.present? && args.github_name.present?
     exceptions_repo = ExceptionsRepo.new(Ossert.rom)
     if exceptions_repo[args.name]

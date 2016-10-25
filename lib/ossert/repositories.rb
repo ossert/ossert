@@ -37,7 +37,7 @@ class ClassifiersRepo < ROM::Repository[:classifiers]
   end
 
   def actual?
-    classifiers.where('updated_at > ?', 1.month.ago).to_a.count > 0
+    classifiers.where('updated_at > ?', 1.month.ago).to_a.size > 0
   end
 
   def cleanup

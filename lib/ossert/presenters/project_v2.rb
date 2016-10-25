@@ -1,6 +1,5 @@
 module Ossert
   module Presenters
-    # FIXME: Temporary version. Will be changed when new design uppear
     module ProjectV2
       CLASSES = %w(ClassE ClassD ClassC ClassB ClassA)
 

@@ -30,10 +30,10 @@ module Ossert
           GRADES.each_with_index do |grade, idx|
             classifier[grade].each_pair do |metric, values|
               sibling_class_values = if (idx + 1) < GRADES.count
-                                        classifier[GRADES[idx+1]][metric]
-                                      else
-                                        []
-                                      end
+                                       classifier[GRADES[idx+1]][metric]
+                                     else
+                                       []
+                                     end
               all_values = sibling_class_values + values
               classifier[grade][metric] = (values.max || 0) and next if all_values.count <= 2
               classifier[grade][metric] = (all_values.sum/all_values.count).round(2)
@@ -148,7 +148,7 @@ module Ossert
 
         def run_reverse
           reversed_metrics.each do |reversed_metric|
-            GRADES.first((GRADES.count / 2.0).ceil).each_with_index do |grade, idx|
+            GRADES.first((GRADES.count / 2.0).ceil).each do |grade|
               next unless classifier[grade][reversed_metric].present?
 
               previous_value = classifier[REVERSED_GRADE[grade]][reversed_metric]

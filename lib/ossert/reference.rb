@@ -11,8 +11,8 @@ module Ossert
     def collect_stats_for_refs!(refs)
       threads = []
       puts "==== COLLECTING REFERENCE PROJECTS ===="
-      refs.in_groups_of(3, false).each do |_batch|
-        threads << Thread.new(_batch) do |batch|
+      refs.in_groups_of(3, false).each do |thread_batch|
+        threads << Thread.new(thread_batch) do |batch|
           batch.each do |reference|
             proj_class = reference.class.name.demodulize
             reference.project_names.each do |project_name|

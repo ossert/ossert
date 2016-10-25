@@ -49,8 +49,8 @@ module Ossert
         }
       end
 
-      def grade(project, last_year_offset = 1)
-        Check.grade(
+      def process_using(action, project, last_year_offset = 1)
+        Check.send(action,
           self.class.config,
           project,
           {
@@ -63,18 +63,12 @@ module Ossert
         )
       end
 
-      def check(project, last_year_offset = 1)
-        Check.check(
-          self.class.config,
-          project,
-          {
-            agility_total: agility_total_classifier,
-            community_total: community_total_classifier,
-            agility_last_year: agility_last_year_classifier,
-            community_last_year: community_last_year_classifier
-          },
-          last_year_offset
-        )
+      def grade(*args)
+        process_using(*args.unshift(:grade))
+      end
+
+      def check(*args)
+        process_using(*args.unshift(:check))
       end
 
       def train

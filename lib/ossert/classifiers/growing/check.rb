@@ -4,34 +4,32 @@ module Ossert
       class Check
         GRADES = %w(A B C D E)
 
-        def self.check(config, project, classifiers, last_year_offset = 1)
-          checks_rates = config['checks'].map do |check_name|
-            [
-              check_name.to_sym,
-              check_class_by(check_name).new(
-                config, project, classifiers, last_year_offset
-              ).grade_as_hash
-            ]
+        class << self
+          def process_using(action, config, project, classifiers, last_year_offset = 1)
+            checks_rates = config['checks'].map do |check_name|
+              [
+                check_name.to_sym,
+                check_class_by(check_name).new(
+                  config, project, classifiers, last_year_offset
+                ).send(action)
+              ]
+            end
+            checks_rates.to_h
           end
-          checks_rates.to_h
-        end
 
-        def self.grade(config, project, classifiers, last_year_offset = 1)
-          checks_rates = config['checks'].map do |check_name|
-            [
-              check_name.to_sym,
-              check_class_by(check_name).new(
-                config, project, classifiers, last_year_offset
-              ).grade
-            ]
+          def check(*args)
+            process_using(*args.unshift(:grade_as_hash))
           end
-          checks_rates.to_h
-        end
 
-        def self.check_class_by(check_name)
-          Kernel.const_get(
-            "Ossert::Classifiers::Growing::Check::#{check_name.capitalize}"
-          )
+          def grade(*args)
+            process_using(*args.unshift(:grade))
+          end
+
+          def check_class_by(check_name)
+            Kernel.const_get(
+              "Ossert::Classifiers::Growing::Check::#{check_name.capitalize}"
+            )
+          end
         end
 
         class Base

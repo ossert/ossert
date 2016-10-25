@@ -48,7 +48,7 @@ namespace :db do
   end
 
   desc "Dumps the database to backups"
-  task :dump, [:fmt] do |t, args|
+  task :dump, [:fmt] do |_, args|
     dump_fmt = args.fmt || 'c' # or 'p', 't', 'd'
     dump_sfx = suffix_for_format dump_fmt
     backup_dir = backup_directory true
@@ -71,10 +71,10 @@ namespace :db do
   end
 
   desc "Restores the database from a backup using PATTERN"
-  task :restore, [:pat] do |t, args|
+  task :restore, [:pat] do |_, args|
     if args.pat.present?
       cmd = nil
-      with_config do |app, db_url|
+      with_config do |_, db_url|
         backup_dir = backup_directory
         files = Dir.glob("#{backup_dir}/*#{args.pat}*")
         case files.size
@@ -106,9 +106,9 @@ namespace :db do
 
   namespace :restore do
     desc "Restores the database from latest backup"
-    task :last do |t, args|
+    task :last do
       cmd = nil
-      with_config do |app, db_url|
+      with_config do |_, db_url|
         backup_dir = backup_directory
         file = Dir.glob("#{backup_dir}/*").max_by {|f| File.mtime(f)}
         if file
@@ -155,7 +155,7 @@ namespace :db do
 
   def backup_directory(create=false)
     backup_dir = "db/backups"
-    if create and not Dir.exists?(backup_dir)
+    if create and not Dir.exist?(backup_dir)
       puts "Creating #{backup_dir} .."
       Dir.mkdir_p(backup_dir)
     end

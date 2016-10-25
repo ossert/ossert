@@ -112,7 +112,7 @@ module Ossert
       # Returns nothing.
       def get(path)
         raise ArgumentError unless path.end_with? type
-        response = agent.get("#{api_endpoint}#{path.to_s}")
+        response = agent.get("#{api_endpoint}#{path}")
         case response.status
         when 404
           raise NotFound

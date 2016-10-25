@@ -64,7 +64,7 @@ module Ossert
     #
     # Returns Array of quarter metric values aggregated for last year.
     def last_year_data(offset = 1)
-      last_year_as_hash.values
+      last_year_as_hash(offset).values
     end
 
     # Public: Get quarters metric values aggregated for last year.

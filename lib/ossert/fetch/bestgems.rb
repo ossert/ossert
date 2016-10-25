@@ -1,24 +1,25 @@
 module Ossert
   module Fetch
-    class BestgemsDailyStat
+    class BestgemsBase
       def self.process_page(page = nil)
-        doc = Nokogiri::HTML(open("http://bestgems.org/daily#{page ? "?page=#{page}" : '' }"))
+        doc = Nokogiri::HTML(open("http://bestgems.org/#{endpoint}#{page ? "?page=#{page}" : '' }"))
         doc.css("table").xpath('//tr//td').each_slice(4) do |rank, downloads, name, _|
-          rank = rank.text.gsub(',', '').to_i
-          downloads = downloads.text.gsub(',', '').to_i
+          rank = rank.text.delete(',').to_i
+          downloads = downloads.text.delete(',').to_i
           yield(rank, downloads, name.text)
         end
       end
     end
 
-    class BestgemsTotalStat
-      def self.process_page(page = nil)
-        doc = Nokogiri::HTML(open("http://bestgems.org/total#{page ? "?page=#{page}" : '' }"))
-        doc.css("table").xpath('//tr//td').each_slice(4) do |rank, downloads, name, _|
-          rank = rank.text.gsub(',', '').to_i
-          downloads = downloads.text.gsub(',', '').to_i
-          yield(rank, downloads, name.text)
-        end
+    class BestgemsDailyStat < BestgemsBase
+      def self.endpoint
+        :daily
+      end
+    end
+
+    class BestgemsTotalStat < BestgemsBase
+      def self.endpoint
+        :total
       end
     end
 

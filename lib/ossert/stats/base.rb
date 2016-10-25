@@ -23,6 +23,24 @@ module Ossert
         def create_attributes_accessors
           attr_accessor(*attributes)
         end
+
+        def define_counts(*attributes)
+          Array.wrap(attributes).each do |metric|
+            define_method("#{metric}_count") { public_send(metric).count }
+          end
+        end
+
+        def define_percent(*attributes, default_value: 0)
+          Array.wrap(attributes).each do |metric|
+            type = metric.to_s.split('_').first
+            define_method("#{metric}_percent") do
+              value = public_send(metric)
+              total_count = public_send("#{type}_all").count
+              return default_value if total_count.zero?
+              ((value.count.to_d / total_count.to_d) * 100).round(2)
+            end
+          end
+        end
       end
 
       def initialize
@@ -31,15 +49,19 @@ module Ossert
         end
       end
 
-      def metric_values
-        self.class.metrics.map { |metric| public_send(metric).to_f }
+      def median(values)
+        values = values.to_a.sort
+        if values.count.odd?
+          values[values.count/2]
+        elsif values.count.zero?
+          0
+        else
+          ((values[values.count/2 - 1] + values[values.count/2]) / 2.0).to_i
+        end
       end
 
       def metric_values
-        self.class.metrics.map do |metric|
-          public_send(metric).to_f
-          # metric.to_s =~ /(percent|avg)/ ? value / 3.0 : value
-        end
+        self.class.metrics.map { |metric| public_send(metric).to_f }
       end
 
       def metrics_to_hash

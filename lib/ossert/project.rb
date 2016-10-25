@@ -113,21 +113,36 @@ module Ossert
       JSON.generate(meta)
     end
 
-    class Agility
+    class BaseStore
       attr_accessor :quarters, :total, :total_prediction, :quarter_prediction
 
       def initialize(quarters: nil, total: nil)
-        @quarters = quarters || QuartersStore.new(Stats::AgilityQuarter)
-        @total = total || Stats::AgilityTotal.new
+        @quarters = quarters || QuartersStore.new(self.class.quarter_stats_klass)
+        @total = total || self.class.total_stats_klass.new
       end
     end
 
-    class Community
-      attr_accessor :quarters, :total, :total_prediction, :quarter_prediction
+    class Agility < BaseStore
+      class << self
+        def quarter_stats_klass
+          Stats::AgilityQuarter
+        end
 
-      def initialize(quarters: nil, total: nil)
-        @quarters = quarters || QuartersStore.new(Stats::CommunityQuarter)
-        @total = total || Stats::CommunityTotal.new
+        def total_stats_klass
+          Stats::AgilityTotal
+        end
+      end
+    end
+
+    class Community < BaseStore
+      class << self
+        def quarter_stats_klass
+          Stats::CommunityQuarter
+        end
+
+        def total_stats_klass
+          Stats::CommunityTotal
+        end
       end
     end
   end

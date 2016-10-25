@@ -88,6 +88,10 @@ module Ossert
         request(:tags, @repo_name, &block)
       end
 
+      def commits(from, to, &block)
+        request(:commits, @repo_name, since: from, until: to, &block)
+      end
+
       def last_year_commits
         last_year_commits = []
         retry_count = 3
@@ -133,8 +137,8 @@ module Ossert
       # Add class with processing types, e.g. top_contributors, commits and so on
 
       def process_top_contributors
-        top_contributors.last(10).reverse.each do |c|
-          login = c[:author][:login]
+        @top_contributors = top_contributors.map { |contrib_data| contrib_data[:author][:login] }
+        @top_contributors.last(10).reverse.each do |login|
           (meta[:top_10_contributors] ||= []) << "https://github.com/#{login}"
         end
         nil
@@ -409,8 +413,63 @@ module Ossert
         contributors do |c|
           login = c.try(:[], :login).presence || generate_anonymous
           community.total.contributors << login
-        end#
+        end
         community.total.users_involved.merge(community.total.contributors)
+
+        # TODO: extract contributors and commits, quarter by quarter.
+        #
+        # => {:sha=>"d1a43d32e615b4a75117151b002266c560ce9061",
+        # :commit=>
+        #   {:author=>
+        #     {:name=>"Yves Senn",
+        #     :email=>"yves.senn@gmail.com",
+        #     :date=>"2015-09-22T08:25:14Z"},
+        #   :committer=>
+        #     {:name=>"Yves Senn",
+        #     :email=>"yves.senn@gmail.com",
+        #     :date=>"2015-09-22T08:25:14Z"},
+        #   :message=>
+        #     "Merge pull request #21678 from ronakjangir47/array_to_formatted_s_docs\n\nAdded Examples in docs for internal behavior of Array#to_formatted_s [ci skip]",
+        #   :tree=>
+        #     {:sha=>"204811aa155645b461467dbd2238ac41c0fe8a30",
+        #     :url=>
+        #       "https://api.github.com/repos/rails/rails/git/trees/204811aa155645b461467dbd2238ac41c0fe8a30"},
+        #   :url=>
+        #     "https://api.github.com/repos/rails/rails/git/commits/d1a43d32e615b4a75117151b002266c560ce9061",
+        #   :comment_count=>0},
+        # :url=>
+        #   "https://api.github.com/repos/rails/rails/commits/d1a43d32e615b4a75117151b002266c560ce9061",
+        # :html_url=>
+        #   "https://github.com/rails/rails/commit/d1a43d32e615b4a75117151b002266c560ce9061",
+        # :comments_url=>
+        #   "https://api.github.com/repos/rails/rails/commits/d1a43d32e615b4a75117151b002266c560ce9061/comments",
+        # :author=>
+        #   {:login=>"senny",
+        #    ...
+        #    :type=>"User",
+        #    :site_admin=>false},
+        # :committer=>
+        #   {:login=>"senny",
+        #    ...
+        #   :type=>"User",
+        #   :site_admin=>false},
+        # :parents=>
+        #   [{:sha=>"2a7e8f54c66dbd65822f2a7135546a240426b631",
+        #     :url=>
+        #     "https://api.github.com/repos/rails/rails/commits/2a7e8f54c66dbd65822f2a7135546a240426b631",
+        #     :html_url=>
+        #     "https://github.com/rails/rails/commit/2a7e8f54c66dbd65822f2a7135546a240426b631"},
+        #   {:sha=>"192d29f1c7ea16c506c09da2b854d1acdfbc8749",
+        #     :url=>
+        #     "https://api.github.com/repos/rails/rails/commits/192d29f1c7ea16c506c09da2b854d1acdfbc8749",
+        #     :html_url=>
+        #     "https://github.com/rails/rails/commit/192d29f1c7ea16c506c09da2b854d1acdfbc8749"}]}
+
+        # process collaborators and commits. year by year, more info then ^^^^^
+        # count = 0; collab = Set.new; fetcher.commits(14.months.ago.utc.iso8601, 13.month.ago.utc.iso8601) do |commit|
+        #   count+=1
+        #   collab << (commit[:author].try(:[],:login) || commit[:commit][:author][:name])
+        # end
 
         process_issues
 

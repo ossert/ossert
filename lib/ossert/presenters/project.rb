@@ -2,7 +2,6 @@ require 'ossert/presenters/project_v2'
 
 module Ossert
   module Presenters
-    # FIXME: Temporary version. Will be changed when new design uppear
     class Project
       include Ossert::Presenters::ProjectV2
 
@@ -12,16 +11,6 @@ module Ossert
       def initialize(project)
         @project = project
         @reference = Ossert::Classifiers::Growing.current.reference_values_per_grade
-      end
-
-      def preview_reference_values_for(metric, section) # maybe automatically find section?
-        metric_by_grades = @reference[section][metric.to_s]
-        grades = CLASSES.reverse
-        sign = metric_by_grades[grades.first][:range].include?(-Float::INFINITY) ? '<' : '>'
-
-        grades.each_with_object({}) do |grade, preview|
-          preview[grade.sub(/Class/, '')] = "#{sign} #{metric_by_grades[grade][:threshold].to_i}"
-        end
       end
 
       def with_reference(text, value, metric, type)
@@ -42,185 +31,107 @@ module Ossert
         raise e
       end
 
-      def percent(value)
-        "#{value.ceil}%"
-      end
-
-      def date(value)
-        Time.at(value).strftime('%d/%m/%y')
-      end
-
-      def years(value)
-        if (years = value.to_i / 365) > 0
-          "#{years}+ years"
-        else
-          "Less than a year"
-        end
-      end
-
-      def days(value)
-        case value
-        when 0
-          "not enough data"
-        when 1
-          "~#{value.ceil} day"
-        when 2..30
-          "~#{value.ceil} days"
-        when 31..61
-          "~#{(value / 31).ceil} month"
-        else
-          "~#{(value / 31).ceil} months"
-        end
-      end
-
-      def downloads(value)
-        value.ceil.to_s.gsub(/\d(?=(...)+$)/, '\0,')
-      end
+      METRICS_DECORATIONS = {
+        /(percent|divergence)/ => ->(value) { "#{value.ceil}%" },
+        /(date|changed)/ => ->(value) { Time.at(value).strftime('%d/%m/%y') },
+        /processed_in/ => (->(value) {
+          case value
+          when 0
+            "not enough data"
+          when 1
+            "~#{value.ceil} day"
+          when 2..30
+            "~#{value.ceil} days"
+          when 31..61
+            "~#{(value / 31).ceil} month"
+          else
+            "~#{(value / 31).ceil} months"
+          end
+        }),
+        /period/ => (->(value) {
+          if (years = value.to_i / 365) > 0
+            "#{years}+ years"
+          else
+            "Less than a year"
+          end
+        }),
+        /count/ => ->(value) { value.to_i },
+        /downloads/ => ->(value) { value.ceil.to_s.gsub(/\d(?=(...)+$)/, '\0,') },
+      }
 
       def decorate_value(metric, value)
-        case metric.to_s
-        when /(percent|divergence)/
-          percent(value)
-        when /(date|changed)/
-          date(value)
-        when /processed_in/
-          days(value)
-        when /period/
-          years(value)
-        when /count/
-          value.to_i
-        when /downloads/
-          downloads(value)
-        else
-          value
+        value = value.to_f
+        METRICS_DECORATIONS.each do |check, decorator|
+          return decorator.call(value) if metric =~ check
         end
+        value.to_i
       end
 
       def decorate_metric(metric, value, type)
-        case metric.to_s
-        when /(percent|divergence)/
-          with_reference(
-            percent(value),
-            value,
-            metric,
-            type
-          )
-        when /(date|changed)/
-          with_reference(
-            date(value),
-            value,
-            metric,
-            type
-          )
-        when /processed_in/
-          with_reference(
-            days(value),
-            value,
-            metric,
-            type
-          )
-        when /period/
-          with_reference(
-            years(value),
-            value,
-            metric,
-            type
-          )
-        when /count/
-          with_reference(
-            value.to_i,
-            value,
-            metric,
-            type
-          )
-        when /downloads/
-          with_reference(
-            downloads(value),
-            value,
-            metric,
-            type
-          )
-        when /legacy/
-          with_reference(
-            value,
-            value,
-            metric.to_s.sub(/legacy/,'actual') + "_count",
-            type
-          )
-        else
-          with_reference(
-            value,
-            value,
-            metric,
-            type
-          )
-        end
+        value = value.to_f
+        with_reference(decorate_value(metric, value), value, metric, type)
+      end
+
+      def agility_quarter(time)
+        decorate_quarter_with_diff(time, :agility)
+      end
+
+      def community_quarter(time)
+        decorate_quarter_with_diff(time, :community)
+      end
+
+      def agility_quarter_values(time)
+        quarter_values @project.agility.quarters[time].metrics_to_hash
+      end
+
+      def community_quarter_values(time)
+        quarter_values @project.community.quarters[time].metrics_to_hash
       end
 
       def agility_total
-        @project.agility.total.metrics_to_hash.each_with_object({}) do |(metric, value), res|
-          next if metric =~ /active/
-          res[metric] = decorate_metric metric, value, :agility_total
-        end
+        decorate_metrics @project.agility.total.metrics_to_hash, :agility_total
       end
 
       def community_total
-        @project.community.total.metrics_to_hash.each_with_object({}) do |(metric, value), res|
-          res[metric] = decorate_metric metric, value, :community_total
-        end
-      end
-
-      def agility_quarter(quarter)
-        quarter = Time.at(quarter).to_date.to_time(:utc).beginning_of_quarter
-        prev_quarter = Time.at(quarter).to_date.to_time(:utc).beginning_of_quarter - 1.day
-
-        prev = @project.agility.quarters[prev_quarter].metrics_to_hash.each_with_object({}) do |(metric, value), res|
-          res[metric] = value.to_i
-        end
-        @project.agility.quarters[quarter].metrics_to_hash.each_with_object({}) do |(metric, value), result|
-          result[Ossert.t(metric)] = decorate_metric(metric, value, :agility_quarter) + ' <> ' +
-                                  decorate_metric(metric, value.to_i - prev[metric], :delta)
-        end
-      end
-
-      def community_quarter(quarter)
-        quarter = Time.at(quarter).to_date.to_time(:utc).beginning_of_quarter
-        prev_quarter = Time.at(quarter).to_date.to_time(:utc).beginning_of_quarter - 1.day
-
-        prev = @project.community.quarters[prev_quarter].metrics_to_hash.each_with_object({}) do |(metric, value), res|
-          res[metric] = value.to_i
-        end
-
-        @project.community.quarters[quarter].metrics_to_hash.each_with_object({}) do |(metric, value), result|
-          result[Ossert.t(metric)] = decorate_metric(metric, value, :community_quarter) + ' <> ' +
-                                  decorate_metric(metric, value.to_i - prev[metric], :delta)
-        end
-      end
-
-      def agility_quarter_values(quarter)
-        quarter = Time.at(quarter).to_date.to_time(:utc).beginning_of_quarter
-
-        @project.agility.quarters[quarter].metrics_to_hash.each_with_object({}) do |(metric, value), result|
-          result[metric] = value
-        end
-      end
-
-      def community_quarter_values(quarter)
-        quarter = Time.at(quarter).to_date.to_time(:utc).beginning_of_quarter
-        @project.community.quarters[quarter].metrics_to_hash.each_with_object({}) do |(metric, value), result|
-          result[metric] = value
-        end
+        decorate_metrics @project.community.total.metrics_to_hash, :community_total
       end
 
       def community_last_year
-        @project.community.quarters.last_year_as_hash.each_with_object({}) do |(metric, value), result|
-          result[metric] = decorate_metric(metric, value.to_i, :community_year)
-        end
+        decorate_metrics @project.community.quarters.last_year_as_hash, :community_year
       end
 
       def agility_last_year
-        @project.agility.quarters.last_year_as_hash.each_with_object({}) do |(metric, value), result|
-          result[metric] = decorate_metric(metric, value.to_i, :agility_year)
+        decorate_metrics @project.agility.quarters.last_year_as_hash, :agility_year
+      end
+
+      private
+
+      def quarter_start(time)
+        Time.at(time).to_date.to_time(:utc).beginning_of_quarter
+      end
+
+      def quarter_values(quarter_data)
+        quarter_data.each_with_object({}) do |(metric, value), res|
+          res[metric] = value.to_i
+        end
+      end
+
+      def decorate_metrics(metrics_data, section_type)
+        metrics_data.each_with_object({}) do |(metric, value), result|
+          result[metric] = decorate_metric(metric, value.to_i, section_type)
+        end
+      end
+
+      def decorate_quarter_with_diff(time, section)
+        section_type = "#{section}_quarter".to_sym
+        quarter_data = @project.send(section).quarters[quarter_start(time)].metrics_to_hash
+        diff = quarter_values(@project.send(section).quarters[quarter_start(time) - 1.day].metrics_to_hash)
+
+        quarter_data.each_with_object({}) do |(metric, value), result|
+          decorated_metric = decorate_metric(metric, value, section_type)
+          result[Ossert.t(metric)] = <<-TEXT
+#{decorated_metric[:text]} <> #{decorate_metric(metric, value.to_i - diff[metric], :delta)}
+          TEXT
         end
       end
     end

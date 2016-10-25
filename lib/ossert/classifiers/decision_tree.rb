@@ -55,42 +55,41 @@ module Ossert
       end
 
       def train
-        grouped_projects = train_group
-        agility_total_attributes = Stats::AgilityQuarter.metrics
-        agility_quarters_attributes = Stats::AgilityTotal.metrics
-        community_total_attributes = Stats::CommunityTotal.metrics
-        community_quarters_attributes = Stats::CommunityQuarter.metrics
-        agility_total_data, community_total_data, agility_last_year_data, community_last_year_data = [], [], [], []
+        agility_total_data,
+        community_total_data,
+        agility_last_year_data,
+        community_last_year_data = [], [], [], []
 
-        GRADES.each_with_index do |grade, i|
+        grouped_projects = train_group
+        GRADES.each do |grade|
           grouped_projects[grade].each do |project|
             agility_total_data << (project.agility.total.metric_values << grade)
             community_total_data << (project.community.total.metric_values << grade)
+
             if (last_year_data = project.agility.quarters.last_year_data).present?
-              agility_last_year_data << (project.agility.quarters.last_year_data << grade)
+              agility_last_year_data << (last_year_data << grade)
             end
             if (last_year_data = project.community.quarters.last_year_data).present?
-              community_last_year_data << (project.community.quarters.last_year_data << grade)
+              community_last_year_data << (last_year_data << grade)
             end
           end
         end
 
-        @agility_total_dec_tree = ::DecisionTree::ID3Tree.new(
-          agility_total_attributes, agility_total_data, 'ClassE', :continuous
-        )
-        @agility_total_dec_tree.train
-        @agility_quarters_dec_tree = ::DecisionTree::ID3Tree.new(
-          agility_quarters_attributes, agility_last_year_data, 'ClassE', :continuous
-        )
-        @agility_quarters_dec_tree.train
-        @community_total_dec_tree = ::DecisionTree::ID3Tree.new(
-          community_total_attributes, community_total_data, 'ClassE', :continuous
-        )
-        @community_total_dec_tree.train
-        @community_quarters_dec_tree = ::DecisionTree::ID3Tree.new(
-          community_quarters_attributes, community_last_year_data, 'ClassE', :continuous
-        )
-        @community_quarters_dec_tree.train
+        trees = [
+          [Stats::AgilityQuarter.metrics, agility_total_data],
+          [Stats::AgilityTotal.metrics, agility_last_year_data],
+          [Stats::CommunityTotal.metrics, community_total_data],
+          [Stats::CommunityQuarter.metrics, community_last_year_data],
+        ].map do |attributes, data|
+          ::DecisionTree::ID3Tree.new(
+            attributes, data, 'ClassE', :continuous
+          )
+        end.tap(&:train)
+
+        @agility_total_dec_tree,
+        @agility_quarters_dec_tree,
+        @community_total_dec_tree,
+        @community_quarters_dec_tree = trees
       end
     end
   end
