@@ -22,6 +22,10 @@ module Ossert
     }
 
     class << self
+      def exist?(name)
+        ::ProjectRepo.new(Ossert.rom)[name].present?
+      end
+
       def random(count = 10)
         ::ProjectRepo.new(Ossert.rom).random(count)
       end
