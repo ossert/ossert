@@ -17,8 +17,7 @@ require "ossert/project"
 require "ossert/fetch"
 require "ossert/reference"
 require "ossert/classifiers"
-require "ossert/jobs"
-require 'octokit'
+require "ossert/workers"
 
 module Ossert
   def rom(database_url = nil)

@@ -1,3 +1,5 @@
+require 'octokit'
+
 module Ossert
   module Fetch
     class GitHub

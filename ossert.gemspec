@@ -21,7 +21,12 @@ Gem::Specification.new do |spec|
 
   spec.add_runtime_dependency "octokit", "~> 4.0"
   spec.add_runtime_dependency "gems", "~> 0.8.3"
-  spec.add_runtime_dependency "sucker_punch", "~> 2.0"
+
+  spec.add_runtime_dependency "redis"
+  spec.add_runtime_dependency "redis-namespace"
+  spec.add_runtime_dependency "sidekiq"
+  spec.add_runtime_dependency "sidekiq-unique-jobs"
+
   spec.add_runtime_dependency "activesupport" # TODO: remove dependency later
   spec.add_runtime_dependency "oj"
   spec.add_runtime_dependency "sequel"
