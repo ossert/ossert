@@ -27,7 +27,7 @@ describe Ossert do
         {popularity: 'A', maintenance: 'B', maturity: 'A'}
       end
       let(:grades_C) do
-        {popularity: 'A', maintenance: 'C', maturity: 'C'}
+        {popularity: 'C', maintenance: 'C', maturity: 'C'}
       end
       let(:grades_D) do
         {popularity: 'D', maintenance: 'A', maturity: 'D'}
@@ -67,7 +67,7 @@ describe Ossert do
               it do
                 expect(call_references).to eq({
                   "A" => "> 92",
-                  "B" => "> 67",
+                  "B" => "> 68",
                   "C" => "> 19",
                   "D" => "> 10",
                   "E" => "> 2",

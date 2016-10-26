@@ -23,6 +23,10 @@ module Ossert
         @releases ||= client.get("versions/#{project.rubygems_alias}.json")
       end
 
+      def reversed_dependencies
+        client.get("/gems/#{project.rubygems_alias}/reverse_dependencies.json")
+      end
+
       def process_meta
         meta[:homepage_url] = info['homepage_uri']
         meta[:docs_url] = info['documentation_uri']
@@ -43,6 +47,9 @@ module Ossert
           match ||= info['homepage_uri'].try(:match, /github.com\/([a-zA-Z0-9\.\_\-]+)\/([a-zA-Z0-9\.\_\-]+)/)
           project.github_alias = "#{match[1]}/#{match[2]}" if match
         end
+
+        agility.total.dependencies += info['dependencies']['runtime']
+        community.total.dependants += reversed_dependencies
 
         releases.each do |release|
           agility.total.releases_total_rg << release['number']

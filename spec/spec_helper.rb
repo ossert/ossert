@@ -50,30 +50,38 @@ RSpec.configure do |config|
     @D_project = 'dry-web'
     @E_project = 'reifier'
 
-    VCR.use_cassette 'fetch_all_projects' do
-      threads = []
-      threads << Thread.new do
+    threads = []
+    threads << Thread.new do
+      VCR.use_cassette 'fetch_a_project' do
         Ossert::Project.fetch_all(@A_project, 'ClassA')
       end
-      threads << Thread.new do
+    end
+    threads << Thread.new do
+      VCR.use_cassette 'fetch_b_project' do
         Ossert::Project.fetch_all(@B_project, 'ClassB')
       end
-      threads << Thread.new do
+    end
+    threads << Thread.new do
+      VCR.use_cassette 'fetch_c_project' do
         Ossert::Project.fetch_all(@C_project, 'ClassC')
       end
-      threads << Thread.new do
+    end
+    threads << Thread.new do
+      VCR.use_cassette 'fetch_d_project' do
         Ossert::Project.fetch_all(@D_project, 'ClassD')
       end
-      threads << Thread.new do
+    end
+    threads << Thread.new do
+      VCR.use_cassette 'fetch_e_project' do
         Ossert::Project.fetch_all(@E_project, 'ClassE')
       end
-      threads.each(&:join) # not stable solution...
-        # Ossert::Project.fetch_all(@A_project, 'ClassA')
-        # Ossert::Project.fetch_all(@B_project, 'ClassB')
-        # Ossert::Project.fetch_all(@C_project, 'ClassC')
-        # Ossert::Project.fetch_all(@D_project, 'ClassD')
-        # Ossert::Project.fetch_all(@E_project, 'ClassE')
     end
+    threads.each(&:join) # not stable solution...
+    # Ossert::Project.fetch_all(@A_project, 'ClassA')
+    # Ossert::Project.fetch_all(@B_project, 'ClassB')
+    # Ossert::Project.fetch_all(@C_project, 'ClassC')
+    # Ossert::Project.fetch_all(@D_project, 'ClassD')
+    # Ossert::Project.fetch_all(@E_project, 'ClassE')
   end
   config.after(:all) do
     db = Sequel.connect(DB_URL)
