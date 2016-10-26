@@ -472,10 +472,15 @@ module Ossert
         #   count+=1
         #   collab << (commit[:author].try(:[],:login) || commit[:commit][:author][:name])
         # end
+        sleep(1)
 
         process_issues
 
+        sleep(5)
+
         process_pulls
+
+        sleep(5)
 
         process_actual_prs_and_issues
 
@@ -483,7 +488,11 @@ module Ossert
 
         process_commits
 
+        sleep(1)
+
         process_top_contributors
+
+        sleep(1)
 
         branches do |branch|
           # stale and total

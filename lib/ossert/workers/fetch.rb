@@ -8,6 +8,8 @@ module Ossert
 
       def perform(name)
         Ossert::Project.fetch_all(name)
+      ensure
+        GC.start
       end
     end
   end
