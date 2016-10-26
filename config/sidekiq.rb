@@ -1,4 +1,5 @@
 require 'ossert'
+require 'ossert/workers/fetch'
 
 SIDEKIQ_REDIS_CONFIGURATION = {
   url: ENV.fetch('REDIS_URL'),

@@ -319,6 +319,8 @@ module Ossert
                                               ((values[values.count/2 - 1] + values[values.count/2]) / 2.0).to_i
                                             end
 
+        sleep(2)
+
         pulls_comments do |pull_comment|
           login = pull_comment[:user].try(:[], :login).presence || generate_anonymous
           if community.total.contributors.include? login
