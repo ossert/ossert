@@ -11,7 +11,6 @@ stats:
         - pr_with_contrib_comments_percent
         - pr_processed_in_avg
       metrics:
-        - dependencies_count
         - issues_closed_percent
         - issues_non_owner_percent
         - issues_with_contrib_comments_percent

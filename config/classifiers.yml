@@ -14,8 +14,12 @@ classifiers:
       issues_actual_count: 200
       issues_active_percent: 90
       issues_closed_percent: 90
-      dependencies_count: 15
-      dependants_count: 800
+      dependants_count:
+        - 500
+        - 100
+        - 20
+        - 5
+        - 1
       first_issue_date_int:
         - 1161160504 # Best
         - 1476783369 # Worst
@@ -32,7 +36,6 @@ classifiers:
         - 1
         - 90
     reversed:
-      - dependencies_count
       - stale_branches_count
       - issues_active_percent
       - pr_active_percent
@@ -75,7 +78,6 @@ classifiers:
           releases_count: 4
           commits: 4
         total:
-          dependencies_count: 2
           issues_closed_percent: 0.5
           issues_non_owner_percent: 0.5
           issues_with_contrib_comments_percent: 0.5

@@ -49,14 +49,18 @@ module Ossert
             values_range = Array.wrap(values_range)
             values_range = values_range.reverse if reversed_metrics.include? synt_metric
 
-            max_value, min_value = values_range
-            min_value = min_value.to_i
-            max_value = max_value.to_i
+            step_threshold = if values_range.count == GRADES.count
+                               ->(idx) { values_range[idx] }
+                             else
+                               max_value, min_value = values_range
+                               min_value = min_value.to_i
+                               max_value = max_value.to_i
+                               step = ((max_value - min_value) / GRADES.count.to_f).round(2)
+                               ->(idx) { max_value - (step * idx).round(2) }
+                             end
 
-            growth = ((max_value - min_value) / GRADES.count.to_f).round(2)
-
-            GRADES.reverse.each_with_index do |grade, idx|
-              classifier[grade][synt_metric] = (growth * (idx + 1)).round(2) + min_value
+            GRADES.each_with_index do |grade, idx|
+              classifier[grade][synt_metric] = step_threshold.(idx)
             end
           end
         end
