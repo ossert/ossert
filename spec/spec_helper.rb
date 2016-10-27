@@ -21,7 +21,7 @@ VCR.configure do |c|
   end
 
   c.ignore_request do |request|
-    !request.headers['X-Vcr-Test-Repo-Setup'].nil?
+    !request.headers['X-Vcr-Test-Repo-Setup'].nil? or request.uri =~ /api\.stackexchange\.com/
   end
 
   c.default_cassette_options = {
@@ -64,12 +64,12 @@ RSpec.configure do |config|
       end
     end
     threads << Thread.new do
-      VCR.use_cassette 'fetch_d_proJect' do
+      VCR.use_cassette 'fetch_d_project' do
         Ossert::Project.fetch_all(@d_project, 'ClassD')
       end
     end
     threads << Thread.new do
-      VCR.use_cassette 'fetch_e_proJect' do
+      VCR.use_cassette 'fetch_e_project' do
         Ossert::Project.fetch_all(@e_project, 'ClassE')
       end
     end

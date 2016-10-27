@@ -115,7 +115,6 @@ stats:
         - last_month_answers_avg
         - last_month_questions_views
         - last_month_question_owner_reputation_avg
-        - last_month_users_who_answered
         - last_month_answered_questions
         - last_month_answered_questions_divergence
       attributes:
@@ -163,7 +162,6 @@ stats:
         - answers_avg
         - questions_views
         - question_owner_reputation_avg
-        - users_who_answered
         - answered_questions
         - answered_questions_divergence
       attributes:
