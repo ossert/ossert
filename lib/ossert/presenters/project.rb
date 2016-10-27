@@ -1,11 +1,18 @@
+# frozen_string_literal: true
 require 'ossert/presenters/project_v2'
 
 module Ossert
   module Presenters
     class Project
       include Ossert::Presenters::ProjectV2
+      CLASSES = [
+        'ClassE'.freeze,
+        'ClassD'.freeze,
+        'ClassC'.freeze,
+        'ClassB'.freeze,
+        'ClassA'.freeze
+      ]
 
-      CLASSES = %w(ClassE ClassD ClassC ClassB ClassA)
       attr_reader :project
 
       def initialize(project)
@@ -14,7 +21,7 @@ module Ossert
       end
 
       def with_reference(text, value, metric, type)
-        return (text.to_i > 0 ? "+#{text}" : text).to_s if type =~ /delta/
+        return (text.to_i.positive? ? "+#{text}" : text).to_s if type =~ /delta/
 
         metric_by_ref = @reference[type][metric.to_s]
         reference = CLASSES.inject('NaN') do |acc, ref|
@@ -34,10 +41,10 @@ module Ossert
       METRICS_DECORATIONS = {
         /(percent|divergence)/ => ->(value) { "#{value.ceil}%" },
         /(date|changed)/ => ->(value) { Time.at(value).strftime('%d/%m/%y') },
-        /processed_in/ => (->(value) {
+        /processed_in/ => (lambda do |value|
           case value
           when 0
-            "not enough data"
+            'not enough data'
           when 1
             "~#{value.ceil} day"
           when 2..30
@@ -47,17 +54,17 @@ module Ossert
           else
             "~#{(value / 31).ceil} months"
           end
-        }),
-        /period/ => (->(value) {
-          if (years = value.to_i / 365) > 0
+        end),
+        /period/ => (lambda do |value|
+          if (years = value.to_i / 365).positive?
             "#{years}+ years"
           else
-            "Less than a year"
+            'Less than a year'
           end
-        }),
+        end),
         /count/ => ->(value) { value.to_i },
-        /downloads/ => ->(value) { value.ceil.to_s.gsub(/\d(?=(...)+$)/, '\0,') },
-      }
+        /downloads/ => ->(value) { value.ceil.to_s.gsub(/\d(?=(...)+$)/, '\0,') }
+      }.freeze
 
       def decorate_value(metric, value)
         value = value.to_f

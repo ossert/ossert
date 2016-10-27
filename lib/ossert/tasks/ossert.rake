@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 namespace :ossert do
   namespace :cache do
     desc 'Reset data cache'
@@ -9,9 +10,9 @@ namespace :ossert do
   end
 
   desc 'Collect reference projects'
-  task :collect => ['db:dump'] do
+  task collect: ['db:dump'] do
     begin
-      puts "Run collecting process"
+      puts 'Run collecting process'
       time = Benchmark.realtime do
         Ossert::Project.cleanup_referencies!
         reference_projects = Ossert::Reference.prepare_projects!
@@ -20,13 +21,13 @@ namespace :ossert do
 
       puts "Collecting process finished in #{time.round(3)} sec."
     rescue
-      Rake::Task["db:restore:last"].invoke
+      Rake::Task['db:restore:last'].invoke
     end
   end
 
   desc 'Add or replace project name exception'
   task :exception, [:name, :github_name] do |_, args|
-    raise "Arguments name and GitHub name expected" unless args.name.present? && args.github_name.present?
+    raise 'Arguments name and GitHub name expected' unless args.name.present? && args.github_name.present?
     exceptions_repo = ExceptionsRepo.new(Ossert.rom)
     if exceptions_repo[args.name]
       exceptions_repo.update(

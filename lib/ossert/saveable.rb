@@ -1,13 +1,14 @@
+# frozen_string_literal: true
 module Ossert
   module Saveable
-    UNUSED_REFERENCE = 'unused'.freeze
+    UNUSED_REFERENCE = 'unused'
     ATTRIBUTE_EXTRACT_VALUE_MAP = {
       agility_total_data: ->(project) { project.agility.total.to_json },
       agility_quarters_data: ->(project) { project.agility.quarters.to_json },
       community_total_data: ->(project) { project.community.total.to_json },
       community_quarters_data: ->(project) { project.community.quarters.to_json },
       meta_data: ->(project) { project.meta_to_json }
-    }
+    }.freeze
 
     def self.included(base)
       base.extend(ClassMethods)
@@ -18,11 +19,8 @@ module Ossert
       value = ATTRIBUTE_EXTRACT_VALUE_MAP.fetch(attriibute).call(self)
 
       with_repo do |repo|
-        if repo[name]
-          repo.update(name, attriibute => value, updated_at: Time.now.utc)
-        else
-          raise 'Not saved yet, sorry!'
-        end
+        raise 'Not saved yet, sorry!' unless repo[name]
+        repo.update(name, attriibute => value, updated_at: Time.now.utc)
       end
       nil
     end
@@ -100,7 +98,7 @@ module Ossert
           stored_project.name,
           stored_project.github_name,
           stored_project.rubygems_name,
-          stored_project.reference,
+          stored_project.reference
         )
         project.assign_data(
           ProjectRepo::Unpacker.process(stored_project)

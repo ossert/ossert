@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 module Ossert
   module Fetch
     class Rubygems
@@ -7,7 +8,7 @@ module Ossert
       def_delegators :project, :agility, :community, :meta
 
       def initialize(project)
-        @client = SimpleClient.new("https://rubygems.org/api/v1/")
+        @client = SimpleClient.new('https://rubygems.org/api/v1/')
         @project = project
       end
 
@@ -43,8 +44,8 @@ module Ossert
 
       def process
         if project.github_alias.blank?
-          match = info['source_code_uri'].try(:match, /github.com\/([a-zA-Z0-9\.\_\-]+)\/([a-zA-Z0-9\.\_\-]+)/)
-          match ||= info['homepage_uri'].try(:match, /github.com\/([a-zA-Z0-9\.\_\-]+)\/([a-zA-Z0-9\.\_\-]+)/)
+          match = info['source_code_uri'].try(:match, %r{github.com/([a-zA-Z0-9\.\_\-]+)/([a-zA-Z0-9\.\_\-]+)})
+          match ||= info['homepage_uri'].try(:match, %r{github.com/([a-zA-Z0-9\.\_\-]+)/([a-zA-Z0-9\.\_\-]+)})
           project.github_alias = "#{match[1]}/#{match[2]}" if match
         end
 
