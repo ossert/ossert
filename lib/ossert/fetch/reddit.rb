@@ -53,8 +53,9 @@ module Ossert
           end
         }
       end
-
+      
       def process
+        return if project.reddit_name.nil?
         project.reddit_name.split(",").each {|name| process_subreddit(name.strip, :new)}
         project.reddit_name.split(",").each {|name| process_subreddit(name.strip, :top)}
 
