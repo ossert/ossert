@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 module Ossert
   # Public: Class for data divided by quarters. Each quarter instantiates some statistics class.
   # Contains methods for quarters calculations, such as grouping, preview and other.
@@ -15,7 +16,7 @@ module Ossert
     # Returns QuarterStore instance.
     def initialize(data_klass)
       @data_klass = data_klass
-      @quarters = Hash.new
+      @quarters = {}
     end
 
     # Public: Strict fetch of quarter for given date
@@ -35,7 +36,7 @@ module Ossert
     def find_or_create(date)
       quarters[date_to_start(date)] ||= data_klass.new
     end
-    alias_method :[], :find_or_create
+    alias [] find_or_create
 
     # Public: Find closest begining of quarter for given date.
     #
@@ -45,7 +46,7 @@ module Ossert
     def date_to_start(date)
       if date.is_a? String
         # Alternative, but more expensive: DateTime.parse(value).beginning_of_quarter.to_i
-        DateTime.new(*date.split('-'.freeze).map(&:to_i)).beginning_of_quarter.to_i
+        DateTime.new(*date.split('-').map(&:to_i)).beginning_of_quarter.to_i
       else
         Time.at(date).to_date.to_time(:utc).beginning_of_quarter.to_i
       end
@@ -106,7 +107,7 @@ module Ossert
       period = start_date + 93.days
       while period < end_date
         find_or_create(period)
-        period = period + 93.days
+        period += 93.days
       end
     end
 

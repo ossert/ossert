@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 module Ossert
   module Stats
     class AgilityTotal < Base
@@ -7,18 +8,17 @@ module Ossert
 
       define_percent(
         :issues_closed, :issues_active, :issues_non_owner, :issues_with_contrib_comments,
-        :pr_closed, :pr_active, :pr_non_owner, :pr_with_contrib_comments,
+        :pr_closed, :pr_active, :pr_non_owner, :pr_with_contrib_comments
       )
 
       [
-        :first_pr_date, :last_pr_date, :first_issue_date, :last_issue_date, :last_release_date,
+        :first_pr_date, :last_pr_date, :first_issue_date,
+        :last_issue_date, :last_release_date
       ].each do |metric|
         define_method("#{metric}_int") { public_send(metric).to_i }
       end
 
-      [:issues_all, :pr_all, :stale_branches].each do |metric|
-        define_method("#{metric}_count") { public_send(metric).count }
-      end
+      define_counts(:issues_all, :pr_all, :stale_branches, :dependencies)
 
       def commits_count_since_last_release_count
         commits_count_since_last_release.is_a?(Set) ? 0 : commits_count_since_last_release

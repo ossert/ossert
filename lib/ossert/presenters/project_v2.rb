@@ -1,7 +1,8 @@
+# frozen_string_literal: true
 module Ossert
   module Presenters
     module ProjectV2
-      CLASSES = %w(ClassE ClassD ClassC ClassB ClassA)
+      CLASSES = %w(ClassE ClassD ClassC ClassB ClassA).freeze
 
       def preview_reference_values_for(metric, section) # maybe automatically find section?
         metric_by_grades = @reference[section][metric.to_s]
@@ -14,12 +15,12 @@ module Ossert
       end
 
       REFERENCES_STUB = {
-        'ClassA' => {threshold: '0', range: []},
-        'ClassB' => {threshold: '0', range: []},
-        'ClassC' => {threshold: '0', range: []},
-        'ClassD' => {threshold: '0', range: []},
-        'ClassE' => {threshold: '0', range: []},
-      }
+        'ClassA' => { threshold: '0', range: [] },
+        'ClassB' => { threshold: '0', range: [] },
+        'ClassC' => { threshold: '0', range: [] },
+        'ClassD' => { threshold: '0', range: [] },
+        'ClassE' => { threshold: '0', range: [] }
+      }.freeze
 
       # Tooltip data:
       # {
@@ -83,11 +84,10 @@ module Ossert
           Ossert::Classifiers::Growing.current.check(@project, last_year_offset)
         end
 
-        @fast_preview_graph_data = {popularity: [], maintenance: [], maturity: []} # replace with config
+        @fast_preview_graph_data = { popularity: [], maintenance: [], maturity: [] } # replace with config
 
         max = check_results.count
         check_results.each_with_index do |check_result, index|
-
           offset = max - index
           check_result.each do |check, results|
             gain = results[:gain].to_f.round(2)
@@ -97,8 +97,7 @@ module Ossert
               values: [gain]
             }
 
-
-            @fast_preview_graph_data[check][index - 1][:values] << gain if index > 0
+            @fast_preview_graph_data[check][index - 1][:values] << gain if index.positive?
             @fast_preview_graph_data[check][index][:values] << gain if index == max - 1
           end
         end

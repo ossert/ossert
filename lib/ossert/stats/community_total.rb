@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 module Ossert
   module Stats
     class CommunityTotal < Base
@@ -5,11 +6,11 @@ module Ossert
       self.section_type = 'total'
       create_attributes_accessors
 
-      [:users_creating_issues, :users_commenting_issues, :users_creating_pr,
-      :users_commenting_pr, :contributors, :watchers, :stargazers, :forks,
-      :users_involved].each do |metric|
-        define_method("#{metric}_count") { send(metric).count }
-      end
+      define_counts(
+        :users_creating_issues, :users_commenting_issues, :users_creating_pr,
+        :users_commenting_pr, :contributors, :watchers, :stargazers, :forks,
+        :users_involved, :dependants
+      )
 
       def users_involved_no_stars_count
         (users_involved - stargazers).count

@@ -32,6 +32,7 @@ stats:
         - life_period
         - last_changed
       attributes:
+        dependencies: Set
         issues_open: Set
         issues_closed: Set
         issues_owner: Set
@@ -96,6 +97,7 @@ stats:
     total:
       aggregated_metrics: []
       metrics:
+        - dependants_count
         - users_creating_issues_count
         - users_commenting_issues_count
         - users_creating_pr_count
@@ -107,6 +109,7 @@ stats:
         - users_involved_no_stars_count
         - total_downloads
       attributes:
+        dependants: Set
         users_creating_issues: Set
         users_commenting_issues: Set
         users_creating_pr: Set

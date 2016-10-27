@@ -1,3 +1,6 @@
+# frozen_string_literal: true
+require 'octokit'
+
 module Ossert
   module Fetch
     class GitHub
@@ -7,7 +10,7 @@ module Ossert
       def_delegators :project, :agility, :community, :meta
 
       def initialize(project)
-        @client = ::Octokit::Client.new(:access_token => ENV["GITHUB_TOKEN"])
+        @client = ::Octokit::Client.new(access_token: ENV['GITHUB_TOKEN'])
         client.default_media_type = 'application/vnd.github.v3.star+json'
         client.auto_paginate = true
 
@@ -33,9 +36,9 @@ module Ossert
       def url(endpoint, repo_name)
         path = case endpoint
                when /issues_comments/
-                 "issues/comments"
+                 'issues/comments'
                when /pulls_comments/
-                 "pulls/comments"
+                 'pulls/comments'
                else
                  endpoint
                end
@@ -95,10 +98,10 @@ module Ossert
       def last_year_commits
         last_year_commits = []
         retry_count = 3
-        while last_year_commits.blank? && retry_count > 0
+        while last_year_commits.blank? && retry_count.positive?
           last_year_commits = client.commit_activity_stats(@repo_name)
           if last_year_commits.blank?
-            sleep(15*retry_count)
+            sleep(15 * retry_count)
             retry_count -= 1
           end
         end
@@ -123,7 +126,7 @@ module Ossert
         tag_info = tag_info(sha)
         return tag_info[:tagger][:date] if tag_info
         value = commit(sha)[:commit][:committer][:date]
-        DateTime.new(*value.split('-'.freeze).map(&:to_i)).to_i
+        DateTime.new(*value.split('-').map(&:to_i)).to_i
       end
 
       def commits_since(date)
@@ -165,10 +168,10 @@ module Ossert
           agility.quarters[tag_date].releases_total_gh << tag[:name]
         end
 
-        unless latest_release_date.zero?
-          agility.total.last_release_date = latest_release_date# wrong: last_release_commit[:commit][:committer][:date]
-          agility.total.commits_count_since_last_release = commits_since(Time.at(latest_release_date).utc).length
-        end
+        return if latest_release_date.zero?
+
+        agility.total.last_release_date = latest_release_date # wrong: last_release_commit[:commit][:committer][:date]
+        agility.total.commits_count_since_last_release = commits_since(Time.at(latest_release_date).utc).length
       end
 
       def process_quarters_issues_and_prs_processing_days
@@ -201,13 +204,12 @@ module Ossert
 
         values = issues_processed_in_days.to_a.sort
         agility.total.issues_processed_in_avg = if values.count.odd?
-                                                          values[values.count/2]
-                                                        elsif values.count.zero?
-                                                          0
-                                                        else
-                                                          ((values[values.count/2 - 1] + values[values.count/2]) / 2.0).to_i
-                                                        end
-
+                                                  values[values.count / 2]
+                                                elsif values.count.zero?
+                                                  0
+                                                else
+                                                  ((values[values.count / 2 - 1] + values[values.count / 2]) / 2.0).to_i
+                                                end
 
         pulls_processed_in_days = []
         pulls do |pull|
@@ -220,17 +222,18 @@ module Ossert
 
         values = pulls_processed_in_days.to_a.sort
         agility.total.pr_processed_in_avg = if values.count.odd?
-                                                      values[values.count/2]
-                                                    elsif values.count.zero?
-                                                      0
-                                                    else
-                                                      ((values[values.count/2 - 1] + values[values.count/2]) / 2.0).to_i
-                                                    end
+                                              values[values.count / 2]
+                                            elsif values.count.zero?
+                                              0
+                                            else
+                                              ((values[values.count / 2 - 1] + values[values.count / 2]) / 2.0).to_i
+                                            end
       end
 
       def process_actual_prs_and_issues
-        actual_prs, actual_issues = Set.new, Set.new
-        agility.quarters.each_sorted do |quarter, data|
+        actual_prs = Set.new
+        actual_issues = Set.new
+        agility.quarters.each_sorted do |_quarter, data|
           data.pr_actual = actual_prs
           data.issues_actual = actual_issues
 
@@ -310,12 +313,14 @@ module Ossert
 
         values = pulls_processed_in_days.to_a.sort
         agility.total.pr_processed_in_avg = if values.count.odd?
-                                              values[values.count/2]
+                                              values[values.count / 2]
                                             elsif values.count.zero?
                                               0
                                             else
-                                              ((values[values.count/2 - 1] + values[values.count/2]) / 2.0).to_i
+                                              ((values[values.count / 2 - 1] + values[values.count / 2]) / 2.0).to_i
                                             end
+
+        sleep(2)
 
         pulls_comments do |pull_comment|
           login = pull_comment[:user].try(:[], :login).presence || generate_anonymous
@@ -376,11 +381,11 @@ module Ossert
 
         values = issues_processed_in_days.to_a.sort
         agility.total.issues_processed_in_avg = if values.count.odd?
-                                                  values[values.count/2]
+                                                  values[values.count / 2]
                                                 elsif values.count.zero?
                                                   0
                                                 else
-                                                  ((values[values.count/2 - 1] + values[values.count/2]) / 2.0).to_i
+                                                  ((values[values.count / 2 - 1] + values[values.count / 2]) / 2.0).to_i
                                                 end
 
         issues_comments do |issue_comment|
@@ -429,7 +434,8 @@ module Ossert
         #     :email=>"yves.senn@gmail.com",
         #     :date=>"2015-09-22T08:25:14Z"},
         #   :message=>
-        #     "Merge pull request #21678 from ronakjangir47/array_to_formatted_s_docs\n\nAdded Examples in docs for internal behavior of Array#to_formatted_s [ci skip]",
+        #     "Merge pull request #21678 from ronakjangir47/array_to_formatted_s_docs\n\nAdded Examples in docs for int
+        #     ernal behavior of Array#to_formatted_s [ci skip]",
         #   :tree=>
         #     {:sha=>"204811aa155645b461467dbd2238ac41c0fe8a30",
         #     :url=>
@@ -470,10 +476,15 @@ module Ossert
         #   count+=1
         #   collab << (commit[:author].try(:[],:login) || commit[:commit][:author][:name])
         # end
+        sleep(1)
 
         process_issues
 
+        sleep(5)
+
         process_pulls
+
+        sleep(5)
 
         process_actual_prs_and_issues
 
@@ -481,7 +492,11 @@ module Ossert
 
         process_commits
 
+        sleep(1)
+
         process_top_contributors
+
+        sleep(1)
 
         branches do |branch|
           # stale and total

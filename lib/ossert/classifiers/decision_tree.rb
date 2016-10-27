@@ -1,10 +1,17 @@
+# frozen_string_literal: true
 require 'graphr'
 require 'decisiontree'
 
 module Ossert
   module Classifiers
     class DecisionTree
-      GRADES = %w(ClassA ClassB ClassC ClassD ClassE)
+      GRADES = [
+        'ClassA'.freeze,
+        'ClassB'.freeze,
+        'ClassC'.freeze,
+        'ClassD'.freeze,
+        'ClassE'.freeze,
+      ]
 
       class << self
         attr_accessor :all
@@ -49,16 +56,16 @@ module Ossert
 
       def ready?
         agility_total_dec_tree.presence &&
-        agility_quarters_dec_tree.presence &&
-        community_total_dec_tree.presence &&
-        community_quarters_dec_tree
+          agility_quarters_dec_tree.presence &&
+          community_total_dec_tree.presence &&
+          community_quarters_dec_tree
       end
 
       def train
-        agility_total_data,
-        community_total_data,
-        agility_last_year_data,
-        community_last_year_data = [], [], [], []
+        agility_total_data = []
+        community_total_data = []
+        agility_last_year_data = []
+        community_last_year_data = []
 
         grouped_projects = train_group
         GRADES.each do |grade|
@@ -79,7 +86,7 @@ module Ossert
           [Stats::AgilityQuarter.metrics, agility_total_data],
           [Stats::AgilityTotal.metrics, agility_last_year_data],
           [Stats::CommunityTotal.metrics, community_total_data],
-          [Stats::CommunityQuarter.metrics, community_last_year_data],
+          [Stats::CommunityQuarter.metrics, community_last_year_data]
         ].map do |attributes, data|
           ::DecisionTree::ID3Tree.new(
             attributes, data, 'ClassE', :continuous

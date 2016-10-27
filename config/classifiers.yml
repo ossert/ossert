@@ -14,6 +14,12 @@ classifiers:
       issues_actual_count: 200
       issues_active_percent: 90
       issues_closed_percent: 90
+      dependants_count:
+        - 500
+        - 100
+        - 20
+        - 5
+        - 1
       first_issue_date_int:
         - 1161160504 # Best
         - 1476783369 # Worst
@@ -50,9 +56,9 @@ classifiers:
           forks_count: 3
           users_involved_count: 3
           users_involved_no_stars_count: 3
-          # delta_downloads: 3
           total_downloads: 3
         total:
+          dependants_count: 4
           users_creating_issues_count: 1
           users_commenting_issues_count: 1
           users_creating_pr_count: 1

@@ -1,14 +1,21 @@
+# frozen_string_literal: true
 module Ossert
   module Classifiers
     class Growing
       class Classifier
-        GRADES = %w(ClassA ClassB ClassC ClassD ClassE)
+        GRADES = [
+          'ClassA'.freeze,
+          'ClassB'.freeze,
+          'ClassC'.freeze,
+          'ClassD'.freeze,
+          'ClassE'.freeze,
+        ]
         REVERSED_GRADE = {
-          'ClassA' => 'ClassE',
-          'ClassB' => 'ClassD',
-          'ClassC' => 'ClassC',
-          'ClassD' => 'ClassB',
-          'ClassE' => 'ClassA'
+          'ClassA' => 'ClassE'.freeze,
+          'ClassB' => 'ClassD'.freeze,
+          'ClassC' => 'ClassC'.freeze,
+          'ClassD' => 'ClassB'.freeze,
+          'ClassE' => 'ClassA'.freeze
         }
 
         attr_reader :classifier, :config
@@ -30,13 +37,13 @@ module Ossert
           GRADES.each_with_index do |grade, idx|
             classifier[grade].each_pair do |metric, values|
               sibling_class_values = if (idx + 1) < GRADES.count
-                                       classifier[GRADES[idx+1]][metric]
+                                       classifier[GRADES[idx + 1]][metric]
                                      else
                                        []
                                      end
               all_values = sibling_class_values + values
-              classifier[grade][metric] = (values.max || 0) and next if all_values.count <= 2
-              classifier[grade][metric] = (all_values.sum/all_values.count).round(2)
+              (classifier[grade][metric] = (values.max || 0)) && next if all_values.count <= 2
+              classifier[grade][metric] = (all_values.sum / all_values.count).round(2)
             end
           end
         end
@@ -49,14 +56,18 @@ module Ossert
             values_range = Array.wrap(values_range)
             values_range = values_range.reverse if reversed_metrics.include? synt_metric
 
-            max_value, min_value = values_range
-            min_value = min_value.to_i
-            max_value = max_value.to_i
+            step_threshold = if values_range.count == GRADES.count
+                               ->(idx) { values_range[idx] }
+                             else
+                               max_value, min_value = values_range
+                               min_value = min_value.to_i
+                               max_value = max_value.to_i
+                               step = ((max_value - min_value) / GRADES.count.to_f).round(2)
+                               ->(idx) { max_value - (step * idx).round(2) }
+                             end
 
-            growth = ((max_value - min_value) / GRADES.count.to_f).round(2)
-
-            GRADES.reverse.each_with_index do |grade, idx|
-              classifier[grade][synt_metric] = (growth * (idx + 1)).round(2) + min_value
+            GRADES.each_with_index do |grade, idx|
+              classifier[grade][synt_metric] = step_threshold.call(idx)
             end
           end
         end
@@ -78,7 +89,9 @@ module Ossert
           end
 
           def initialize(metric, value, grade)
-            @metric, @value, @grade = metric, value, grade
+            @metric = metric
+            @value = value
+            @grade = grade
           end
 
           def range

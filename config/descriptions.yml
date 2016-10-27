@@ -1,5 +1,6 @@
 descriptions:
   # Agility
+  dependencies_count: Total number of external dependecies used in runtime
   issues_closed_percent: Percent of closed issues from the total number
   issues_non_owner_percent: Percent of issues created by non-owners of the repo from the total number
   issues_with_contrib_comments_percent: Percent of issues with contributor comments from the total number
@@ -25,6 +26,7 @@ descriptions:
   commits: How many commits where made during the period
 
   # Community
+  dependants_count: Total number of projects that depends on current
   users_creating_issues_count: Number of unique users that created issues
   users_commenting_issues_count: Number of unique users that commented any issue
   users_creating_pr_count: Number of unique users that requested a pull

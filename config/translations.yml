@@ -1,5 +1,6 @@
 translations:
   # Agility
+  dependencies_count: 'Number of Runtime Dependencies'
   issues_closed_percent: 'Issues Closed %'
   issues_non_owner_percent: 'Issues Created Not By Repo Owner'
   issues_with_contrib_comments_percent: 'Issues With Contibutors Comments'
@@ -25,6 +26,7 @@ translations:
   commits: 'Number of Commits Made'
 
   # Community
+  dependants_count: 'Number of Dependants'
   users_creating_issues_count: 'Number of Users Creating Issues'
   users_commenting_issues_count: 'Number of Users Commenting Issues'
   users_creating_pr_count: 'Number of Users Creating Pull Requests'

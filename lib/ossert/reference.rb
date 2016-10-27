@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 module Ossert
   module Reference
     def prepare_projects!
@@ -10,7 +11,7 @@ module Ossert
     # Most resource consuming method
     def collect_stats_for_refs!(refs)
       threads = []
-      puts "==== COLLECTING REFERENCE PROJECTS ===="
+      puts '==== COLLECTING REFERENCE PROJECTS ===='
       refs.in_groups_of(3, false).each do |thread_batch|
         threads << Thread.new(thread_batch) do |batch|
           batch.each do |reference|
@@ -29,13 +30,13 @@ module Ossert
           end
         end
       end
-      threads.each {|thr| thr.join }
-      puts "Done with reference projects."
+      threads.each(&:join)
+      puts 'Done with reference projects.'
     end
     module_function :collect_stats_for_refs!
 
     class Base
-      CLASSES = %w(ClassA ClassB ClassC ClassD ClassE)
+      CLASSES = %w(ClassA ClassB ClassC ClassD ClassE).freeze
 
       attr_reader :total, :representative, :pages, :project_names
 
@@ -49,11 +50,11 @@ module Ossert
 
       def prepare_projects!
         all_pages = pages.to_a.shuffle
-        all_projects = Hash.new
+        all_projects = {}
         representative.times do
           current_page = all_pages.pop
           Fetch::BestgemsDailyStat.process_page(current_page) do |rank, downloads, name|
-            all_projects[name] = {rank: rank, downloads: downloads}
+            all_projects[name] = { rank: rank, downloads: downloads }
           end
         end
 
@@ -77,19 +78,19 @@ module Ossert
 
     class ClassC < Base
       def initialize
-        super(100, 10000, 51..550)
+        super(100, 10_000, 51..550)
       end
     end
 
     class ClassD < Base
       def initialize
-        super(100, 50000, 551..2500)
+        super(100, 50_000, 551..2500)
       end
     end
 
     class ClassE < Base
       def initialize
-        super(100, 50000, 2501..5000)
+        super(100, 50_000, 2501..5000)
       end
     end
   end

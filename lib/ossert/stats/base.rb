@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 module Ossert
   module Stats
     class Base
@@ -52,11 +53,11 @@ module Ossert
       def median(values)
         values = values.to_a.sort
         if values.count.odd?
-          values[values.count/2]
+          values[values.count / 2]
         elsif values.count.zero?
           0
         else
-          ((values[values.count/2 - 1] + values[values.count/2]) / 2.0).to_i
+          ((values[values.count / 2 - 1] + values[values.count / 2]) / 2.0).to_i
         end
       end
 
@@ -67,21 +68,21 @@ module Ossert
       def metrics_to_hash
         self.class.metrics.each_with_object({}) do |var, result|
           value = send(var)
-          if value.is_a? Set
-            result[var] = value.to_a
-          else
-            result[var] = value
-          end
+          result[var] = if value.is_a? Set
+                          value.to_a
+                        else
+                          value
+                        end
         end
       end
 
       def to_hash
         self.class.attributes.each_with_object({}) do |var, result|
-          if (value = send(var)).is_a? Set
-            result[var] = value.to_a
-          else
-            result[var] = value
-          end
+          result[var] = if (value = send(var)).is_a? Set
+                          value.to_a
+                        else
+                          value
+                        end
         end
       end
 
