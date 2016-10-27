@@ -1,8 +1,9 @@
-require "ossert/stats/base"
-require "ossert/stats/agility_total"
-require "ossert/stats/agility_quarter"
-require "ossert/stats/community_total"
-require "ossert/stats/community_quarter"
+# frozen_string_literal: true
+require 'ossert/stats/base'
+require 'ossert/stats/agility_total'
+require 'ossert/stats/agility_quarter'
+require 'ossert/stats/community_total'
+require 'ossert/stats/community_quarter'
 
 module Ossert
   module Stats

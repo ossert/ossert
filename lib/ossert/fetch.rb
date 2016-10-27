@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 require 'nokogiri'
 require 'open-uri'
 require 'benchmark'
@@ -13,7 +14,7 @@ module Ossert
   # Such as GitHub, Rubygems, Bestgems. Also provides simple functionality for
   # fetching HTTP API.
   module Fetch
-    ALL_FETCHERS = [Rubygems, Bestgems, GitHub]
+    ALL_FETCHERS = [Rubygems, Bestgems, GitHub].freeze
 
     # Public: Fetch data for project using all fetchers by default process method
     #

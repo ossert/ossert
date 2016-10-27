@@ -1,7 +1,8 @@
+# frozen_string_literal: true
 namespace :db do
   namespace :test do
     task :prepare do
-      test_database_url = ENV.fetch("TEST_DATABASE_URL")
+      test_database_url = ENV.fetch('TEST_DATABASE_URL')
       database_name = test_database_url.split('/').last
 
       ROM::Configuration.new(:sql, test_database_url)
@@ -19,10 +20,10 @@ namespace :db do
   end
 
   task :load_config do
-    ROM::Configuration.new(:sql, ENV.fetch("DATABASE_URL"))
+    ROM::Configuration.new(:sql, ENV.fetch('DATABASE_URL'))
   end
 
-  desc 'Create the database, load the schema, and initialize with the seed data (use db:reset to also drop the db first)'
+  desc 'Create the database, load the schema, and initialize with the seed data (db:reset to also drop the db first)'
   task :setup do
     Rake::Task['db:create'].invoke
     Rake::Task['db:load_config'].invoke
@@ -36,25 +37,25 @@ namespace :db do
   end
 
   task :drop do
-    sh "dropdb #{ENV.fetch("DATABASE_URL").split('/').last}" do
+    sh "dropdb #{ENV.fetch('DATABASE_URL').split('/').last}" do
       # Ignore errors
     end
   end
 
   task :create do
-    sh "createdb #{ENV.fetch("DATABASE_URL").split('/').last}" do
+    sh "createdb #{ENV.fetch('DATABASE_URL').split('/').last}" do
       # Ignore errors
     end
   end
 
-  desc "Dumps the database to backups"
+  desc 'Dumps the database to backups'
   task :dump, [:fmt] do |_, args|
     dump_fmt = args.fmt || 'c' # or 'p', 't', 'd'
     dump_sfx = suffix_for_format dump_fmt
     backup_dir = backup_directory true
     cmd = nil
     with_config do |app, db_url|
-      file_name = Time.now.strftime("%Y%m%d%H%M%S") + "_" + app + '_db.' + dump_sfx
+      file_name = Time.now.strftime('%Y%m%d%H%M%S') + '_' + app + '_db.' + dump_sfx
       cmd = "pg_dump #{db_url} --no-owner --no-acl -F #{dump_fmt} -v -f #{backup_dir}/#{file_name}"
     end
     puts cmd
@@ -63,14 +64,14 @@ namespace :db do
     end
   end
 
-  desc "Show the existing database backups"
+  desc 'Show the existing database backups'
   task :list_backups do
     backup_dir = backup_directory
-    puts "#{backup_dir}"
+    puts backup_dir.to_s
     exec "/bin/ls -lht #{backup_dir}"
   end
 
-  desc "Restores the database from a backup using PATTERN"
+  desc 'Restores the database from a backup using PATTERN'
   task :restore, [:pat] do |_, args|
     if args.pat.present?
       cmd = nil
@@ -91,13 +92,13 @@ namespace :db do
         else
           puts "Too many files match the pattern '#{args.pat}':"
           puts ' ' + files.join("\n ")
-          puts "Try a more specific pattern"
+          puts 'Try a more specific pattern'
         end
       end
       unless cmd.nil?
-        Rake::Task["db:drop"].invoke
+        Rake::Task['db:drop'].invoke
         puts cmd
-        exec cmd << " || exit 0"
+        exec cmd << ' || exit 0'
       end
     else
       puts 'Please pass a pattern to the task'
@@ -105,12 +106,12 @@ namespace :db do
   end
 
   namespace :restore do
-    desc "Restores the database from latest backup"
+    desc 'Restores the database from latest backup'
     task :last do
       cmd = nil
       with_config do |_, db_url|
         backup_dir = backup_directory
-        file = Dir.glob("#{backup_dir}/*").max_by {|f| File.mtime(f)}
+        file = Dir.glob("#{backup_dir}/*").max_by { |f| File.mtime(f) }
         if file
           fmt = format_for_file file
           if fmt.nil?
@@ -119,14 +120,14 @@ namespace :db do
             cmd = "pg_restore -d '#{db_url}' -F #{fmt} -v #{file}"
           end
         else
-          puts "No backups found"
+          puts 'No backups found'
         end
       end
       unless cmd.nil?
-        Rake::Task["db:drop"].invoke
-        Rake::Task["db:create"].invoke
+        Rake::Task['db:drop'].invoke
+        Rake::Task['db:create'].invoke
         puts cmd
-        exec cmd << " || exit 0"
+        exec cmd << ' || exit 0'
       end
     end
   end
@@ -134,13 +135,12 @@ namespace :db do
   private
 
   def suffix_for_format(suffix)
-      case suffix
-      when 'c' then 'dump'
-      when 'p' then 'sql'
-      when 't' then 'tar'
-      when 'd' then 'dir'
-      else nil
-      end
+    case suffix
+    when 'c' then 'dump'
+    when 'p' then 'sql'
+    when 't' then 'tar'
+    when 'd' then 'dir'
+    end
   end
 
   def format_for_file(file)
@@ -149,13 +149,12 @@ namespace :db do
     when /\.sql$/  then 'p'
     when /\.dir$/  then 'd'
     when /\.tar$/  then 't'
-    else nil
     end
   end
 
-  def backup_directory(create=false)
-    backup_dir = "db/backups"
-    if create and not Dir.exist?(backup_dir)
+  def backup_directory(create = false)
+    backup_dir = 'db/backups'
+    if create && !Dir.exist?(backup_dir)
       puts "Creating #{backup_dir} .."
       Dir.mkdir_p(backup_dir)
     end
@@ -163,6 +162,6 @@ namespace :db do
   end
 
   def with_config
-    yield 'ossert', ENV.fetch("DATABASE_URL")
+    yield 'ossert', ENV.fetch('DATABASE_URL')
   end
 end

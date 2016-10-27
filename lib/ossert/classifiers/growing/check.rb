@@ -1,8 +1,15 @@
+# frozen_string_literal: true
 module Ossert
   module Classifiers
     class Growing
       class Check
-        GRADES = %w(A B C D E)
+        GRADES = [
+          'A'.freeze,
+          'B'.freeze,
+          'C'.freeze,
+          'D'.freeze,
+          'E'.freeze,
+        ]
 
         class << self
           def process_using(action, config, project, classifiers, last_year_offset = 1)
@@ -94,11 +101,11 @@ module Ossert
           end
 
           def grade_as_hash
-            grade = {gain: 0, mark: 'E'}
+            grade = { gain: 0, mark: 'E' }
             max = GRADES.count
             check.each_with_index do |(current_grade, gain), decrease|
               next if gain <= trusted_probability
-              grade = {gain: gain * (max - decrease), mark: current_grade}
+              grade = { gain: gain * (max - decrease), mark: current_grade }
               break
             end
             grade
@@ -112,7 +119,7 @@ module Ossert
 
           def rate(rates, metrics, data, classifier)
             classifier.each_pair do |grade, qualified_metrics|
-              grade = grade.sub(/Class/,'')
+              grade = grade.sub(/Class/, '')
               metrics = metrics.slice(*data.keys)
               metrics.each_pair do |metric, weight|
                 range = qualified_metrics[metric.to_s][:range]

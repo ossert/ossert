@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 require 'rom-repository'
 require 'rom-sql'
 
@@ -37,7 +38,7 @@ class ClassifiersRepo < ROM::Repository[:classifiers]
   end
 
   def actual?
-    classifiers.where('updated_at > ?', 1.month.ago).to_a.size > 0
+    !classifiers.where('updated_at > ?', 1.month.ago).to_a.empty?
   end
 
   def cleanup
@@ -132,7 +133,11 @@ class ProjectRepo < ROM::Repository[:projects]
 
       def coerce_value(value)
         return Set.new(value) if value.is_a? Array
-        return DateTime.parse(value) rescue value
+        begin
+          return DateTime.parse(value)
+        rescue
+          value
+        end
       end
 
       def stored_data
@@ -169,7 +174,7 @@ class ProjectRepo < ROM::Repository[:projects]
 
       def new_stats_object
         Ossert::QuartersStore.new(
-          Object.const_get "Ossert::Stats::#{@stats_type.capitalize}Quarter"
+          Object.const_get("Ossert::Stats::#{@stats_type.capitalize}Quarter")
         )
       end
 

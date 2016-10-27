@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 require 'ossert/classifiers/decision_tree'
 require 'ossert/classifiers/growing'
 

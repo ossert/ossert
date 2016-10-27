@@ -1,9 +1,10 @@
+# frozen_string_literal: true
 module Ossert
   module Fetch
     class BestgemsBase
       def self.process_page(page = nil)
-        doc = Nokogiri::HTML(open("http://bestgems.org/#{endpoint}#{page ? "?page=#{page}" : '' }"))
-        doc.css("table").xpath('//tr//td').each_slice(4) do |rank, downloads, name, _|
+        doc = Nokogiri::HTML(open("http://bestgems.org/#{endpoint}#{page ? "?page=#{page}" : ''}"))
+        doc.css('table').xpath('//tr//td').each_slice(4) do |rank, downloads, name, _|
           rank = rank.text.delete(',').to_i
           downloads = downloads.text.delete(',').to_i
           yield(rank, downloads, name.text)
@@ -30,7 +31,7 @@ module Ossert
       def_delegators :project, :agility, :community, :meta
 
       def initialize(project)
-        @client = SimpleClient.new("http://bestgems.org/api/v1/")
+        @client = SimpleClient.new('http://bestgems.org/api/v1/')
         @project = project
       end
 
@@ -66,7 +67,7 @@ module Ossert
 
         prev_downloads_delta = 0
         community.quarters.each_sorted do |start_date, stat|
-          prev_downloads_delta  = stat.delta_downloads.to_i - prev_downloads_delta
+          prev_downloads_delta = stat.delta_downloads.to_i - prev_downloads_delta
           community.quarters[start_date].download_divergence = divergence(
             prev_downloads_delta, downloads_till_now['total_downloads']
           )

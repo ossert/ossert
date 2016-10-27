@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 module Ossert
   class Project
     include Ossert::Saveable
@@ -14,12 +15,12 @@ module Ossert
       issue_tracker_url: nil,
       mailing_list_url: nil,
       authors: nil,
-      top_10_contributors: Array.new,
+      top_10_contributors: [],
       description: nil,
       current_version: nil,
       rubygems_url: nil,
-      github_url: nil,
-    }
+      github_url: nil
+    }.freeze
 
     class << self
       def exist?(name)
@@ -31,11 +32,11 @@ module Ossert
       end
 
       def fetch_all(name, reference = Ossert::Saveable::UNUSED_REFERENCE)
-        if (name_exception = ExceptionsRepo.new(Ossert.rom)[name])
-          project = new(name, name_exception.github_name, name, reference)
-        else
-          project = new(name, nil, name, reference)
-        end
+        project = if (name_exception = ExceptionsRepo.new(Ossert.rom)[name])
+                    new(name, name_exception.github_name, name, reference)
+                  else
+                    new(name, nil, name, reference)
+                  end
 
         Ossert::Fetch.all project
         project.prepare_time_bounds!
@@ -44,7 +45,7 @@ module Ossert
       end
 
       def projects_by_reference
-        load_referenced.group_by { |prj| prj.reference }
+        load_referenced.group_by(&:reference)
       end
     end
 
@@ -52,7 +53,7 @@ module Ossert
       raise unless Classifiers::Growing.current.ready?
       Classifiers::Growing.current.grade(self)
     end
-    alias_method :grade_by_classifier, :grade_by_growing_classifier
+    alias grade_by_classifier grade_by_growing_classifier
 
     def analyze_by_decisision_tree
       raise unless Classifiers::DecisionTree.current.ready?
@@ -70,7 +71,7 @@ module Ossert
       @meta = META_STUB.dup
     end
 
-    def assign_data(meta:, agility:, community:, created_at: , updated_at:)
+    def assign_data(meta:, agility:, community:, created_at:, updated_at:)
       @agility = agility
       @community = community
       @meta = meta
@@ -95,7 +96,7 @@ module Ossert
         extended: {
           start: (extended_start || Time.now.utc).to_datetime,
           end: (extended_end || 20.years.ago).to_datetime
-        },
+        }
       }
 
       agility.quarters.fullfill!
