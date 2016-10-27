@@ -40,3 +40,28 @@ descriptions:
   total_downloads: Total number of downloads since first day of the project
   delta_downloads: Number of downloads that were made during period
   download_divergence: Downloads Growth From Previous Period %
+  
+  # Reddit
+  last_mentions: Mentions on reddit in new/top section
+  users_commenting_posts: Hash set from users who commenting post on reddit
+  
+  # Stackoverflow
+  last_month_questions: Number of questions on Stackoverflow for last month
+  last_month_answers: Number of qnswers on Stackoverflow for last month
+  last_month_answers_avg: Per question average number of answers on Stackoverflow for last month
+  last_month_questions_views: Total views of questions for last month
+  last_month_question_owner_reputation_avg: Topic starters average reputation for last month
+  last_month_users_who_answered: Hash set of users who answered on question on Stackoverflow for last month
+  last_month_answered_questions: Total number of answered question on Stackoverflow for last month
+  last_month_answered_questions_divergence: Percentage of question marked as "answered" for last month
+
+  # Stackoverflow
+  questions: Number of questions on Stackoverflow from date of latest release
+  answers: Number of answers on Stackoverflow from date of latest release
+  answers_avg: Number of answers average on Stackoverflow from date of latest release
+  questions_views: Total views of questions from date of latest release
+  question_owner_reputation_avg: Topic starters average reputation from date of latest release
+  users_who_answered: Hash set of users who answered on question on Stackoverflow from date of latest release
+  answered_questions: Total number of answered question on Stackoverflow from date of latest release
+  answered_questions_divergence: Percentage of question marked as "answered" from date of latest release
+

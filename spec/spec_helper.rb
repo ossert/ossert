@@ -21,7 +21,7 @@ VCR.configure do |c|
   end
 
   c.ignore_request do |request|
-    !request.headers['X-Vcr-Test-Repo-Setup'].nil?
+    !request.headers['X-Vcr-Test-Repo-Setup'].nil? or request.uri =~ /api\.stackexchange\.com/
   end
 
   c.default_cassette_options = {
