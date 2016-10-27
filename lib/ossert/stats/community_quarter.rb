@@ -8,7 +8,7 @@ module Ossert
 
       [:users_creating_issues, :users_commenting_issues, :users_creating_pr,
        :users_commenting_pr, :contributors, :stargazers, :forks,
-       :users_involved].each do |metric|
+       :users_involved, :users_who_answered].each do |metric|
         define_method("#{metric}_count") { send(metric).count }
       end
 

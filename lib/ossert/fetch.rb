@@ -6,6 +6,8 @@ require 'benchmark'
 require 'ossert/fetch/github'
 require 'ossert/fetch/rubygems'
 require 'ossert/fetch/bestgems'
+require 'ossert/fetch/reddit'
+require 'ossert/fetch/stackoverflow'
 
 # TODO: Add logging
 
@@ -14,7 +16,7 @@ module Ossert
   # Such as GitHub, Rubygems, Bestgems. Also provides simple functionality for
   # fetching HTTP API.
   module Fetch
-    ALL_FETCHERS = [Rubygems, Bestgems, GitHub].freeze
+    ALL_FETCHERS = [Rubygems, Bestgems, GitHub, Reddit, Stackoverflow].freeze
 
     # Public: Fetch data for project using all fetchers by default process method
     #
@@ -92,14 +94,15 @@ module Ossert
       #
       # Returns nothing.
       def initialize(api_endpoint, type = nil)
-        raise ArgumentError if !api_endpoint.start_with?('http') || !api_endpoint.end_with?('/')
+        raise ArgumentError if api_endpoint.nil?
         @api_endpoint = api_endpoint
         @type = type || 'json'
       end
 
       class NotFound < StandardError; end
       class UnexpectedResponseError < StandardError; end
-
+      class WrongContentType < StandardError; end
+      
       # Public: Get data via HTTP GET for given API path
       #
       # path - The String describes path of endpoint to access the data
@@ -112,8 +115,9 @@ module Ossert
       #
       # Returns nothing.
       def get(path)
-        raise ArgumentError unless path.end_with? type
         response = agent.get("#{api_endpoint}#{path}")
+        raise WrongContentType unless response.headers['content-type'].include?(type)
+
         case response.status
         when 404
           raise NotFound

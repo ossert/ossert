@@ -5,7 +5,7 @@ module Ossert
 
     attr_accessor :name, :github_alias, :rubygems_alias,
                   :community, :agility, :reference,
-                  :meta, :created_at, :updated_at
+                  :meta, :created_at, :updated_at, :reddit_name
 
     META_STUB = {
       homepage_url: nil,
@@ -33,7 +33,7 @@ module Ossert
 
       def fetch_all(name, reference = Ossert::Saveable::UNUSED_REFERENCE)
         project = if (name_exception = ExceptionsRepo.new(Ossert.rom)[name])
-                    new(name, name_exception.github_name, name, reference)
+                    new(name, name_exception.github_name, name, reference, name_exception.reddit_name)
                   else
                     new(name, nil, name, reference)
                   end
@@ -60,12 +60,13 @@ module Ossert
       Classifiers::DecisionTree.current.check(self)
     end
 
-    def initialize(name, github_alias = nil, rubygems_alias = nil, reference = nil)
+    def initialize(name, github_alias = nil, rubygems_alias = nil, reference = nil, reddit_name = nil)
       @name = name.dup
       @github_alias = github_alias
       @rubygems_alias = (rubygems_alias || name).dup
       @reference = reference.dup
-
+      @reddit_name = reddit_name
+      
       @agility = Agility.new
       @community = Community.new
       @meta = META_STUB.dup

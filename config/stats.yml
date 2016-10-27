@@ -108,6 +108,16 @@ stats:
         - users_involved_count
         - users_involved_no_stars_count
         - total_downloads
+        - last_mentions
+        - users_commenting_posts_count
+        - last_month_questions
+        - last_month_answers
+        - last_month_answers_avg
+        - last_month_questions_views
+        - last_month_question_owner_reputation_avg
+        - last_month_users_who_answered
+        - last_month_answered_questions
+        - last_month_answered_questions_divergence
       attributes:
         dependants: Set
         users_creating_issues: Set
@@ -123,6 +133,16 @@ stats:
         owners_rubygems: Set
         total_downloads:
         delta_downloads:
+        last_mentions:
+        users_commenting_posts: Set
+        last_month_questions:
+        last_month_answers:
+        last_month_answers_avg:
+        last_month_questions_views:
+        last_month_question_owner_reputation_avg:
+        last_month_users_who_answered: Set
+        last_month_answered_questions:
+        last_month_answered_questions_divergence:
     quarter:
       aggregated_metrics:
         - download_divergence
@@ -137,6 +157,15 @@ stats:
         - users_involved_no_stars_count
         - download_divergence
         - total_downloads
+        - last_mentions
+        - questions
+        - answers
+        - answers_avg
+        - questions_views
+        - question_owner_reputation_avg
+        - users_who_answered
+        - answered_questions
+        - answered_questions_divergence
       attributes:
         users_creating_issues: Set
         users_commenting_issues: Set
@@ -149,3 +178,12 @@ stats:
         download_divergence:
         total_downloads:
         delta_downloads:
+        last_mentions:
+        questions:
+        answers:
+        answers_avg:
+        questions_views:
+        question_owner_reputation_avg:
+        users_who_answered: Set
+        answered_questions:
+        answered_questions_divergence:
