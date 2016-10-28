@@ -7,8 +7,11 @@ module Ossert
       create_attributes_accessors
 
       define_percent(
-        :issues_active, :issues_closed,
-        :pr_active, :pr_closed, :pr_merged,
+        issues_active: :issues_all,
+        issues_closed: :issues_all,
+        pr_active: :pr_all,
+        pr_closed: :pr_all,
+        pr_merged: :pr_all,
         default_value: 100.0
       )
 

@@ -52,24 +52,38 @@ module Ossert
       end
 
       def process
-        downloads_till_now = nil
-        total_downloads.each do |total|
-          downloads_till_now = total unless downloads_till_now
-          downloads_saved = community.quarters[total['date']].total_downloads.to_i
-          community.quarters[total['date']].total_downloads = [downloads_saved, total['total_downloads']].max
-        end
-        community.total.total_downloads = downloads_till_now['total_downloads']
+        process_total_downloads
+        process_daily_downloads
+        process_delta_downloads
+      end
 
+      def process_total_downloads
+        @downloads_till_now = nil
+        total_downloads.each do |total|
+          @downloads_till_now = total unless @downloads_till_now
+          quarter_downloads = community.quarters[total['date']]
+
+          quarter_downloads.total_downloads = [
+            quarter_downloads.total_downloads.to_i,
+            total['total_downloads']
+          ].max
+        end
+        community.total.total_downloads = @downloads_till_now['total_downloads']
+      end
+
+      def process_daily_downloads
         daily_downloads.each do |daily|
           downloads_saved = community.quarters[daily['date']].delta_downloads.to_i
           community.quarters[daily['date']].delta_downloads = downloads_saved + daily['daily_downloads']
         end
+      end
 
+      def process_delta_downloads
         prev_downloads_delta = 0
         community.quarters.each_sorted do |start_date, stat|
           prev_downloads_delta = stat.delta_downloads.to_i - prev_downloads_delta
           community.quarters[start_date].download_divergence = divergence(
-            prev_downloads_delta, downloads_till_now['total_downloads']
+            prev_downloads_delta, @downloads_till_now['total_downloads']
           )
         end
       end

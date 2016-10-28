@@ -32,16 +32,13 @@ module Ossert
       end
 
       def fetch_all(name, reference = Ossert::Saveable::UNUSED_REFERENCE)
-        project = if (name_exception = ExceptionsRepo.new(Ossert.rom)[name])
-                    new(name, name_exception.github_name, name, reference)
-                  else
-                    new(name, nil, name, reference)
-                  end
+        project = find_by_name(name, reference)
 
         Ossert::Fetch.all project
         project.prepare_time_bounds!
         project.dump
-        nil
+      rescue => e
+        puts "Fetching Failed for '#{name}' with error: #{e.inspect}"
       end
 
       def projects_by_reference
@@ -83,35 +80,38 @@ module Ossert
       @decorated ||= Ossert::Presenters::Project.new(self)
     end
 
-    def prepare_time_bounds!(extended_start: nil, extended_end: nil)
-      config = {
-        base_value: {
-          start: Time.now.utc,
-          end: 20.years.ago
-        },
-        aggregation: {
-          start: :min,
-          end: :max
-        },
-        extended: {
-          start: (extended_start || Time.now.utc).to_datetime,
-          end: (extended_end || 20.years.ago).to_datetime
-        }
+    TIME_BOUNDS_CONFIG = {
+      base_value: {
+        start: nil,
+        end: nil
+      },
+      aggregation: {
+        start: :min,
+        end: :max
+      },
+      extended: {
+        start: nil,
+        end: nil
       }
+    }.freeze
 
-      agility.quarters.fullfill!
-      community.quarters.fullfill!
+    def prepare_time_bounds!(extended_start: nil, extended_end: nil)
+      config = TIME_BOUNDS_CONFIG.dup
+      config[:base_value][:start] = Time.now.utc
+      config[:base_value][:end] = 20.years.ago
+      config[:extended][:start] = (extended_start || Time.now.utc).to_datetime
+      config[:extended][:end] = (extended_end || 20.years.ago).to_datetime
 
-      [:start, :end].map do |time_bound|
-        [
-          config[:base_value][time_bound],
-          config[:extended][time_bound],
-          agility.quarters.send("#{time_bound}_date"),
-          community.quarters.send("#{time_bound}_date")
-        ].send(
-          config[:aggregation][time_bound]
-        ).to_date
-      end
+      agility.quarters.fullfill! && community.quarters.fullfill!
+
+      [:start, :end].map { |time_bound| time_bound_values(time_bound, config).to_date }
+    end
+
+    def time_bound_values(time_bound, config)
+      [
+        config[:base_value][time_bound], config[:extended][time_bound],
+        agility.quarters.send("#{time_bound}_date"), community.quarters.send("#{time_bound}_date")
+      ].send(config[:aggregation][time_bound])
     end
 
     def meta_to_json

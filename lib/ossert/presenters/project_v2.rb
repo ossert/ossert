@@ -2,15 +2,28 @@
 module Ossert
   module Presenters
     module ProjectV2
-      CLASSES = %w(ClassE ClassD ClassC ClassB ClassA).freeze
+      CLASSES = [
+        'ClassE'.freeze,
+        'ClassD'.freeze,
+        'ClassC'.freeze,
+        'ClassB'.freeze,
+        'ClassA'.freeze
+      ].freeze
+      KLASS_2_GRADE = {
+        'ClassA' => 'A'.freeze,
+        'ClassB' => 'B'.freeze,
+        'ClassC' => 'C'.freeze,
+        'ClassD' => 'D'.freeze,
+        'ClassE' => 'E'.freeze
+      }.freeze
 
       def preview_reference_values_for(metric, section) # maybe automatically find section?
         metric_by_grades = @reference[section][metric.to_s]
         grades = CLASSES.reverse
         sign = metric_by_grades[grades.first][:range].include?(-Float::INFINITY) ? '<' : '>'
 
-        grades.each_with_object({}) do |grade, preview|
-          preview[grade.sub(/Class/, '')] = "#{sign} #{metric_by_grades[grade][:threshold].to_i}"
+        grades.each_with_object({}) do |klass, preview|
+          preview[KLASS_2_GRADE[klass]] = "#{sign} #{metric_by_grades[klass][:threshold].to_i}"
         end
       end
 
@@ -36,38 +49,32 @@ module Ossert
       # }
       def tooltip_data(metric)
         classes = CLASSES.reverse
-
         section = Ossert::Stats.guess_section_by_metric(metric)
-
-        ranks = classes.each_with_object([]) do |klass, preview|
-          grade = klass.downcase.sub(/class/, '')
-          result = {
-            type: grade,
-            year: ' N/A ',
-            total: ' N/A '
-          }
-
-          [:year, :total].each do |section_type|
-            next if section == :not_found # this should not happen
-            reference_section = [section, section_type].join('_')
-
-            metric_by_grades = @reference[reference_section.to_sym][metric.to_s]
-            next unless metric_by_grades
-
-            sign = metric_by_grades[classes.first][:range].include?(-Float::INFINITY) ? '&lt;&nbsp;' : '&gt;&nbsp;'
-            value = decorate_value(metric, metric_by_grades[klass][:threshold])
-
-            result[section_type] = "#{sign} #{value}"
+        ranks = classes.inject([]) do |preview, klass|
+          base = { type: KLASS_2_GRADE[klass].downcase, year: ' N/A ', total: ' N/A ' }
+          preview << [:year, :total].each_with_object(base) do |section_type, result|
+            next unless (metric_data = metric_tooltip_data(metric, section, section_type, klass)).present?
+            result[section_type] = metric_data
           end
-
-          preview << result
         end
 
-        {
-          title: Ossert.t(metric),
-          description: Ossert.descr(metric),
-          ranks: ranks
-        }
+        { title: Ossert.t(metric), description: Ossert.descr(metric), ranks: ranks }
+      end
+
+      def metric_tooltip_data(metric, section, section_type, klass)
+        return if section == :not_found # this should not happen
+        reference_section = [section, section_type].join('_')
+
+        return unless (metric_by_grades = @reference[reference_section.to_sym][metric.to_s])
+
+        [
+          reversed_metrics.include?(metric) ? '&lt;&nbsp;' : '&gt;&nbsp;',
+          decorate_value(metric, metric_by_grades[klass][:threshold])
+        ].join(' ')
+      end
+
+      def reversed_metrics
+        @reversed_metrics ||= Ossert::Classifiers::Growing.config['reversed']
       end
 
       # Fast preview graph
@@ -78,31 +85,29 @@ module Ossert
       #   {"title":"Oct - Dec 2016","type":"d","values":[35,50]},
       #   {"title":"Next year","type":"e","values":[50,10]}
       # ]
-      def fast_preview_graph_data
+      def fast_preview_graph_data(lookback = 4)
         return @fast_preview_graph_data if defined? @fast_preview_graph_data
-        check_results = 4.downto(0).map do |last_year_offset|
+        check_results = lookback.downto(0).map do |last_year_offset|
           Ossert::Classifiers::Growing.current.check(@project, last_year_offset)
         end
-
         @fast_preview_graph_data = { popularity: [], maintenance: [], maturity: [] } # replace with config
 
-        max = check_results.count
         check_results.each_with_index do |check_result, index|
-          offset = max - index
-          check_result.each do |check, results|
-            gain = results[:gain].to_f.round(2)
-            @fast_preview_graph_data[check] << {
-              title: last_quarters_bounds(offset),
-              type: results[:mark].downcase,
-              values: [gain]
-            }
-
-            @fast_preview_graph_data[check][index - 1][:values] << gain if index.positive?
-            @fast_preview_graph_data[check][index][:values] << gain if index == max - 1
-          end
+          offset = lookback + 1 - index
+          check_result.each { |check, results| sumup_checks(check, results, index, offset) }
         end
-
         @fast_preview_graph_data
+      end
+
+      def sumup_checks(check, results, index, offset)
+        gain = results[:gain]
+        @fast_preview_graph_data[check] << {
+          title: last_quarters_bounds(offset),
+          type: results[:mark].downcase,
+          values: [gain, gain]
+        }
+
+        @fast_preview_graph_data[check][index - 1][:values][1] = gain if index.positive?
       end
 
       def last_quarters_bounds(last_year_offset)

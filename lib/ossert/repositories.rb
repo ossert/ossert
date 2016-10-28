@@ -97,6 +97,19 @@ class ProjectRepo < ROM::Repository[:projects]
     end
 
     def process
+      [:agility, :community].each_with_object(process_meta) do |stats_type, result|
+        result[stats_type] = factory_project_stats(stats_type).new(
+          [Total, Quarter].each_with_object({}) do |unpacker_type, stats_result|
+            section_unpacker = unpacker_type.new(@stored_project, stats_type)
+            stats_result[section_unpacker.section] = section_unpacker.process
+          end
+        )
+      end
+    end
+
+    private
+
+    def process_meta(result = {})
       result = {
         created_at: @stored_project.created_at,
         updated_at: @stored_project.updated_at
@@ -107,19 +120,8 @@ class ProjectRepo < ROM::Repository[:projects]
                         {}
                       end
 
-      [:agility, :community].each do |stats_type|
-        result[stats_type] = factory_project_stats(stats_type).new(
-          [Total, Quarter].each_with_object({}) do |unpacker_type, stats_result|
-            section_unpacker = unpacker_type.new(@stored_project, stats_type)
-            stats_result[section_unpacker.section] = section_unpacker.process
-          end
-        )
-      end
-
       result
     end
-
-    private
 
     def factory_project_stats(stats_type)
       Object.const_get "Ossert::Project::#{stats_type.to_s.capitalize}"

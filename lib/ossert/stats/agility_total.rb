@@ -7,16 +7,21 @@ module Ossert
       create_attributes_accessors
 
       define_percent(
-        :issues_closed, :issues_active, :issues_non_owner, :issues_with_contrib_comments,
-        :pr_closed, :pr_active, :pr_non_owner, :pr_with_contrib_comments
+        issues_active: :issues_all,
+        issues_closed: :issues_all,
+        issues_non_owner: :issues_all,
+        issues_with_contrib_comments: :issues_all,
+        pr_active: :pr_all,
+        pr_closed: :pr_all,
+        pr_non_owner: :pr_all,
+        pr_with_contrib_comments: :pr_all,
+        default_value: 100.0
       )
 
-      [
+      define_ints(
         :first_pr_date, :last_pr_date, :first_issue_date,
         :last_issue_date, :last_release_date
-      ].each do |metric|
-        define_method("#{metric}_int") { public_send(metric).to_i }
-      end
+      )
 
       define_counts(:issues_all, :pr_all, :stale_branches, :dependencies)
 

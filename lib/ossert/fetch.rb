@@ -65,7 +65,6 @@ module Ossert
         puts "<====== Finished in #{time.round(3)} sec."
         sleep(1)
       end
-      nil
     end
     module_function :only
 

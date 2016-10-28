@@ -25,20 +25,25 @@ module Ossert
           attr_accessor(*attributes)
         end
 
+        def define_ints(*attributes)
+          Array.wrap(attributes).each do |metric|
+            define_method("#{metric}_int") { public_send(metric).to_i }
+          end
+        end
+
         def define_counts(*attributes)
           Array.wrap(attributes).each do |metric|
             define_method("#{metric}_count") { public_send(metric).count }
           end
         end
 
-        def define_percent(*attributes, default_value: 0)
-          Array.wrap(attributes).each do |metric|
-            type = metric.to_s.split('_').first
+        def define_percent(attributes, default_value: 0)
+          attributes.to_h.each do |metric, total|
             define_method("#{metric}_percent") do
-              value = public_send(metric)
-              total_count = public_send("#{type}_all").count
+              total_count = public_send(total).count
               return default_value if total_count.zero?
-              ((value.count.to_d / total_count.to_d) * 100).round(2)
+
+              ((public_send(metric).count.to_d / total_count.to_d) * 100).round(2)
             end
           end
         end
@@ -51,14 +56,15 @@ module Ossert
       end
 
       def median(values)
-        values = values.to_a.sort
-        if values.count.odd?
-          values[values.count / 2]
-        elsif values.count.zero?
-          0
-        else
-          ((values[values.count / 2 - 1] + values[values.count / 2]) / 2.0).to_i
-        end
+        values = Array(values).sort
+        count = values.count
+
+        return 0 if count.zero?
+
+        middle_idx = values.count / 2
+        return values[middle_idx] if count.odd?
+
+        (values[middle_idx - 1] + values[middle_idx]) / 2
       end
 
       def metric_values

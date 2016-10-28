@@ -17,6 +17,8 @@ module Ossert
     def initialize(data_klass)
       @data_klass = data_klass
       @quarters = {}
+      @start_date = Time.now
+      @end_date = Time.now
     end
 
     # Public: Strict fetch of quarter for given date
@@ -82,9 +84,7 @@ module Ossert
                      .map { |x| x.reduce(:+) }
       ).to_h
 
-      data_klass.aggregated_metrics.each do |metric|
-        last_year_metrics[metric] /= 4.0
-      end
+      data_klass.aggregated_metrics.each { |metric| last_year_metrics[metric] /= 4.0 }
 
       last_year_metrics
     end
@@ -95,20 +95,19 @@ module Ossert
     #
     # Returns nothing.
     def fullfill!
-      if quarters.empty?
-        @start_date = Time.now
-        @end_date = Time.now
-        return
+      return if quarters.empty?
+
+      periods_range = with_quarters_dates do |period|
+        find_or_create Time.at(period)
       end
 
+      @start_date = Time.at(periods_range.first)
+      @end_date = Time.at(periods_range.last)
+    end
+
+    def with_quarters_dates
       sorted_quarters = quarters.keys.sort
-      @start_date = Time.at sorted_quarters.first
-      @end_date = Time.at sorted_quarters.last
-      period = start_date + 93.days
-      while period < end_date
-        find_or_create(period)
-        period += 93.days
-      end
+      (sorted_quarters.first..sorted_quarters.last).step(93.days) { |period| yield(period) }
     end
 
     # Public: Iterate (and yields) through quarters in descending order

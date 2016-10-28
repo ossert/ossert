@@ -8,15 +8,15 @@ module Ossert
           'ClassB'.freeze,
           'ClassC'.freeze,
           'ClassD'.freeze,
-          'ClassE'.freeze,
-        ]
+          'ClassE'.freeze
+        ].freeze
         REVERSED_GRADE = {
           'ClassA' => 'ClassE'.freeze,
           'ClassB' => 'ClassD'.freeze,
           'ClassC' => 'ClassC'.freeze,
           'ClassD' => 'ClassB'.freeze,
           'ClassE' => 'ClassA'.freeze
-        }
+        }.freeze
 
         attr_reader :classifier, :config
         def initialize(classifier, config)
@@ -36,11 +36,9 @@ module Ossert
         def run_aggregation
           GRADES.each_with_index do |grade, idx|
             classifier[grade].each_pair do |metric, values|
-              sibling_class_values = if (idx + 1) < GRADES.count
-                                       classifier[GRADES[idx + 1]][metric]
-                                     else
-                                       []
-                                     end
+              sibling_class_values = []
+              sibling_class_values = classifier[GRADES[idx + 1]][metric] if (idx + 1) < GRADES.count
+
               all_values = sibling_class_values + values
               (classifier[grade][metric] = (values.max || 0)) && next if all_values.count <= 2
               classifier[grade][metric] = (all_values.sum / all_values.count).round(2)
@@ -55,21 +53,21 @@ module Ossert
 
             values_range = Array.wrap(values_range)
             values_range = values_range.reverse if reversed_metrics.include? synt_metric
-
-            step_threshold = if values_range.count == GRADES.count
-                               ->(idx) { values_range[idx] }
-                             else
-                               max_value, min_value = values_range
-                               min_value = min_value.to_i
-                               max_value = max_value.to_i
-                               step = ((max_value - min_value) / GRADES.count.to_f).round(2)
-                               ->(idx) { max_value - (step * idx).round(2) }
-                             end
+            step_threshold = syntetic_step_threshold(values_range)
 
             GRADES.each_with_index do |grade, idx|
               classifier[grade][synt_metric] = step_threshold.call(idx)
             end
           end
+        end
+
+        def syntetic_step_threshold(values_range)
+          return ->(idx) { values_range[idx] } if values_range.count == GRADES.count
+          max_value, min_value = values_range
+          min_value = min_value.to_i
+          max_value = max_value.to_i
+          step = ((max_value - min_value) / GRADES.count.to_f).round(2)
+          ->(idx) { max_value - (step * idx).round(2) }
         end
 
         def run_values_to_ranges
@@ -161,12 +159,13 @@ module Ossert
 
         def run_reverse
           reversed_metrics.each do |reversed_metric|
-            GRADES.first((GRADES.count / 2.0).ceil).each do |grade|
-              next unless classifier[grade][reversed_metric].present?
+            GRADES.first(GRADES.count / 2).each do |grade|
+              grade_metrics = classifier[grade]
+              next unless grade_metrics[reversed_metric].present?
+              reversed_grade_metrics = classifier[REVERSED_GRADE[grade]]
 
-              previous_value = classifier[REVERSED_GRADE[grade]][reversed_metric]
-              classifier[REVERSED_GRADE[grade]][reversed_metric] = classifier[grade][reversed_metric]
-              classifier[grade][reversed_metric] = previous_value
+              reversed_grade_metrics[reversed_metric], grade_metrics[reversed_metric] =
+                grade_metrics[reversed_metric], reversed_grade_metrics[reversed_metric]
             end
           end
         end

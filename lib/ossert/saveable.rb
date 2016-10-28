@@ -37,11 +37,20 @@ module Ossert
     end
 
     def attributes
+      meta_attributes.merge(data_attributes)
+    end
+
+    def meta_attributes
       {
         name: name,
         github_name: github_alias,
         rubygems_name: rubygems_alias,
-        reference: reference,
+        reference: reference
+      }
+    end
+
+    def data_attributes
+      {
         meta_data: meta_to_json,
         agility_total_data: agility.total.to_json,
         agility_quarters_data: agility.quarters.to_json,
@@ -57,6 +66,14 @@ module Ossert
     module ClassMethods
       def repo
         ProjectRepo.new(Ossert.rom)
+      end
+
+      def find_by_name(name, reference = Ossert::Saveable::UNUSED_REFERENCE)
+        if (name_exception = ExceptionsRepo.new(Ossert.rom)[name])
+          new(name, name_exception.github_name, name, reference)
+        else
+          new(name, nil, name, reference)
+        end
       end
 
       def load_by_name(name)

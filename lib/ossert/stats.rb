@@ -19,12 +19,9 @@ module Ossert
     module_function :guess_section_by_metric
 
     def section_by_metric
-      return @section_by_metric if defined? @section_by_metric
-
-      stats = Settings['stats']
       @section_by_metric ||= {
-        agility: stats['agility']['total']['metrics'] + stats['agility']['quarter']['metrics'],
-        community: stats['community']['total']['metrics'] + stats['community']['quarter']['metrics']
+        agility: AgilityTotal.metrics + AgilityQuarter.metrics,
+        community: CommunityTotal.metrics + CommunityQuarter.metrics
       }
     end
     module_function :section_by_metric

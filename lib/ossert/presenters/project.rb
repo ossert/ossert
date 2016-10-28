@@ -5,13 +5,6 @@ module Ossert
   module Presenters
     class Project
       include Ossert::Presenters::ProjectV2
-      CLASSES = [
-        'ClassE'.freeze,
-        'ClassD'.freeze,
-        'ClassC'.freeze,
-        'ClassB'.freeze,
-        'ClassA'.freeze
-      ]
 
       attr_reader :project
 
@@ -20,19 +13,16 @@ module Ossert
         @reference = Ossert::Classifiers::Growing.current.reference_values_per_grade
       end
 
+      # value, Float !
       def with_reference(text, value, metric, type)
         return (text.to_i.positive? ? "+#{text}" : text).to_s if type =~ /delta/
 
         metric_by_ref = @reference[type][metric.to_s]
         reference = CLASSES.inject('NaN') do |acc, ref|
-          metric_by_ref[ref][:range].cover?(value.to_f) ? ref : acc
+          metric_by_ref[ref][:range].cover?(value) ? ref : acc
         end
 
-        mark = reference.gsub(/Class/, '')
-        {
-          text: "#{text}&nbsp;#{mark}",
-          mark: mark.downcase
-        }
+        { text: "#{text}&nbsp;#{KLASS_2_GRADE[reference]}", mark: KLASS_2_GRADE[reference].downcase }
       rescue => e
         puts "NO DATA FOR METRIC: '#{metric}'"
         raise e
@@ -68,15 +58,12 @@ module Ossert
 
       def decorate_value(metric, value)
         value = value.to_f
-        METRICS_DECORATIONS.each do |check, decorator|
-          return decorator.call(value) if metric =~ check
-        end
+        METRICS_DECORATIONS.each { |check, decorator| return decorator.call(value) if metric =~ check }
         value.to_i
       end
 
       def decorate_metric(metric, value, type)
-        value = value.to_f
-        with_reference(decorate_value(metric, value), value, metric, type)
+        with_reference(decorate_value(metric, value), value.to_f, metric, type)
       end
 
       def agility_quarter(time)

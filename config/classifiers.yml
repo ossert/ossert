@@ -113,6 +113,7 @@ classifiers:
           releases_count: 2
           commits: 2
         total:
+          dependants_count: 3
           users_creating_issues_count: 1
           users_commenting_issues_count: 1
           users_creating_pr_count: 1

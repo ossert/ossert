@@ -17,7 +17,6 @@ module Ossert
       Kernel.const_set(CONST_NAME, config_data)
     rescue Psych::SyntaxError => e
       raise "YAML syntax error occurred while parsing #{path}. " \
-            'Please note that YAML must be consistently indented using spaces. Tabs are not allowed. ' \
             "Error: #{e.message}"
     end
   end

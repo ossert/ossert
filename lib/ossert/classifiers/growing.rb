@@ -10,8 +10,8 @@ module Ossert
         'ClassB'.freeze,
         'ClassC'.freeze,
         'ClassD'.freeze,
-        'ClassE'.freeze,
-      ]
+        'ClassE'.freeze
+      ].freeze
 
       class << self
         attr_accessor :all
@@ -38,22 +38,22 @@ module Ossert
       end
 
       def reference_values_per_grade
-        to_metrics_per_grade = lambda do |classifier|
-          classifier.each_with_object({}) do |(grade, metrics), res|
-            metrics.each do |metric, value|
-              (res[metric] ||= {})[grade] = value
-            end
+        {
+          agility_total: classifier_to_metrics_per_grade(agility_total_classifier),
+          agility_quarter: classifier_to_metrics_per_grade(agility_last_year_classifier),
+          agility_year: classifier_to_metrics_per_grade(agility_last_year_classifier),
+          community_total: classifier_to_metrics_per_grade(community_total_classifier),
+          community_quarter: classifier_to_metrics_per_grade(community_last_year_classifier),
+          community_year: classifier_to_metrics_per_grade(community_last_year_classifier)
+        }
+      end
+
+      def classifier_to_metrics_per_grade(classifier)
+        classifier.each_with_object({}) do |(grade, metrics), res|
+          metrics.each do |metric, value|
+            (res[metric] ||= {})[grade] = value
           end
         end
-
-        {
-          agility_total: to_metrics_per_grade.call(agility_total_classifier),
-          agility_quarter: to_metrics_per_grade.call(agility_last_year_classifier),
-          agility_year: to_metrics_per_grade.call(agility_last_year_classifier),
-          community_total: to_metrics_per_grade.call(community_total_classifier),
-          community_quarter: to_metrics_per_grade.call(community_last_year_classifier),
-          community_year: to_metrics_per_grade.call(community_last_year_classifier)
-        }
       end
 
       def process_using(action, project, last_year_offset = 1)
@@ -78,8 +78,9 @@ module Ossert
       end
 
       def train
-        classifiers = ClassifiersInitializer.load_or_create.run
-        classifiers.each do |name, classifier|
+        classifiers_initializer = ClassifiersInitializer.load_or_create
+        classifiers_initializer.run
+        classifiers_initializer.classifiers.each do |name, classifier|
           instance_variable_set(
             "@#{name}_classifier",
             Classifier.new(classifier, self.class.config).train
@@ -104,8 +105,11 @@ module Ossert
           end
         end
 
+        attr_reader :classifiers
+
         def initialize(grouped_projects = nil)
           @projects = grouped_projects
+          @classifiers = []
         end
 
         def load(repo)
@@ -138,26 +142,22 @@ module Ossert
           end
         end
 
-        def run
-          return @classifiers if @classifiers.present?
-          @classifiers = CLASSIFIERS_METRICS.keys.map { |type| [type, {}] }.to_h
+        def new_classifiers
+          CLASSIFIERS_METRICS.keys.map { |type| [type, {}] }.to_h
+        end
 
-          GRADES.each do |grade|
+        def run
+          return if @classifiers.present?
+
+          @classifiers = GRADES.each_with_object(new_classifiers) do |grade, classifiers|
             @projects[grade].each do |project|
               CLASSIFIERS_METRICS.each do |type, metrics|
-                @classifiers[type].store(
-                  grade,
-                  merge_metrics(
-                    @classifiers[type][grade].to_h,
-                    metrics.call(project)
-                  )
-                )
+                classifiers[type][grade] = merge_metrics(classifiers[type][grade].to_h, metrics.call(project))
               end
             end
           end
 
           save
-          @classifiers
         end
       end
     end

@@ -14,26 +14,22 @@ module Ossert
       puts '==== COLLECTING REFERENCE PROJECTS ===='
       refs.in_groups_of(3, false).each do |thread_batch|
         threads << Thread.new(thread_batch) do |batch|
-          batch.each do |reference|
-            proj_class = reference.class.name.demodulize
-            reference.project_names.each do |project_name|
-              puts "#{proj_class} reference project: '#{project_name}'"
-
-              begin
-                Ossert::Project.fetch_all(project_name.dup, proj_class)
-              rescue => e
-                puts "Fetching Failed for '#{project_name}' with error: #{e.inspect}"
-              end
-              sleep(5)
-              GC.start
-            end
-          end
+          process_references batch
         end
       end
       threads.each(&:join)
       puts 'Done with reference projects.'
     end
     module_function :collect_stats_for_refs!
+
+    def process_references(references)
+      Array(references).each do |reference|
+        reference.project_names.each_with_object(reference.class.name.demodulize) do |project_name, klass|
+          Ossert::Project.fetch_all(project_name.dup, klass)
+          sleep(5) && GC.start
+        end
+      end
+    end
 
     class Base
       CLASSES = %w(ClassA ClassB ClassC ClassD ClassE).freeze

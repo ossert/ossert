@@ -192,17 +192,17 @@ module Ossert
       end
 
       def process_issues_and_prs_processing_days
-        issues_processed_in_days = []
+        @issues_processed_in_days = []
         issues do |issue|
           next if issue.key? :pull_request
           next unless issue[:state] == 'closed'
           next unless issue[:closed_at].present?
           days_to_close = (Date.parse(issue[:closed_at]) - Date.parse(issue[:created_at])).to_i + 1
-          issues_processed_in_days << days_to_close
+          @issues_processed_in_days << days_to_close
           (agility.quarters[issue[:closed_at]].issues_processed_in_days ||= []) << days_to_close
         end
 
-        values = issues_processed_in_days.to_a.sort
+        values = @issues_processed_in_days.to_a.sort
         agility.total.issues_processed_in_avg = if values.count.odd?
                                                   values[values.count / 2]
                                                 elsif values.count.zero?
@@ -211,16 +211,16 @@ module Ossert
                                                   ((values[values.count / 2 - 1] + values[values.count / 2]) / 2.0).to_i
                                                 end
 
-        pulls_processed_in_days = []
+        @pulls_processed_in_days = []
         pulls do |pull|
           next unless pull[:state] == 'closed'
           next unless pull[:closed_at].present?
           days_to_close = (Date.parse(pull[:closed_at]) - Date.parse(pull[:created_at])).to_i + 1
-          pulls_processed_in_days << days_to_close
+          @pulls_processed_in_days << days_to_close
           (agility.quarters[pull[:closed_at]].pr_processed_in_days ||= []) << days_to_close
         end
 
-        values = pulls_processed_in_days.to_a.sort
+        values = @pulls_processed_in_days.to_a.sort
         agility.total.pr_processed_in_avg = if values.count.odd?
                                               values[values.count / 2]
                                             elsif values.count.zero?
@@ -268,24 +268,39 @@ module Ossert
         end
       end
 
+      def process_open_pull(pull)
+        agility.total.pr_open << pull[:url]
+        agility.quarters[pull[:created_at]].pr_open << pull[:url]
+      end
+
+      def process_closed_pull(pull)
+        agility.total.pr_closed << pull[:url]
+        agility.quarters[pull[:created_at]].pr_open << pull[:url]
+        agility.quarters[pull[:closed_at]].pr_closed << pull[:url] if pull[:closed_at]
+        agility.quarters[pull[:merged_at]].pr_merged << pull[:url] if pull[:merged_at]
+
+        return unless pull[:closed_at].present?
+        days_to_close = (Date.parse(pull[:closed_at]) - Date.parse(pull[:created_at])).to_i + 1
+        @pulls_processed_in_days << days_to_close
+        (agility.quarters[pull[:closed_at]].pr_processed_in_days ||= []) << days_to_close
+      end
+
+      def process_users_from_pull(pull)
+        community.total.users_creating_pr << pull[:user][:login]
+        community.quarters[pull[:created_at]].users_creating_pr << pull[:user][:login]
+        community.total.users_involved << pull[:user][:login]
+        community.quarters[pull[:created_at]].users_involved << pull[:user][:login]
+      end
+
       def process_pulls
-        pulls_processed_in_days = []
+        @pulls_processed_in_days = []
 
         pulls do |pull|
           case pull[:state]
           when 'open'
-            agility.total.pr_open << pull[:url]
-            agility.quarters[pull[:created_at]].pr_open << pull[:url]
+            process_open_pull(pull)
           when 'closed'
-            agility.total.pr_closed << pull[:url]
-            agility.quarters[pull[:created_at]].pr_open << pull[:url]
-            agility.quarters[pull[:closed_at]].pr_closed << pull[:url] if pull[:closed_at]
-            agility.quarters[pull[:merged_at]].pr_merged << pull[:url] if pull[:merged_at]
-            if pull[:closed_at].present?
-              days_to_close = (Date.parse(pull[:closed_at]) - Date.parse(pull[:created_at])).to_i + 1
-              pulls_processed_in_days << days_to_close
-              (agility.quarters[pull[:closed_at]].pr_processed_in_days ||= []) << days_to_close
-            end
+            process_closed_pull(pull)
           end
 
           if pull[:user][:login] == @owner
@@ -305,13 +320,10 @@ module Ossert
             agility.total.last_pr_date = pull[:created_at]
           end
 
-          community.total.users_creating_pr << pull[:user][:login]
-          community.quarters[pull[:created_at]].users_creating_pr << pull[:user][:login]
-          community.total.users_involved << pull[:user][:login]
-          community.quarters[pull[:created_at]].users_involved << pull[:user][:login]
+          process_users_from_pull(pull)
         end
 
-        values = pulls_processed_in_days.to_a.sort
+        values = @pulls_processed_in_days.to_a.sort
         agility.total.pr_processed_in_avg = if values.count.odd?
                                               values[values.count / 2]
                                             elsif values.count.zero?
@@ -335,26 +347,40 @@ module Ossert
         end
       end
 
+      def process_open_issue(issue)
+        agility.total.issues_open << issue[:url]
+        agility.quarters[issue[:created_at]].issues_open << issue[:url]
+      end
+
+      def process_closed_issue(issue)
+        agility.total.issues_closed << issue[:url]
+        # if issue is closed for now, it also was opened somewhen
+        agility.quarters[issue[:created_at]].issues_open << issue[:url]
+        agility.quarters[issue[:closed_at]].issues_closed << issue[:url] if issue[:closed_at]
+
+        return unless issue[:closed_at].present?
+        days_to_close = (Date.parse(issue[:closed_at]) - Date.parse(issue[:created_at])).to_i + 1
+        @issues_processed_in_days << days_to_close
+        (agility.quarters[issue[:closed_at]].issues_processed_in_days ||= []) << days_to_close
+      end
+
+      def process_users_from_issue(issue)
+        community.total.users_creating_issues << issue[:user][:login]
+        community.quarters[issue[:created_at]].users_creating_issues << issue[:user][:login]
+        community.total.users_involved << issue[:user][:login]
+        community.quarters[issue[:created_at]].users_involved << issue[:user][:login]
+      end
+
       def process_issues
-        issues_processed_in_days = []
+        @issues_processed_in_days = []
 
         issues do |issue|
           next if issue.key? :pull_request
           case issue[:state]
           when 'open'
-            agility.total.issues_open << issue[:url]
-            agility.quarters[issue[:created_at]].issues_open << issue[:url]
+            process_open_issue(issue)
           when 'closed'
-            agility.total.issues_closed << issue[:url]
-            # if issue is closed for now, it also was opened somewhen
-            agility.quarters[issue[:created_at]].issues_open << issue[:url]
-            agility.quarters[issue[:closed_at]].issues_closed << issue[:url] if issue[:closed_at]
-
-            if issue[:closed_at].present?
-              days_to_close = (Date.parse(issue[:closed_at]) - Date.parse(issue[:created_at])).to_i + 1
-              issues_processed_in_days << days_to_close
-              (agility.quarters[issue[:closed_at]].issues_processed_in_days ||= []) << days_to_close
-            end
+            process_closed_issue(issue)
           end
 
           if issue[:user][:login] == @owner
@@ -373,13 +399,10 @@ module Ossert
             agility.total.last_issue_date = issue[:created_at]
           end
 
-          community.total.users_creating_issues << issue[:user][:login]
-          community.quarters[issue[:created_at]].users_creating_issues << issue[:user][:login]
-          community.total.users_involved << issue[:user][:login]
-          community.quarters[issue[:created_at]].users_involved << issue[:user][:login]
+          process_users_from_issue(issue)
         end
 
-        values = issues_processed_in_days.to_a.sort
+        values = @issues_processed_in_days.to_a.sort
         agility.total.issues_processed_in_avg = if values.count.odd?
                                                   values[values.count / 2]
                                                 elsif values.count.zero?

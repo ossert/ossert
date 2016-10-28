@@ -73,36 +73,34 @@ namespace :db do
 
   desc 'Restores the database from a backup using PATTERN'
   task :restore, [:pat] do |_, args|
-    if args.pat.present?
-      cmd = nil
-      with_config do |_, db_url|
-        backup_dir = backup_directory
-        files = Dir.glob("#{backup_dir}/*#{args.pat}*")
-        case files.size
-        when 0
-          puts "No backups found for the pattern '#{args.pat}'"
-        when 1
-          file = files.first
-          fmt = format_for_file file
-          if fmt.nil?
-            puts "No recognized dump file suffix: #{file}"
-          else
-            cmd = "pg_restore -d '#{db_url}' -F #{fmt} -v -c #{file}"
-          end
-        else
-          puts "Too many files match the pattern '#{args.pat}':"
-          puts ' ' + files.join("\n ")
-          puts 'Try a more specific pattern'
-        end
-      end
-      unless cmd.nil?
-        Rake::Task['db:drop'].invoke
-        puts cmd
-        exec cmd << ' || exit 0'
-      end
-    else
-      puts 'Please pass a pattern to the task'
+    puts 'Please pass a pattern to the task' unless args.pat.present?
+    cmd = nil
+    with_config do |_, db_url|
+      cmd = command_for_files Dir.glob("#{backup_directory}/*#{args.pat}*"), db_url
     end
+    unless cmd.nil?
+      Rake::Task['db:drop'].invoke
+      puts cmd
+      exec cmd << ' || exit 0'
+    end
+  end
+
+  def command_for_files(pattern, db_url)
+    files = Dir.glob("#{backup_directory}/*#{pattern}*")
+    case files.size
+    when 0
+      puts "No backups found for the pattern '#{pattern}'"
+    when 1
+      command_for_file files.first, db_url
+    else
+      puts "Too many files match the pattern '#{pattern}': #{files.join("\n ")} "
+      puts 'Try a more specific pattern'
+    end
+  end
+
+  def command_for_file(file, db_url)
+    return puts("No recognized dump file suffix: #{file}") unless (fmt = format_for_file(file)).present?
+    "pg_restore -d '#{db_url}' -F #{fmt} -v -c #{file}"
   end
 
   namespace :restore do
@@ -110,8 +108,7 @@ namespace :db do
     task :last do
       cmd = nil
       with_config do |_, db_url|
-        backup_dir = backup_directory
-        file = Dir.glob("#{backup_dir}/*").max_by { |f| File.mtime(f) }
+        file = Dir.glob("#{backup_directory}/*").max_by { |f| File.mtime(f) }
         if file
           fmt = format_for_file file
           if fmt.nil?
