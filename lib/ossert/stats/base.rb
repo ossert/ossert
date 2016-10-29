@@ -10,7 +10,11 @@ module Ossert
         end
 
         def attributes
-          @attributes ||= config['attributes'].keys
+          @attributes ||= config['attributes']
+        end
+
+        def attributes_names
+          @attributes_names ||= attributes.keys
         end
 
         def aggregated_metrics
@@ -22,7 +26,7 @@ module Ossert
         end
 
         def create_attributes_accessors
-          attr_accessor(*attributes)
+          attr_accessor(*attributes_names)
         end
 
         def define_ints(*attributes)
@@ -50,16 +54,14 @@ module Ossert
       end
 
       def initialize
-        self.class.config['attributes'].each do |var, type|
+        self.class.attributes.each do |var, type|
           send "#{var}=", Kernel.const_get(type).new if type
         end
       end
 
       def median(values)
         values = Array(values).sort
-        count = values.count
-
-        return 0 if count.zero?
+        return 0 if (count = values.count).zero?
 
         middle_idx = values.count / 2
         return values[middle_idx] if count.odd?
@@ -73,9 +75,8 @@ module Ossert
 
       def metrics_to_hash
         self.class.metrics.each_with_object({}) do |var, result|
-          value = send(var)
-          result[var] = if value.is_a? Set
-                          value.to_a
+          result[var] = if (value = send(var)).is_a? Array
+                          value.uniq
                         else
                           value
                         end
@@ -84,8 +85,8 @@ module Ossert
 
       def to_hash
         self.class.attributes.each_with_object({}) do |var, result|
-          result[var] = if (value = send(var)).is_a? Set
-                          value.to_a
+          result[var] = if (value = send(var)).is_a? Array
+                          value.uniq
                         else
                           value
                         end
@@ -93,7 +94,7 @@ module Ossert
       end
 
       def to_json
-        JSON.generate(to_hash)
+        MultiJson.dump(to_hash)
       end
     end
   end

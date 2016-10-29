@@ -1,193 +1,138 @@
 # frozen_string_literal: true
-require 'rom-repository'
-require 'rom-sql'
 
-class Exceptions < ROM::Relation[:sql]
-  def by_name(name)
-    where(name: name)
+class NameException < Sequel::Model(:exceptions)
+  set_primary_key [:name]
+  class << self
+    alias by_name []
   end
 end
+::NameException.unrestrict_primary_key
 
-class ExceptionsRepo < ROM::Repository[:exceptions]
-  commands :create, update: :by_name, delete: :by_name
-
-  def [](name)
-    exceptions.by_name(name).one
-  end
-
-  def all
-    exceptions.to_a
-  end
-
-  def all_by_names
-    all.index_by(&:name)
+class Classifier < Sequel::Model
+  set_primary_key [:section]
+  def self.actual?
+    where('updated_at > ?', 1.month.ago).count.positive?
   end
 end
+::Classifier.unrestrict_primary_key
 
-class Classifiers < ROM::Relation[:sql]
-  def by_section(section)
-    where(section: section)
+class Project < Sequel::Model
+  set_primary_key [:name]
+
+  class << self
+    def random(count = 10)
+      where('random() < ?', count * 0.01).limit(count)
+    end
+
+    def later_than(id)
+      where('id >= ?', id)
+    end
+
+    def referenced
+      where('reference <> ?', Ossert::Saveable::UNUSED_REFERENCE)
+    end
   end
 end
+::Project.unrestrict_primary_key
 
-class ClassifiersRepo < ROM::Repository[:classifiers]
-  commands :create, update: :by_section, delete: :by_section
+require 'oj'
+require 'multi_json'
 
-  def [](section)
-    classifiers.by_section(section).one
+class ::Project::Unpacker
+  def initialize(stored_project)
+    @stored_project = stored_project
   end
 
-  def actual?
-    !classifiers.where('updated_at > ?', 1.month.ago).to_a.empty?
+  def self.process(stored_project)
+    new(stored_project).process
   end
 
-  def cleanup
-    command(:delete, classifiers).call
-  end
-end
-
-class Projects < ROM::Relation[:sql]
-  def random(count = 10)
-    where('random() < ?', count * 0.01).limit(count)
-  end
-
-  def by_name(name)
-    where(name: name)
-  end
-
-  def later_than(id)
-    where('id >= ?', id)
-  end
-
-  def referenced
-    where('reference <> ?', Ossert::Saveable::UNUSED_REFERENCE)
-  end
-end
-
-class ProjectRepo < ROM::Repository[:projects]
-  commands :create, update: :by_name, delete: :by_name
-
-  def [](name)
-    projects.by_name(name).one
-  end
-
-  def all
-    projects.to_a
-  end
-
-  def later_than(id)
-    projects.later_than(id).to_a
-  end
-
-  def referenced
-    projects.referenced.to_a
-  end
-
-  def random(count = 10)
-    projects.random(count).to_a
-  end
-
-  class Unpacker
-    def initialize(stored_project)
-      @stored_project = stored_project
-    end
-
-    def self.process(stored_project)
-      new(stored_project).process
-    end
-
-    def process
-      [:agility, :community].each_with_object(process_meta) do |stats_type, result|
-        result[stats_type] = factory_project_stats(stats_type).new(
-          [Total, Quarter].each_with_object({}) do |unpacker_type, stats_result|
-            section_unpacker = unpacker_type.new(@stored_project, stats_type)
-            stats_result[section_unpacker.section] = section_unpacker.process
-          end
-        )
-      end
-    end
-
-    private
-
-    def process_meta(result = {})
-      result = {
-        created_at: @stored_project.created_at,
-        updated_at: @stored_project.updated_at
-      }
-      result[:meta] = if @stored_project.meta_data.present?
-                        JSON.parse(@stored_project.meta_data)
-                      else
-                        {}
-                      end
-
-      result
-    end
-
-    def factory_project_stats(stats_type)
-      Object.const_get "Ossert::Project::#{stats_type.to_s.capitalize}"
-    end
-
-    class Base
-      def initialize(stored_project, stats_type)
-        @stats_type = stats_type
-        @stored_project = stored_project
-      end
-
-      def coerce_value(value)
-        return Set.new(value) if value.is_a? Array
-        begin
-          return DateTime.parse(value)
-        rescue
-          value
+  def process
+    [:agility, :community].each_with_object(process_meta) do |stats_type, result|
+      result[stats_type] = factory_project_stats(stats_type).new(
+        [Total, Quarter].each_with_object({}) do |unpacker_type, stats_result|
+          section_unpacker = unpacker_type.new(@stored_project, stats_type)
+          stats_result[section_unpacker.section] = section_unpacker.process
         end
-      end
-
-      def stored_data
-        @stored_project.send("#{@stats_type}_#{section}_data")
-      end
+      )
     end
+  ensure
+    @stored_project = nil
+  end
 
-    class Total < Base
-      def section
-        :total
-      end
+  private
 
-      def stored_data
-        @stored_project.send("#{@stats_type}_total_data")
-      end
+  def process_meta(result = {})
+    result = {
+      created_at: @stored_project.created_at,
+      updated_at: @stored_project.updated_at
+    }
+    result[:meta] = if @stored_project.meta_data.present?
+                      MultiJson.load(@stored_project.meta_data)
+                    else
+                      {}
+                    end
 
-      def new_stats_object
-        Kernel.const_get("Ossert::Stats::#{@stats_type.capitalize}Total").new
-      end
+    result
+  end
 
-      def process
-        JSON.parse(
-          stored_data
-        ).each_with_object(new_stats_object) do |(metric, value), stats_object|
-          stats_object.send "#{metric}=", coerce_value(value)
-        end
-      end
+  def factory_project_stats(stats_type)
+    Kernel.const_get "Ossert::Project::#{stats_type.to_s.capitalize}"
+  end
+end
+
+class ::Project::Unpacker::Base
+  def initialize(stored_project, stats_type)
+    @stats_type = stats_type
+    @stored_project = stored_project
+  end
+
+  def coerce_value(value)
+    return DateTime.parse(value)
+  rescue
+    value
+  end
+
+  def stored_data
+    @stored_project.send("#{@stats_type}_#{section}_data")
+  end
+end
+
+class ::Project::Unpacker::Total < ::Project::Unpacker::Base
+  def section
+    :total
+  end
+
+  def new_stats_object
+    Kernel.const_get("Ossert::Stats::#{@stats_type.capitalize}Total").new
+  end
+
+  def process
+    MultiJson.load(
+      stored_data
+    ).each_with_object(new_stats_object) do |(metric, value), stats_object|
+      stats_object.send "#{metric}=", coerce_value(value)
     end
+  end
+end
 
-    class Quarter < Base
-      def section
-        :quarters
-      end
+class ::Project::Unpacker::Quarter < ::Project::Unpacker::Base
+  def section
+    :quarters
+  end
 
-      def new_stats_object
-        Ossert::QuartersStore.new(
-          Object.const_get("Ossert::Stats::#{@stats_type.capitalize}Quarter")
-        )
-      end
+  def new_stats_object
+    Ossert::QuartersStore.new(
+      "Ossert::Stats::#{@stats_type.capitalize}Quarter"
+    )
+  end
 
-      def process
-        JSON.parse(
-          stored_data
-        ).each_with_object(new_stats_object) do |(time, metrics), quarter_store|
-          metrics.each_with_object(quarter_store[time.to_i]) do |(metric, value), quarter|
-            quarter.send "#{metric}=", coerce_value(value)
-          end
-        end
+  def process
+    MultiJson.load(
+      stored_data
+    ).each_with_object(new_stats_object) do |(time, metrics), quarter_store|
+      metrics.each_with_object(quarter_store[time.to_i]) do |(metric, value), quarter|
+        quarter.send "#{metric}=", coerce_value(value)
       end
     end
   end

@@ -5,7 +5,7 @@ namespace :db do
       test_database_url = ENV.fetch('TEST_DATABASE_URL')
       database_name = test_database_url.split('/').last
 
-      ROM::Configuration.new(:sql, test_database_url)
+      Sequel.connect(test_database_url)
 
       sh "dropdb #{database_name}" do
         # Ignore errors
@@ -15,25 +15,27 @@ namespace :db do
         # Ignore errors
       end
 
-      ROM::SQL::RakeSupport.run_migrations
+      # FIXME
+      # ROM::SQL::RakeSupport.run_migrations
     end
   end
 
   task :load_config do
-    ROM::Configuration.new(:sql, ENV.fetch('DATABASE_URL'))
+    Sequel.connect(ENV.fetch('DATABASE_URL'))
   end
 
   desc 'Create the database, load the schema, and initialize with the seed data (db:reset to also drop the db first)'
   task :setup do
-    Rake::Task['db:create'].invoke
-    Rake::Task['db:load_config'].invoke
-
-    ROM::SQL::Gateway.instance.migrator.instance_variable_set(
-      :@path,
-      File.expand_path('../../../../db/migrate', __FILE__)
-    )
-
-    ROM::SQL::RakeSupport.run_migrations
+    # FIXME
+    # Rake::Task['db:create'].invoke
+    # Rake::Task['db:load_config'].invoke
+    #
+    # ROM::SQL::Gateway.instance.migrator.instance_variable_set(
+    #   :@path,
+    #   File.expand_path('../../../../db/migrate', __FILE__)
+    # )
+    #
+    # ROM::SQL::RakeSupport.run_migrations
   end
 
   task :drop do

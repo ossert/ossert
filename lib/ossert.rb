@@ -9,7 +9,6 @@ require 'oj'
 require 'ossert/config'
 Ossert::Config.load(:stats, :classifiers, :translations, :descriptions)
 
-require 'ossert/repositories'
 require 'ossert/stats'
 require 'ossert/quarters_store'
 require 'ossert/saveable'
@@ -21,15 +20,17 @@ require 'ossert/classifiers'
 require 'ossert/workers'
 
 module Ossert
-  def rom(database_url = nil)
-    return @rom if defined? @rom
-    conf = ROM::Configuration.new(:sql, database_url || ENV.fetch('DATABASE_URL'))
-    conf.register_relation(::Projects)
-    conf.register_relation(::Classifiers)
-    conf.register_relation(::Exceptions)
-    @rom = ROM.container(conf)
+  def init(database_url = nil)
+    Sequel.connect(database_url || ENV.fetch('DATABASE_URL'))
+    require 'ossert/repositories'
+    # return $rom if defined? $rom
+    # conf = ROM::Configuration.new(:sql, )
+    # conf.register_relation(::Projects)
+    # conf.register_relation(::Classifiers)
+    # conf.register_relation(::Exceptions)
+    # $rom = ROM.container(conf)
   end
-  module_function :rom
+  module_function :init
 
   def description(key)
     descriptions.fetch(key.to_s, "Description for '#{key}' - not found")

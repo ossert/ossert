@@ -26,7 +26,7 @@ module Ossert
       define_counts(:issues_all, :pr_all, :stale_branches, :dependencies)
 
       def commits_count_since_last_release_count
-        commits_count_since_last_release.is_a?(Set) ? 0 : commits_count_since_last_release
+        commits_count_since_last_release.is_a?(Array) ? 0 : commits_count_since_last_release
       end
 
       def issues_active

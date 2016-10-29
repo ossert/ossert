@@ -3,9 +3,10 @@ namespace :ossert do
   namespace :cache do
     desc 'Reset data cache'
     task :reset do
-      require 'ossert'
-      ClassifiersRepo.new(Ossert.rom).cleanup
+      ::Ossert.init
+      ::Classifier.dataset.delete
       Ossert::Classifiers::Growing.new.train
+      true
     end
   end
 

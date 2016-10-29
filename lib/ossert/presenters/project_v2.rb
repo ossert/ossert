@@ -2,19 +2,19 @@
 module Ossert
   module Presenters
     module ProjectV2
-      CLASSES = [
-        'ClassE'.freeze,
-        'ClassD'.freeze,
-        'ClassC'.freeze,
-        'ClassB'.freeze,
-        'ClassA'.freeze
-      ].freeze
+      CLASSES = %w(
+        ClassE
+        ClassD
+        ClassC
+        ClassB
+        ClassA
+      ).freeze
       KLASS_2_GRADE = {
-        'ClassA' => 'A'.freeze,
-        'ClassB' => 'B'.freeze,
-        'ClassC' => 'C'.freeze,
-        'ClassD' => 'D'.freeze,
-        'ClassE' => 'E'.freeze
+        'ClassA' => 'A',
+        'ClassB' => 'B',
+        'ClassC' => 'C',
+        'ClassD' => 'D',
+        'ClassE' => 'E'
       }.freeze
 
       def preview_reference_values_for(metric, section) # maybe automatically find section?

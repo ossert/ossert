@@ -5,13 +5,13 @@ require 'ossert/classifiers/growing/check'
 module Ossert
   module Classifiers
     class Growing
-      GRADES = [
-        'ClassA'.freeze,
-        'ClassB'.freeze,
-        'ClassC'.freeze,
-        'ClassD'.freeze,
-        'ClassE'.freeze
-      ].freeze
+      GRADES = %w(
+        ClassA
+        ClassB
+        ClassC
+        ClassD
+        ClassE
+      ).freeze
 
       class << self
         attr_accessor :all
@@ -97,9 +97,8 @@ module Ossert
         }.freeze
 
         def self.load_or_create
-          repo = ClassifiersRepo.new(Ossert.rom)
-          if repo.actual?
-            new.load(repo)
+          if ::Classifier.actual?
+            new.load
           else
             new(Project.projects_by_reference)
           end
@@ -112,10 +111,10 @@ module Ossert
           @classifiers = []
         end
 
-        def load(repo)
+        def load
           @classifiers = {}
           CLASSIFIERS_METRICS.keys.each do |section|
-            @classifiers[section] = JSON.parse(repo[section.to_s].reference_values)
+            @classifiers[section] = JSON.parse(::Classifier[section.to_s].reference_values)
           end
           self
         end
@@ -131,11 +130,10 @@ module Ossert
         end
 
         def save
-          repo = ClassifiersRepo.new(Ossert.rom)
-          repo.cleanup
+          ::Classifier.dataset.delete
 
           @classifiers.each do |section, reference_values|
-            repo.create(
+            ::Classifier.create(
               section: section.to_s,
               reference_values: JSON.generate(reference_values)
             )
