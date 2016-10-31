@@ -75,11 +75,12 @@ module Ossert
 
       def metrics_to_hash
         self.class.metrics.each_with_object({}) do |var, result|
-          result[var] = if (value = send(var)).is_a? Array
-                          value.uniq
-                        else
-                          value
-                        end
+          result[var] = send(var)
+          # result[var] = if (value = send(var)).is_a? Array
+          #                 value.uniq
+          #               else
+          #                 value
+          #               end
         end
       end
 

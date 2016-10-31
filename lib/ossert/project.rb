@@ -107,7 +107,7 @@ module Ossert
     end
 
     def meta_to_json
-      JSON.generate(meta)
+      MultiJson.dump(meta)
     end
 
     class BaseStore

@@ -13,10 +13,17 @@ module Ossert
         @reference = Ossert::Classifiers::Growing.current.reference_values_per_grade
       end
 
+      def self.with_presenter(project)
+        presenter = new(project)
+        presenter.prepare!
+        yield(presenter)
+        presenter.cleanup_references!
+        presenter = nil
+      end
+
       # value, Float !
       def with_reference(text, value, metric, type)
-        return (text.to_i.positive? ? "+#{text}" : text).to_s if type =~ /delta/
-
+        return (text.to_i.positive? ? "+#{text}" : text).to_s if type == :delta
         metric_by_ref = @reference[type][metric.to_s]
         reference = CLASSES.inject('NaN') do |acc, ref|
           metric_by_ref[ref][:range].cover?(value) ? ref : acc
@@ -83,19 +90,37 @@ module Ossert
       end
 
       def agility_total
-        decorate_metrics @project.agility.total.metrics_to_hash, :agility_total
+        @agility_total ||= decorate_metrics @project.agility.total.metrics_to_hash, :agility_total
       end
 
       def community_total
-        decorate_metrics @project.community.total.metrics_to_hash, :community_total
+        @community_total ||= decorate_metrics @project.community.total.metrics_to_hash, :community_total
       end
 
       def community_last_year
-        decorate_metrics @project.community.quarters.last_year_as_hash, :community_year
+        @community_last_year ||= decorate_metrics @project.community.quarters.last_year_as_hash, :community_year
       end
 
       def agility_last_year
-        decorate_metrics @project.agility.quarters.last_year_as_hash, :agility_year
+        @agility_last_year ||= decorate_metrics @project.agility.quarters.last_year_as_hash, :agility_year
+      end
+
+      def prepare!
+        agility_total
+        agility_last_year
+        community_total
+        community_last_year
+
+        lookback = 5
+        check_results = (lookback - 1).downto(0).map do |last_year_offset|
+          Ossert::Classifiers::Growing.current.check(@project, last_year_offset)
+        end
+        @fast_preview_graph_data = fast_preview_graph_data(lookback, check_results)
+      end
+
+      def cleanup_references!
+        @reference = nil
+        @project = nil
       end
 
       private
