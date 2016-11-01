@@ -1,11 +1,14 @@
 # frozen_string_literal: true
 namespace :db do
+  require 'sequel'
+  Sequel.extension :migration
+
   namespace :test do
     task :prepare do
       test_database_url = ENV.fetch('TEST_DATABASE_URL')
       database_name = test_database_url.split('/').last
 
-      Sequel.connect(test_database_url)
+      DB = Sequel.connect(test_database_url)
 
       sh "dropdb #{database_name}" do
         # Ignore errors
@@ -15,27 +18,36 @@ namespace :db do
         # Ignore errors
       end
 
-      # FIXME
-      # ROM::SQL::RakeSupport.run_migrations
+      Sequel::Migrator.run(DB, File.expand_path('../../../../db/migrate', __FILE__))
+      Rake::Task['db:version'].execute
     end
   end
 
+  task :migrate => :load_config do
+    Sequel::Migrator.run(DB, File.expand_path('../../../../db/migrate', __FILE__))
+    Rake::Task['db:version'].execute
+  end
+
+  desc 'Prints current schema version'
+  task :version do
+    version = if DB.tables.include?(:schema_info)
+                DB[:schema_info].first[:version]
+              end || 0
+
+    puts "Schema Version: #{version}"
+  end
+
   task :load_config do
-    Sequel.connect(ENV.fetch('DATABASE_URL'))
+    DB = Sequel.connect(ENV.fetch('DATABASE_URL'))
   end
 
   desc 'Create the database, load the schema, and initialize with the seed data (db:reset to also drop the db first)'
   task :setup do
-    # FIXME
-    # Rake::Task['db:create'].invoke
-    # Rake::Task['db:load_config'].invoke
-    #
-    # ROM::SQL::Gateway.instance.migrator.instance_variable_set(
-    #   :@path,
-    #   File.expand_path('../../../../db/migrate', __FILE__)
-    # )
-    #
-    # ROM::SQL::RakeSupport.run_migrations
+    Rake::Task['db:create'].invoke
+    Rake::Task['db:load_config'].invoke
+
+    Sequel::Migrator.run(DB, File.expand_path('../../../../db/migrate', __FILE__))
+    Rake::Task['db:version'].execute
   end
 
   task :drop do

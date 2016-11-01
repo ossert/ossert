@@ -234,20 +234,13 @@ module Ossert
         actual_prs = Set.new
         actual_issues = Set.new
         agility.quarters.each_sorted do |_quarter, data|
-          data.pr_actual = actual_prs
-          data.issues_actual = actual_issues
+          data.pr_actual = actual_prs.to_a
+          data.issues_actual = actual_issues.to_a
 
-          closed = data.pr_closed + data.issues_closed
-          actual_prs = (actual_prs + data.pr_open) - closed
-          actual_issues = (actual_issues + data.issues_open) - closed
+          closed = Set.new(data.pr_closed + data.issues_closed)
+          actual_prs = Set.new(actual_prs + data.pr_open) - closed
+          actual_issues = Set.new(actual_issues + data.issues_open) - closed
         end
-      end
-
-      def process_pr_with_contrib_comments_fix
-        prev_prs = agility.total.pr_with_contrib_comments
-        agility.total.pr_with_contrib_comments = Set.new(
-          prev_prs.map { |pr_link| issue2pull_url(pr_link) }
-        )
       end
 
       def issue2pull_url(html_url)
@@ -255,17 +248,6 @@ module Ossert
           %r{https://github.com/(#{@repo_name})/pull/(\d+)},
           'https://api.github.com/repos/\2/pulls/\3'
         )
-      end
-
-      # FIXME: delete if temporary
-      def fix_issues_and_prs_with_contrib_comments
-        agility.total.pr_with_contrib_comments.delete_if do |pr|
-          !(pr =~ %r{https://api.github.com/repos/#{@repo_name}/pulls/\d+})
-        end
-
-        agility.total.issues_with_contrib_comments.delete_if do |issue|
-          !(issue =~ %r{https://github.com/#{@repo_name}/issues/\d+})
-        end
       end
 
       def process_open_pull(pull)
@@ -442,7 +424,8 @@ module Ossert
           login = c.try(:[], :login).presence || generate_anonymous
           community.total.contributors << login
         end
-        community.total.users_involved.merge(community.total.contributors)
+        community.total.users_involved += community.total.contributors
+        community.total.users_involved.uniq!
 
         # TODO: extract contributors and commits, quarter by quarter.
         #

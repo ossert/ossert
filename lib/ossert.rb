@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 require 'ossert/version'
-require 'gems'
 require 'sequel'
 require 'active_support/all' # remove later, we use only quarters and index_by here
 require 'json'
@@ -23,12 +22,6 @@ module Ossert
   def init(database_url = nil)
     Sequel.connect(database_url || ENV.fetch('DATABASE_URL'))
     require 'ossert/repositories'
-    # return $rom if defined? $rom
-    # conf = ROM::Configuration.new(:sql, )
-    # conf.register_relation(::Projects)
-    # conf.register_relation(::Classifiers)
-    # conf.register_relation(::Exceptions)
-    # $rom = ROM.container(conf)
   end
   module_function :init
 

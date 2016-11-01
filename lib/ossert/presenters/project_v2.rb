@@ -64,13 +64,11 @@ module Ossert
       def metric_tooltip_data(metric, section, section_type, klass)
         return if section == :not_found # this should not happen
         reference_section = [section, section_type].join('_')
-
-        metric_by_grades = REFERENCES_STUB.dup
         return unless (metric_by_grades = @reference[reference_section.to_sym][metric.to_s])
 
         [
           reversed_metrics.include?(metric) ? '&lt;&nbsp;' : '&gt;&nbsp;',
-          decorate_value(metric, metric_by_grades[klass][:threshold])
+          decorator.value(metric, metric_by_grades[klass][:threshold])
         ].join(' ')
       end
 
@@ -87,11 +85,6 @@ module Ossert
       #   {"title":"Next year","type":"e","values":[50,10]}
       # ]
       def fast_preview_graph_data(lookback = 5, check_results = nil)
-        return @fast_preview_graph_data if defined? @fast_preview_graph_data
-        # check_results = (lookback - 1).downto(0).map do |last_year_offset|
-        #   {popularity: {text: '1 A', mark: 'A'}, maintenance: {text: '1 B', mark: 'B'}, maturity: {text: '1 C', mark: 'C'}}
-        #   # Ossert::Classifiers::Growing.current.check(@project, last_year_offset)
-        # end
         graph_data = { popularity: [], maintenance: [], maturity: [] } # replace with config
 
         check_results.each_with_index do |check_result, index|
@@ -99,7 +92,7 @@ module Ossert
             sum_up_checks(graph_data, check, results, index, lookback - index)
           end
         end
-        graph_data
+        graph_data.map { |k, v| [k, MultiJson.dump(v)] }.to_h
       end
 
       def sum_up_checks(graph_data, check, results, index, offset)
@@ -114,7 +107,7 @@ module Ossert
       end
 
       def last_quarters_bounds(last_year_offset)
-        date = Time.current.utc - (last_year_offset * 3).months
+        date = Time.current.utc - ((last_year_offset - 1) * 3).months
 
         [date.beginning_of_quarter.strftime('%b'),
          date.end_of_quarter.strftime('%b %Y')].join(' - ')

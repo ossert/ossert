@@ -75,18 +75,16 @@ module Ossert
       def load_by_name(name)
         stored_prj = ::Project.find(name: name)
         deserialize(stored_prj) if stored_prj
-      ensure
-        stored_prj = nil
       end
 
       def load_referenced
-        ::Project.referenced.map! do |stored_prj|
+        ::Project.referenced.map do |stored_prj|
           deserialize(stored_prj)
         end
       end
 
       def load_later_than(id)
-        ::Project.later_than(id).map! do |stored_prj|
+        ::Project.later_than(id).map do |stored_prj|
           deserialize(stored_prj)
         end
       end
@@ -97,7 +95,7 @@ module Ossert
 
       # TODO: Danger! Later we'll need pagination here!
       def load_all
-        ::Project.paged_each.map! do |stored_prj|
+        ::Project.paged_each.map do |stored_prj|
           deserialize(stored_prj)
         end
       end

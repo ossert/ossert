@@ -85,7 +85,7 @@ module Ossert
       end
 
       def to_hash
-        self.class.attributes.each_with_object({}) do |var, result|
+        self.class.attributes_names.each_with_object({}) do |var, result|
           result[var] = if (value = send(var)).is_a? Array
                           value.uniq
                         else
