@@ -109,7 +109,7 @@ module Ossert
       end
 
       def top_contributors
-        client.contributors_stats(@repo_name, retry_timeout: 5, retry_wait: 1)
+        client.contributors_stats(@repo_name, retry_timeout: 5, retry_wait: 5)
       end
 
       def commit(sha)
@@ -140,7 +140,7 @@ module Ossert
       # Add class with processing types, e.g. top_contributors, commits and so on
 
       def process_top_contributors
-        @top_contributors = top_contributors.map { |contrib_data| contrib_data[:author][:login] }
+        @top_contributors = (top_contributors || []).map { |contrib_data| contrib_data[:author][:login] }
         @top_contributors.last(10).reverse.each do |login|
           (meta[:top_10_contributors] ||= []) << "https://github.com/#{login}"
         end
@@ -538,6 +538,7 @@ module Ossert
           community.quarters[forker[:created_at]].users_involved << forker[:owner][:login]
         end
       rescue Octokit::NotFound => e
+        puts e.backtrace
         raise "Github NotFound Error: #{e.inspect}"
       end
 
@@ -551,7 +552,7 @@ module Ossert
           attempt += 1
           raise if attempt > MAX_ATTEMPTS
           puts "Github Error: #{e.inspect}... retrying"
-          sleep(attempt * 1.minute)
+          sleep(attempt * 5.minutes)
           retry
         end
       end

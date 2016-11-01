@@ -35,7 +35,7 @@ module Ossert
       end
 
       def process_links
-        {
+        meta.merge!(
           homepage_url: info['homepage_uri'],
           docs_url: info['documentation_uri'],
           wiki_url: info['wiki_uri'],
@@ -44,7 +44,7 @@ module Ossert
           mailing_list_url: info['mailing_list_uri'],
           rubygems_url: info['project_uri'],
           github_url: "https://github.com/#{project.github_alias}" # or exception!
-        }
+        )
       end
 
       def process_github_alias
@@ -62,8 +62,8 @@ module Ossert
       end
 
       def process_dependencies
-        agility.total.dependencies = Set.new(info['dependencies']['runtime'])
-        community.total.dependants = Set.new(reversed_dependencies)
+        agility.total.dependencies = Set.new(info['dependencies']['runtime']).to_a
+        community.total.dependants = Set.new(reversed_dependencies).to_a
       end
 
       def process
