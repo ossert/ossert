@@ -275,34 +275,36 @@ module Ossert
       end
 
       def process_pulls
-        @pulls_processed_in_days = []
+        @pulls_processed_in_days = Set.new
 
-        pulls do |pull|
-          case pull[:state]
-          when 'open'
-            process_open_pull(pull)
-          when 'closed'
-            process_closed_pull(pull)
+        retry_call do
+          pulls do |pull|
+            case pull[:state]
+            when 'open'
+              process_open_pull(pull)
+            when 'closed'
+              process_closed_pull(pull)
+            end
+
+            if pull[:user][:login] == @owner
+              agility.total.pr_owner << pull[:url]
+            else
+              agility.total.pr_non_owner << pull[:url]
+            end
+
+            agility.total.pr_total << pull[:url]
+            agility.quarters[pull[:created_at]].pr_total << pull[:url]
+
+            if agility.total.first_pr_date.nil? || pull[:created_at] < agility.total.first_pr_date
+              agility.total.first_pr_date = pull[:created_at]
+            end
+
+            if agility.total.last_pr_date.nil? || pull[:created_at] > agility.total.last_pr_date
+              agility.total.last_pr_date = pull[:created_at]
+            end
+
+            process_users_from_pull(pull)
           end
-
-          if pull[:user][:login] == @owner
-            agility.total.pr_owner << pull[:url]
-          else
-            agility.total.pr_non_owner << pull[:url]
-          end
-
-          agility.total.pr_total << pull[:url]
-          agility.quarters[pull[:created_at]].pr_total << pull[:url]
-
-          if agility.total.first_pr_date.nil? || pull[:created_at] < agility.total.first_pr_date
-            agility.total.first_pr_date = pull[:created_at]
-          end
-
-          if agility.total.last_pr_date.nil? || pull[:created_at] > agility.total.last_pr_date
-            agility.total.last_pr_date = pull[:created_at]
-          end
-
-          process_users_from_pull(pull)
         end
 
         values = @pulls_processed_in_days.to_a.sort
@@ -314,18 +316,19 @@ module Ossert
                                               ((values[values.count / 2 - 1] + values[values.count / 2]) / 2.0).to_i
                                             end
 
-        sleep(2)
 
-        pulls_comments do |pull_comment|
-          login = pull_comment[:user].try(:[], :login).presence || generate_anonymous
-          if community.total.contributors.include? login
-            agility.total.pr_with_contrib_comments << pull_comment[:pull_request_url]
+        retry_call do
+          pulls_comments do |pull_comment|
+            login = pull_comment[:user].try(:[], :login).presence || generate_anonymous
+            if community.total.contributors.include? login
+              agility.total.pr_with_contrib_comments << pull_comment[:pull_request_url]
+            end
+
+            community.total.users_commenting_pr << login
+            community.quarters[pull_comment[:created_at]].users_commenting_pr << login
+            community.total.users_involved << login
+            community.quarters[pull_comment[:created_at]].users_involved << login
           end
-
-          community.total.users_commenting_pr << login
-          community.quarters[pull_comment[:created_at]].users_commenting_pr << login
-          community.total.users_involved << login
-          community.quarters[pull_comment[:created_at]].users_involved << login
         end
       end
 
@@ -482,15 +485,10 @@ module Ossert
         #   count+=1
         #   collab << (commit[:author].try(:[],:login) || commit[:commit][:author][:name])
         # end
-        sleep(1)
 
         process_issues
 
-        sleep(5)
-
         process_pulls
-
-        sleep(5)
 
         process_actual_prs_and_issues
 
@@ -541,6 +539,21 @@ module Ossert
         end
       rescue Octokit::NotFound => e
         raise "Github NotFound Error: #{e.inspect}"
+      end
+
+      MAX_ATTEMPTS = 5
+
+      def retry_call
+        attempt = 0
+        begin
+          yield
+        rescue Octokit::InternalServerError => e
+          attempt += 1
+          raise if attempt > MAX_ATTEMPTS
+          puts "Github Error: #{e.inspect}... retrying"
+          sleep(attempt * 1.minute)
+          retry
+        end
       end
 
       # GitHub sometimes hides login, this is fallback
