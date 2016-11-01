@@ -6,127 +6,193 @@ module Ossert
     class Project
       include Ossert::Presenters::ProjectV2
 
-      attr_reader :project
+      attr_reader :project, :decorator
 
       def initialize(project)
         @project = project
         @reference = Ossert::Classifiers::Growing.current.reference_values_per_grade
+        @decorator = Decorator.new(@reference)
       end
 
-      # value, Float !
-      def with_reference(text, value, metric, type)
-        return (text.to_i.positive? ? "+#{text}" : text).to_s if type =~ /delta/
+      def self.with_presenter(project)
+        presenter = new(project)
+        presenter.prepare!
+        yield(presenter)
+        presenter.cleanup_references!
+      end
 
-        metric_by_ref = @reference[type][metric.to_s]
-        reference = CLASSES.inject('NaN') do |acc, ref|
-          metric_by_ref[ref][:range].cover?(value) ? ref : acc
+      class Decorator
+        def initialize(reference)
+          @reference = reference
         end
 
-        { text: "#{text}&nbsp;#{KLASS_2_GRADE[reference]}", mark: KLASS_2_GRADE[reference].downcase }
-      rescue => e
-        puts "NO DATA FOR METRIC: '#{metric}'"
-        raise e
-      end
-
-      METRICS_DECORATIONS = {
-        /(percent|divergence)/ => ->(value) { "#{value.ceil}%" },
-        /(date|changed)/ => ->(value) { Time.at(value).strftime('%d/%m/%y') },
-        /processed_in/ => (lambda do |value|
-          case value
-          when 0
-            'not enough data'
-          when 1
-            "~#{value.ceil} day"
-          when 2..30
-            "~#{value.ceil} days"
-          when 31..61
-            "~#{(value / 31).ceil} month"
-          else
-            "~#{(value / 31).ceil} months"
+        # value, Float !
+        def with_reference(text, value, metric, type)
+          return (text.to_i.positive? ? "+#{text}" : text).to_s if type == :delta
+          metric_by_ref = @reference[type][metric.to_s]
+          reference = Project::CLASSES.inject('NaN') do |acc, ref|
+            metric_by_ref[ref][:range].cover?(value) ? ref : acc
           end
-        end),
-        /period/ => (lambda do |value|
-          if (years = value.to_i / 365).positive?
-            "#{years}+ years"
-          else
-            'Less than a year'
+
+          { text: "#{text}&nbsp;#{Project::KLASS_2_GRADE[reference]}",
+            mark: Project::KLASS_2_GRADE[reference].downcase }
+        rescue => e
+          puts "NO DATA FOR METRIC: '#{metric}'"
+          raise e
+        end
+
+        METRICS_DECORATIONS = {
+          /(percent|divergence)/ => ->(value) { "#{value.ceil}%" },
+          /(date|changed)/ => ->(value) { Time.at(value).strftime('%d/%m/%y') },
+          /processed_in/ => (lambda do |value|
+            case value
+            when 0
+              'not enough data'
+            when 1
+              "~#{value.ceil} day"
+            when 2..30
+              "~#{value.ceil} days"
+            when 31..61
+              "~#{(value / 31).ceil} month"
+            else
+              "~#{(value / 31).ceil} months"
+            end
+          end),
+          /period/ => (lambda do |value|
+            if (years = value.to_i / 365).positive?
+              "#{years}+ years"
+            else
+              'Less than a year'
+            end
+          end),
+          /count/ => ->(value) { value.to_i },
+          /downloads/ => ->(value) { value.ceil.to_s.gsub(/\d(?=(...)+$)/, '\0,') }
+        }.freeze
+
+        def value(metric, value)
+          value = value.to_f
+          METRICS_DECORATIONS.each { |check, decorator| return decorator.call(value) if metric =~ check }
+          value.to_i
+        end
+
+        def metric(metric, value, type)
+          with_reference(value(metric, value), value.to_f, metric, type)
+        end
+
+        def quarter_with_diff(project, time, section)
+          section_type = "#{section}_quarter".to_sym
+          quarter_data = project.send(section).quarters[quarter_start(time)].metrics_to_hash
+          diff = quarter_values(project.send(section).quarters[quarter_start(time) - 1.day].metrics_to_hash)
+
+          quarter_data.each_with_object({}) do |(metric, value), result|
+            decorated_metric = metric(metric, value, section_type)
+            result[Ossert.t(metric)] = <<-TEXT
+  #{decorated_metric[:text]} <> #{metric(metric, value.to_i - diff[metric], :delta)}
+            TEXT
           end
-        end),
-        /count/ => ->(value) { value.to_i },
-        /downloads/ => ->(value) { value.ceil.to_s.gsub(/\d(?=(...)+$)/, '\0,') }
-      }.freeze
+        end
 
-      def decorate_value(metric, value)
-        value = value.to_f
-        METRICS_DECORATIONS.each { |check, decorator| return decorator.call(value) if metric =~ check }
-        value.to_i
-      end
+        def metrics(metrics_data, section_type)
+          metrics_data.each_with_object({}) do |(metric, value), result|
+            result[metric] = metric(metric, value.to_i, section_type)
+          end
+        end
 
-      def decorate_metric(metric, value, type)
-        with_reference(decorate_value(metric, value), value.to_f, metric, type)
+        private
+
+        def quarter_start(time)
+          Time.at(time).to_date.to_time(:utc).beginning_of_quarter
+        end
+
+        def quarter_values(quarter_data)
+          quarter_data.each_with_object({}) do |(metric, value), res|
+            res[metric] = value.to_i
+          end
+        end
       end
 
       def agility_quarter(time)
-        decorate_quarter_with_diff(time, :agility)
+        decorator.quarter_with_diff(@project, time, :agility)
       end
 
       def community_quarter(time)
-        decorate_quarter_with_diff(time, :community)
+        decorator.quarter_with_diff(@project, time, :community)
       end
 
       def agility_quarter_values(time)
-        quarter_values @project.agility.quarters[time].metrics_to_hash
+        decorator.values @project.agility.quarters[time].metrics_to_hash
       end
 
       def community_quarter_values(time)
-        quarter_values @project.community.quarters[time].metrics_to_hash
+        decorator.values @project.community.quarters[time].metrics_to_hash
       end
 
       def agility_total
-        decorate_metrics @project.agility.total.metrics_to_hash, :agility_total
+        @agility_total ||= decorator.metrics @project.agility.total.metrics_to_hash, :agility_total
       end
 
       def community_total
-        decorate_metrics @project.community.total.metrics_to_hash, :community_total
+        @community_total ||= decorator.metrics @project.community.total.metrics_to_hash, :community_total
       end
 
       def community_last_year
-        decorate_metrics @project.community.quarters.last_year_as_hash, :community_year
+        @community_last_year ||= decorator.metrics @project.community.quarters.last_year_as_hash, :community_year
       end
 
       def agility_last_year
-        decorate_metrics @project.agility.quarters.last_year_as_hash, :agility_year
+        @agility_last_year ||= decorator.metrics @project.agility.quarters.last_year_as_hash, :agility_year
       end
 
-      private
+      def metric_preview(metric)
+        preview = {}
+        return(preview) if (section = Ossert::Stats.guess_section_by_metric(metric)) == :not_found
 
-      def quarter_start(time)
-        Time.at(time).to_date.to_time(:utc).beginning_of_quarter
+        preview[:tooltip] = MultiJson.dump(tooltip_data(metric))
+        preview[:translation] = Ossert.t(metric)
+
+        preview.merge!(last_year_section(metric, section))
+        preview.merge!(total_section(metric, section))
+        preview
       end
 
-      def quarter_values(quarter_data)
-        quarter_data.each_with_object({}) do |(metric, value), res|
-          res[metric] = value.to_i
+      def last_year_section(metric, section)
+        section_last_year = public_send("#{section}_last_year")[metric]
+        {
+          last_year_mark: section_last_year.try(:[], :mark),
+          last_year_val: section_last_year.try(:[], :text) || 'N/A'
+        }
+      end
+
+      def total_section(metric, section)
+        section_total = public_send("#{section}_total")[metric]
+        {
+          total_mark: section_total.try(:[], :mark),
+          total_val: section_total.try(:[], :text) || 'N/A'
+        }
+      end
+
+      def prepare!
+        agility_total
+        agility_last_year
+        community_total
+        community_last_year
+
+        lookback = 5
+        check_results = (lookback - 1).downto(0).map do |last_year_offset|
+          Ossert::Classifiers::Growing.current.check(@project, last_year_offset)
         end
+
+        @grade = check_results.last(2).first.map { |k, v| [k, v[:mark].downcase] }.to_h
+        @fast_preview_graph = fast_preview_graph_data(lookback, check_results)
       end
+      attr_reader :grade, :fast_preview_graph
 
-      def decorate_metrics(metrics_data, section_type)
-        metrics_data.each_with_object({}) do |(metric, value), result|
-          result[metric] = decorate_metric(metric, value.to_i, section_type)
-        end
-      end
-
-      def decorate_quarter_with_diff(time, section)
-        section_type = "#{section}_quarter".to_sym
-        quarter_data = @project.send(section).quarters[quarter_start(time)].metrics_to_hash
-        diff = quarter_values(@project.send(section).quarters[quarter_start(time) - 1.day].metrics_to_hash)
-
-        quarter_data.each_with_object({}) do |(metric, value), result|
-          decorated_metric = decorate_metric(metric, value, section_type)
-          result[Ossert.t(metric)] = <<-TEXT
-#{decorated_metric[:text]} <> #{decorate_metric(metric, value.to_i - diff[metric], :delta)}
-          TEXT
-        end
+      def cleanup_references!
+        @reference = nil
+        @project = nil
+        @fast_preview_graph_data = nil
+        @grade = nil
+        @decorator = nil
       end
     end
   end

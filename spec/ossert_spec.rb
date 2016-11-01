@@ -31,7 +31,7 @@ describe Ossert do
         { popularity: 'C', maintenance: 'C', maturity: 'C' }
       end
       let(:grades_D) do
-        { popularity: 'D', maintenance: 'A', maturity: 'D' }
+        { popularity: 'D', maintenance: 'D', maturity: 'D' }
       end
       let(:grades_E) do
         { popularity: 'E', maintenance: 'E', maturity: 'E' }

@@ -23,14 +23,6 @@ module Ossert
     }.freeze
 
     class << self
-      def exist?(name)
-        ::ProjectRepo.new(Ossert.rom)[name].present?
-      end
-
-      def random(count = 10)
-        ::ProjectRepo.new(Ossert.rom).random(count)
-      end
-
       def fetch_all(name, reference = Ossert::Saveable::UNUSED_REFERENCE)
         project = find_by_name(name, reference)
 
@@ -115,38 +107,38 @@ module Ossert
     end
 
     def meta_to_json
-      JSON.generate(meta)
+      MultiJson.dump(meta)
     end
 
     class BaseStore
       attr_accessor :quarters, :total, :total_prediction, :quarter_prediction
 
       def initialize(quarters: nil, total: nil)
-        @quarters = quarters || QuartersStore.new(self.class.quarter_stats_klass)
-        @total = total || self.class.total_stats_klass.new
+        @quarters = quarters || QuartersStore.new(self.class.quarter_stats_klass_name)
+        @total = total || ::Kernel.const_get(self.class.total_stats_klass_name).new
       end
     end
 
     class Agility < BaseStore
       class << self
-        def quarter_stats_klass
-          Stats::AgilityQuarter
+        def quarter_stats_klass_name
+          'Ossert::Stats::AgilityQuarter'
         end
 
-        def total_stats_klass
-          Stats::AgilityTotal
+        def total_stats_klass_name
+          'Ossert::Stats::AgilityTotal'
         end
       end
     end
 
     class Community < BaseStore
       class << self
-        def quarter_stats_klass
-          Stats::CommunityQuarter
+        def quarter_stats_klass_name
+          'Ossert::Stats::CommunityQuarter'
         end
 
-        def total_stats_klass
-          Stats::CommunityTotal
+        def total_stats_klass_name
+          'Ossert::Stats::CommunityTotal'
         end
       end
     end

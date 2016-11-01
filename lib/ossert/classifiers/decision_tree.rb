@@ -5,13 +5,13 @@ require 'decisiontree'
 module Ossert
   module Classifiers
     class DecisionTree
-      GRADES = [
-        'ClassA'.freeze,
-        'ClassB'.freeze,
-        'ClassC'.freeze,
-        'ClassD'.freeze,
-        'ClassE'.freeze
-      ].freeze
+      GRADES = %w(
+        ClassA
+        ClassB
+        ClassC
+        ClassD
+        ClassE
+      ).freeze
 
       class << self
         attr_accessor :all

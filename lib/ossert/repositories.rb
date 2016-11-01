@@ -1,90 +1,38 @@
 # frozen_string_literal: true
-require 'rom-repository'
-require 'rom-sql'
+require 'oj'
+require 'multi_json'
 
-class Exceptions < ROM::Relation[:sql]
-  def by_name(name)
-    where(name: name)
+class NameException < Sequel::Model(:exceptions)
+  set_primary_key [:name]
+  class << self
+    alias by_name []
   end
 end
+::NameException.unrestrict_primary_key
 
-class ExceptionsRepo < ROM::Repository[:exceptions]
-  commands :create, update: :by_name, delete: :by_name
-
-  def [](name)
-    exceptions.by_name(name).one
-  end
-
-  def all
-    exceptions.to_a
-  end
-
-  def all_by_names
-    all.index_by(&:name)
+class Classifier < Sequel::Model
+  set_primary_key [:section]
+  def self.actual?
+    where('updated_at > ?', 1.month.ago).count.positive?
   end
 end
+::Classifier.unrestrict_primary_key
 
-class Classifiers < ROM::Relation[:sql]
-  def by_section(section)
-    where(section: section)
-  end
-end
+class Project < Sequel::Model
+  set_primary_key [:name]
 
-class ClassifiersRepo < ROM::Repository[:classifiers]
-  commands :create, update: :by_section, delete: :by_section
+  class << self
+    def random(count = 10)
+      where('random() < ?', count * 0.01).limit(count)
+    end
 
-  def [](section)
-    classifiers.by_section(section).one
-  end
+    def later_than(id)
+      where('id >= ?', id)
+    end
 
-  def actual?
-    !classifiers.where('updated_at > ?', 1.month.ago).to_a.empty?
-  end
-
-  def cleanup
-    command(:delete, classifiers).call
-  end
-end
-
-class Projects < ROM::Relation[:sql]
-  def random(count = 10)
-    where('random() < ?', count * 0.01).limit(count)
-  end
-
-  def by_name(name)
-    where(name: name)
-  end
-
-  def later_than(id)
-    where('id >= ?', id)
-  end
-
-  def referenced
-    where('reference <> ?', Ossert::Saveable::UNUSED_REFERENCE)
-  end
-end
-
-class ProjectRepo < ROM::Repository[:projects]
-  commands :create, update: :by_name, delete: :by_name
-
-  def [](name)
-    projects.by_name(name).one
-  end
-
-  def all
-    projects.to_a
-  end
-
-  def later_than(id)
-    projects.later_than(id).to_a
-  end
-
-  def referenced
-    projects.referenced.to_a
-  end
-
-  def random(count = 10)
-    projects.random(count).to_a
+    def referenced
+      where('reference <> ?', Ossert::Saveable::UNUSED_REFERENCE)
+    end
   end
 
   class Unpacker
@@ -105,6 +53,8 @@ class ProjectRepo < ROM::Repository[:projects]
           end
         )
       end
+    ensure
+      @stored_project = nil
     end
 
     private
@@ -115,7 +65,7 @@ class ProjectRepo < ROM::Repository[:projects]
         updated_at: @stored_project.updated_at
       }
       result[:meta] = if @stored_project.meta_data.present?
-                        JSON.parse(@stored_project.meta_data)
+                        MultiJson.load(@stored_project.meta_data)
                       else
                         {}
                       end
@@ -124,7 +74,7 @@ class ProjectRepo < ROM::Repository[:projects]
     end
 
     def factory_project_stats(stats_type)
-      Object.const_get "Ossert::Project::#{stats_type.to_s.capitalize}"
+      Kernel.const_get "Ossert::Project::#{stats_type.to_s.capitalize}"
     end
 
     class Base
@@ -134,12 +84,9 @@ class ProjectRepo < ROM::Repository[:projects]
       end
 
       def coerce_value(value)
-        return Set.new(value) if value.is_a? Array
-        begin
-          return DateTime.parse(value)
-        rescue
-          value
-        end
+        return DateTime.parse(value)
+      rescue
+        value
       end
 
       def stored_data
@@ -152,16 +99,12 @@ class ProjectRepo < ROM::Repository[:projects]
         :total
       end
 
-      def stored_data
-        @stored_project.send("#{@stats_type}_total_data")
-      end
-
       def new_stats_object
         Kernel.const_get("Ossert::Stats::#{@stats_type.capitalize}Total").new
       end
 
       def process
-        JSON.parse(
+        MultiJson.load(
           stored_data
         ).each_with_object(new_stats_object) do |(metric, value), stats_object|
           stats_object.send "#{metric}=", coerce_value(value)
@@ -176,12 +119,12 @@ class ProjectRepo < ROM::Repository[:projects]
 
       def new_stats_object
         Ossert::QuartersStore.new(
-          Object.const_get("Ossert::Stats::#{@stats_type.capitalize}Quarter")
+          "Ossert::Stats::#{@stats_type.capitalize}Quarter"
         )
       end
 
       def process
-        JSON.parse(
+        MultiJson.load(
           stored_data
         ).each_with_object(new_stats_object) do |(time, metrics), quarter_store|
           metrics.each_with_object(quarter_store[time.to_i]) do |(metric, value), quarter|
@@ -192,3 +135,4 @@ class ProjectRepo < ROM::Repository[:projects]
     end
   end
 end
+::Project.unrestrict_primary_key

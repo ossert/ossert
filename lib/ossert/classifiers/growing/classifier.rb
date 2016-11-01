@@ -3,19 +3,19 @@ module Ossert
   module Classifiers
     class Growing
       class Classifier
-        GRADES = [
-          'ClassA'.freeze,
-          'ClassB'.freeze,
-          'ClassC'.freeze,
-          'ClassD'.freeze,
-          'ClassE'.freeze
-        ].freeze
+        GRADES = %w(
+          ClassA
+          ClassB
+          ClassC
+          ClassD
+          ClassE
+        ).freeze
         REVERSED_GRADE = {
-          'ClassA' => 'ClassE'.freeze,
-          'ClassB' => 'ClassD'.freeze,
-          'ClassC' => 'ClassC'.freeze,
-          'ClassD' => 'ClassB'.freeze,
-          'ClassE' => 'ClassA'.freeze
+          'ClassA' => 'ClassE',
+          'ClassB' => 'ClassD',
+          'ClassC' => 'ClassC',
+          'ClassD' => 'ClassB',
+          'ClassE' => 'ClassA'
         }.freeze
 
         attr_reader :classifier, :config

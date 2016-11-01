@@ -21,7 +21,6 @@ Gem::Specification.new do |spec|
   spec.require_paths = ['lib']
 
   spec.add_runtime_dependency 'octokit', '~> 4.0'
-  spec.add_runtime_dependency 'gems', '~> 0.8.3'
 
   spec.add_runtime_dependency 'redis'
   spec.add_runtime_dependency 'redis-namespace'
@@ -30,21 +29,19 @@ Gem::Specification.new do |spec|
 
   spec.add_runtime_dependency 'activesupport' # TODO: remove dependency later
   spec.add_runtime_dependency 'oj'
+  spec.add_runtime_dependency 'multi_json'
   spec.add_runtime_dependency 'sequel'
-  spec.add_runtime_dependency 'rom-repository'
-  spec.add_runtime_dependency 'rom-sql'
   spec.add_runtime_dependency 'pg'
   spec.add_runtime_dependency 'nokogiri'
   spec.add_runtime_dependency 'graphr'
+  spec.add_runtime_dependency 'rake', '~> 10.0'
 
   spec.add_development_dependency 'memory_profiler'
   spec.add_development_dependency 'rubocop'
   spec.add_development_dependency 'bundler', '~> 1.11'
   spec.add_development_dependency 'pry'
-  spec.add_development_dependency 'rake', '~> 10.0'
   spec.add_development_dependency 'rspec', '~> 3.0'
   spec.add_development_dependency 'simplecov'
-  spec.add_development_dependency 'multi_json'
   spec.add_development_dependency 'webmock'
   spec.add_development_dependency 'vcr'
 end

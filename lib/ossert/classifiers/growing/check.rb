@@ -3,19 +3,19 @@ module Ossert
   module Classifiers
     class Growing
       class Check
-        GRADES = [
-          'A'.freeze,
-          'B'.freeze,
-          'C'.freeze,
-          'D'.freeze,
-          'E'.freeze
-        ].freeze
+        GRADES = %w(
+          A
+          B
+          C
+          D
+          E
+        ).freeze
         KLASS_2_GRADE = {
-          'ClassA' => 'A'.freeze,
-          'ClassB' => 'B'.freeze,
-          'ClassC' => 'C'.freeze,
-          'ClassD' => 'D'.freeze,
-          'ClassE' => 'E'.freeze
+          'ClassA' => 'A',
+          'ClassB' => 'B',
+          'ClassC' => 'C',
+          'ClassD' => 'D',
+          'ClassE' => 'E'
         }.freeze
 
         class << self

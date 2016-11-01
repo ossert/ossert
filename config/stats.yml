@@ -32,26 +32,26 @@ stats:
         - life_period
         - last_changed
       attributes:
-        dependencies: Set
-        issues_open: Set
-        issues_closed: Set
-        issues_owner: Set
-        issues_non_owner: Set
-        issues_with_contrib_comments: Set
-        issues_total: Set
-        issues_processed_in_avg: Set
-        pr_open: Set
-        pr_merged: Set
-        pr_closed: Set
-        pr_owner: Set
-        pr_non_owner: Set
-        pr_with_contrib_comments: Set
-        pr_total: Set
-        pr_processed_in_avg: Set
-        releases_total_gh: Set
-        releases_total_rg: Set
-        stale_branches: Set
-        branches: Set
+        dependencies: Array
+        issues_open: Array
+        issues_closed: Array
+        issues_owner: Array
+        issues_non_owner: Array
+        issues_with_contrib_comments: Array
+        issues_total: Array
+        issues_processed_in_avg: Array
+        pr_open: Array
+        pr_merged: Array
+        pr_closed: Array
+        pr_owner: Array
+        pr_non_owner: Array
+        pr_with_contrib_comments: Array
+        pr_total: Array
+        pr_processed_in_avg: Array
+        releases_total_gh: Array
+        releases_total_rg: Array
+        stale_branches: Array
+        branches: Array
         first_pr_date:
         last_pr_date:
         first_issue_date:
@@ -77,19 +77,19 @@ stats:
         - releases_count
         - commits
       attributes:
-        issues_open: Set
-        issues_closed: Set
-        issues_total: Set
-        issues_actual: Set
-        pr_open: Set
-        pr_merged: Set
-        pr_closed: Set
-        pr_total: Set
-        pr_actual: Set
-        branches: Set
-        releases: Set
-        releases_total_gh: Set
-        releases_total_rg: Set
+        issues_open: Array
+        issues_closed: Array
+        issues_total: Array
+        issues_actual: Array
+        pr_open: Array
+        pr_merged: Array
+        pr_closed: Array
+        pr_total: Array
+        pr_actual: Array
+        branches: Array
+        releases: Array
+        releases_total_gh: Array
+        releases_total_rg: Array
         commits:
         issues_processed_in_days:
         pr_processed_in_days:
@@ -109,18 +109,18 @@ stats:
         - users_involved_no_stars_count
         - total_downloads
       attributes:
-        dependants: Set
-        users_creating_issues: Set
-        users_commenting_issues: Set
-        users_creating_pr: Set
-        users_commenting_pr: Set
-        contributors: Set
-        watchers: Set
-        stargazers: Set
-        forks: Set
-        users_involved: Set
-        owners_github: Set
-        owners_rubygems: Set
+        dependants: Array
+        users_creating_issues: Array
+        users_commenting_issues: Array
+        users_creating_pr: Array
+        users_commenting_pr: Array
+        contributors: Array
+        watchers: Array
+        stargazers: Array
+        forks: Array
+        users_involved: Array
+        owners_github: Array
+        owners_rubygems: Array
         total_downloads:
         delta_downloads:
     quarter:
@@ -138,14 +138,14 @@ stats:
         - download_divergence
         - total_downloads
       attributes:
-        users_creating_issues: Set
-        users_commenting_issues: Set
-        users_creating_pr: Set
-        users_commenting_pr: Set
-        contributors: Set
-        stargazers: Set
-        forks: Set
-        users_involved: Set
+        users_creating_issues: Array
+        users_commenting_issues: Array
+        users_creating_pr: Array
+        users_commenting_pr: Array
+        contributors: Array
+        stargazers: Array
+        forks: Array
+        users_involved: Array
         download_divergence:
         total_downloads:
         delta_downloads:

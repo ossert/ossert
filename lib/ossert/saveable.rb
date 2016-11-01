@@ -18,20 +18,16 @@ module Ossert
       attriibute = attriibute.to_sym
       value = ATTRIBUTE_EXTRACT_VALUE_MAP.fetch(attriibute).call(self)
 
-      with_repo do |repo|
-        raise 'Not saved yet, sorry!' unless repo[name]
-        repo.update(name, attriibute => value, updated_at: Time.now.utc)
-      end
+      raise 'Not saved yet, sorry!' unless (found_project = ::Project.find(name: name))
+      found_project.update(name, attriibute => value, updated_at: Time.now.utc)
       nil
     end
 
     def dump
-      with_repo do |repo|
-        if repo[name]
-          repo.update(name, attributes.merge(updated_at: Time.now.utc))
-        else
-          repo.create(attributes)
-        end
+      if (found_project = ::Project.find(name: name))
+        found_project.update(attributes.merge(updated_at: Time.now.utc))
+      else
+        ::Project.create(attributes)
       end
       nil
     end
@@ -59,17 +55,17 @@ module Ossert
       }
     end
 
-    def with_repo
-      yield(self.class.repo)
-    end
-
     module ClassMethods
-      def repo
-        ProjectRepo.new(Ossert.rom)
+      def exist?(name)
+        ::Project.filter(name: name).get(:name).present?
+      end
+
+      def random(count = 10)
+        ::Project.random(count)
       end
 
       def find_by_name(name, reference = Ossert::Saveable::UNUSED_REFERENCE)
-        if (name_exception = ExceptionsRepo.new(Ossert.rom)[name])
+        if (name_exception = ::NameException.find(name: name))
           new(name, name_exception.github_name, name, reference)
         else
           new(name, nil, name, reference)
@@ -77,29 +73,29 @@ module Ossert
       end
 
       def load_by_name(name)
-        stored_prj = repo[name]
+        stored_prj = ::Project.find(name: name)
         deserialize(stored_prj) if stored_prj
       end
 
       def load_referenced
-        repo.referenced.map do |stored_prj|
+        ::Project.referenced.map do |stored_prj|
           deserialize(stored_prj)
         end
       end
 
       def load_later_than(id)
-        repo.later_than(id).map do |stored_prj|
+        ::Project.later_than(id).map do |stored_prj|
           deserialize(stored_prj)
         end
       end
 
       def cleanup_referencies!
-        repo.command(:update, repo.projects).call(reference: UNUSED_REFERENCE)
+        ::Project.update(reference: UNUSED_REFERENCE)
       end
 
       # TODO: Danger! Later we'll need pagination here!
       def load_all
-        repo.all.map do |stored_prj|
+        ::Project.paged_each.map do |stored_prj|
           deserialize(stored_prj)
         end
       end
@@ -118,7 +114,7 @@ module Ossert
           stored_project.reference
         )
         project.assign_data(
-          ProjectRepo::Unpacker.process(stored_project)
+          ::Project::Unpacker.process(stored_project)
         )
         project
       end

@@ -3,14 +3,19 @@ require 'simplecov'
 SimpleCov.start
 
 $LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
+
+require 'sequel'
 require 'ossert'
+
+DB_URL = ENV.fetch('TEST_DATABASE_URL')
+Ossert.init(DB_URL)
+
 require 'multi_json'
 require 'rspec'
 require 'webmock/rspec'
 require 'base64'
 
-DB_URL = ENV.fetch('TEST_DATABASE_URL')
-Ossert.rom(DB_URL)
+::Classifier.dataset.delete
 
 require 'vcr'
 VCR.configure do |c|

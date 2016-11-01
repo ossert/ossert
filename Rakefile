@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 require 'bundler/gem_tasks'
 require 'rspec/core/rake_task'
-require 'rom/sql/rake_task'
+require 'sequel'
 
 require 'bundler'
 Bundler.require
