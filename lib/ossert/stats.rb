@@ -7,7 +7,8 @@ require 'ossert/stats/community_quarter'
 
 module Ossert
   module Stats
-    TOO_LONG = 5.years
+    PER_QUARTER_TOO_LONG = (5.years / 1.day).to_i
+    PER_YEAR_TOO_LONG = PER_QUARTER_TOO_LONG / 4
 
     def guess_section_by_metric(metric)
       found_section = :not_found

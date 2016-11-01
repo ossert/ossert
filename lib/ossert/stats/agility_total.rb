@@ -64,11 +64,11 @@ module Ossert
       end
 
       def issues_processed_in_avg
-        (value = @issues_processed_in_avg).zero? ? TOO_LONG : value
+        (value = @issues_processed_in_avg).zero? ? PER_YEAR_TOO_LONG : value
       end
 
       def pr_processed_in_avg
-        (value = @pr_processed_in_avg).zero? ? TOO_LONG : value
+        (value = @pr_processed_in_avg).zero? ? PER_YEAR_TOO_LONG : value
       end
 
       def releases_count

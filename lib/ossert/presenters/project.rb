@@ -46,13 +46,12 @@ module Ossert
           /(percent|divergence)/ => ->(value) { "#{value.ceil}%" },
           /(date|changed)/ => (lambda do |value|
             date = Time.at(value)
-            return 'not enough data' if date < TOO_LONG_AGO
+            return 'N/A' if date < TOO_LONG_AGO
             date.strftime('%d/%m/%y')
           end),
           /processed_in/ => (lambda do |value|
+            return 'N/A' if value >= Ossert::Stats::PER_YEAR_TOO_LONG || value.zero?
             case value
-            when Ossert::Stats::TOO_LONG
-              'not enough data'
             when 1
               "~#{value.ceil} day"
             when 2..30

@@ -58,6 +58,17 @@ describe Ossert do
           project.preview_reference_values_for(metric_name, section)
         end
 
+        describe '#metric_preview' do
+          let(:preview) { project.metric_preview('issues_processed_in_avg') }
+
+          it do
+            expect(preview[:last_year_mark]).to eq('e')
+            expect(preview[:last_year_val]).to eq('N/A&nbsp;E')
+            expect(preview[:total_mark]).to eq('b')
+            expect(preview[:total_val]).to eq('~1 month&nbsp;B')
+          end
+        end
+
         describe '#reference_values_per_grade' do
           context 'when agility_total metric given' do
             let(:section) { :agility_total }
