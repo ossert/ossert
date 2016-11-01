@@ -59,9 +59,9 @@ module Ossert
         end
       end
 
-      def median(values)
+      def median(values, default_value: 0)
         values = Array(values).sort
-        return 0 if (count = values.count).zero?
+        return default_value if (count = values.count).zero?
 
         middle_idx = values.count / 2
         return values[middle_idx] if count.odd?

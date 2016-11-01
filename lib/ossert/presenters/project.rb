@@ -41,21 +41,26 @@ module Ossert
           raise e
         end
 
+        TOO_LONG_AGO = 10.years.ago
         METRICS_DECORATIONS = {
           /(percent|divergence)/ => ->(value) { "#{value.ceil}%" },
-          /(date|changed)/ => ->(value) { Time.at(value).strftime('%d/%m/%y') },
+          /(date|changed)/ => (lambda do |value|
+            date = Time.at(value)
+            return 'not enough data' if date < TOO_LONG_AGO
+            date.strftime('%d/%m/%y')
+          end),
           /processed_in/ => (lambda do |value|
             case value
-            when 0
+            when Ossert::Stats::TOO_LONG
               'not enough data'
             when 1
               "~#{value.ceil} day"
             when 2..30
               "~#{value.ceil} days"
             when 31..61
-              "~#{(value / 31).ceil} month"
+              "~#{(value / 31).to_i} month"
             else
-              "~#{(value / 31).ceil} months"
+              "~#{(value / 31).to_i} months"
             end
           end),
           /period/ => (lambda do |value|

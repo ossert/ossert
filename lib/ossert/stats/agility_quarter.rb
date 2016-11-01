@@ -21,11 +21,11 @@ module Ossert
       )
 
       def issues_processed_in_avg
-        median(issues_processed_in_days)
+        median(issues_processed_in_days, default_value: Ossert::Stats::TOO_LONG)
       end
 
       def pr_processed_in_avg
-        median(pr_processed_in_days)
+        median(pr_processed_in_days, default_value: Ossert::Stats::TOO_LONG)
       end
 
       def issues_active

@@ -88,7 +88,6 @@ classifiers:
           pr_with_contrib_comments_percent: 0.5
           pr_all_count: 0.5
           pr_processed_in_avg: 0.5
-          last_year_commits: 1
           releases_count: 1
           stale_branches_count: 1
           life_period: 1
@@ -103,7 +102,7 @@ classifiers:
           forks_count: 2
           users_involved_count: 2
           users_involved_no_stars_count: 2
-          delta_downloads: 2
+          total_downloads: 2
           issues_processed_in_avg: 2
           issues_closed_percent: 1
           issues_all_count: 1
@@ -132,7 +131,7 @@ classifiers:
           pr_with_contrib_comments_percent: 0.5
           pr_all_count: 0.5
           pr_processed_in_avg: 0.5
-          last_year_commits: 1
+          commits: 1
           releases_count: 1
           stale_branches_count: 1
           life_period: 1

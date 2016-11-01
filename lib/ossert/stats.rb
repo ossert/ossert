@@ -7,6 +7,8 @@ require 'ossert/stats/community_quarter'
 
 module Ossert
   module Stats
+    TOO_LONG = 5.years
+
     def guess_section_by_metric(metric)
       found_section = :not_found
       section_by_metric.each do |section, metrics|
