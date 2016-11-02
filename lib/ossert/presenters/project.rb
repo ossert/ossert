@@ -102,16 +102,16 @@ module Ossert
           end
         end
 
-        private
-
-        def quarter_start(time)
-          Time.at(time).to_date.to_time(:utc).beginning_of_quarter
-        end
-
         def quarter_values(quarter_data)
           quarter_data.each_with_object({}) do |(metric, value), res|
             res[metric] = value.to_i
           end
+        end
+
+        private
+
+        def quarter_start(time)
+          Time.at(time).to_date.to_time(:utc).beginning_of_quarter
         end
       end
 
@@ -124,11 +124,11 @@ module Ossert
       end
 
       def agility_quarter_values(time)
-        decorator.values @project.agility.quarters[time].metrics_to_hash
+        decorator.quarter_values @project.agility.quarters[time].metrics_to_hash
       end
 
       def community_quarter_values(time)
-        decorator.values @project.community.quarters[time].metrics_to_hash
+        decorator.quarter_values @project.community.quarters[time].metrics_to_hash
       end
 
       def agility_total
