@@ -41,7 +41,7 @@ module Ossert
           raise e
         end
 
-        TOO_LONG_AGO = 10.years.ago
+        TOO_LONG_AGO = 20.years.ago
         METRICS_DECORATIONS = {
           /(percent|divergence)/ => ->(value) { "#{value.ceil}%" },
           /(date|changed)/ => (lambda do |value|

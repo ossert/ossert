@@ -29,8 +29,6 @@ module Ossert
         Ossert::Fetch.all project
         project.prepare_time_bounds!
         project.dump
-      rescue => e
-        puts "Fetching Failed for '#{name}' with error: #{e.inspect}"
       end
 
       def projects_by_reference

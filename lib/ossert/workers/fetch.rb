@@ -10,6 +10,7 @@ module Ossert
 
       def perform(name)
         pid = fork do
+          Ossert.init
           Ossert::Project.fetch_all(name)
         end
         waitpid(pid)

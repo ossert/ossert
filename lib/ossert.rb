@@ -46,4 +46,12 @@ module Ossert
     @translations ||= ::Settings['translations']
   end
   module_function :translations
+
+  NO_GITHUB_NAME = '__unknown__'
+
+  class Zero
+    def self.new
+      0
+    end
+  end
 end

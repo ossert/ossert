@@ -24,12 +24,29 @@ module Ossert
     end
 
     def dump
+      validate!
       if (found_project = ::Project.find(name: name))
         found_project.update(attributes.merge(updated_at: Time.now.utc))
       else
         ::Project.create(attributes)
       end
       nil
+    end
+
+    def valid?
+      [name, github_alias, rubygems_alias].all?(&:present?)
+    end
+
+    class RecordInvalid < StandardError
+      attr_reader :message
+      def initialize(*)
+        super
+        @message = "Couldn't save project. Validation failed!"
+      end
+    end
+
+    def validate!
+      raise RecordInvalid.new unless valid?
     end
 
     def attributes
@@ -53,6 +70,10 @@ module Ossert
         community_total_data: community.total.to_json,
         community_quarters_data: community.quarters.to_json
       }
+    end
+
+    def without_github_data?
+      github_alias == NO_GITHUB_NAME
     end
 
     module ClassMethods
