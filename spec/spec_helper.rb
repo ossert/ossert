@@ -15,8 +15,6 @@ require 'rspec'
 require 'webmock/rspec'
 require 'base64'
 
-::Classifier.dataset.delete
-
 require 'vcr'
 VCR.configure do |c|
   c.configure_rspec_metadata!
@@ -45,13 +43,9 @@ RSpec.configure do |config|
   config.before(:all) do
     db = Sequel.connect(DB_URL)
     db.run('TRUNCATE TABLE projects;')
+    db.run('TRUNCATE TABLE classifiers;')
 
-    @a_project = 'multi_json'
-    @b_project = 'rake'
-    @c_project = 'scientist'
-    @d_project = 'dry-web'
-    @e_project = 'reifier'
-    @no_github_project = 'aaronh-chronic'
+    init_projects
 
     threads = []
     threads << Thread.new do
@@ -84,12 +78,27 @@ RSpec.configure do |config|
         Ossert::Project.fetch_all(@no_github_project, Ossert::Saveable::UNUSED_REFERENCE)
       end
     end
+    threads << Thread.new do
+      VCR.use_cassette 'github_not_found_project' do
+        Ossert::Project.fetch_all(@github_not_found_project, Ossert::Saveable::UNUSED_REFERENCE)
+      end
+    end
     threads.each(&:join)
   end
   config.after(:all) do
     db = Sequel.connect(DB_URL)
     db.run('TRUNCATE TABLE projects;')
   end
+end
+
+def init_projects
+  @a_project = 'multi_json'
+  @b_project = 'rake'
+  @c_project = 'scientist'
+  @d_project = 'dry-web'
+  @e_project = 'reifier'
+  @no_github_project = 'aaronh-chronic'
+  @github_not_found_project = 'rack-mount'
 end
 
 def test_github_token

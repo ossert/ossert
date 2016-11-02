@@ -538,7 +538,7 @@ module Ossert
           community.quarters[forker[:created_at]].users_involved << forker[:owner][:login]
         end
       rescue Octokit::NotFound => e
-        puts e.backtrace
+        project.github_alias = NO_GITHUB_NAME
         raise "Github NotFound Error: #{e.inspect}"
       end
 
