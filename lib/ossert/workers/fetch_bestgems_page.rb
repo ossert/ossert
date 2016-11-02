@@ -19,7 +19,7 @@ module Ossert
               Ossert.init
               next(puts("Skipping project: '#{gem_name}'")) if Ossert::Project.exist?(gem_name)
               Ossert::Project.fetch_all(gem_name)
-              sleep(1.minute)
+              sleep(10)
             end
             waitpid(pid)
           end
