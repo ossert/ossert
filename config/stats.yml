@@ -39,7 +39,7 @@ stats:
         issues_non_owner: Array
         issues_with_contrib_comments: Array
         issues_total: Array
-        issues_processed_in_avg: Array
+        issues_processed_in_avg: Ossert::Zero
         pr_open: Array
         pr_merged: Array
         pr_closed: Array
@@ -47,7 +47,7 @@ stats:
         pr_non_owner: Array
         pr_with_contrib_comments: Array
         pr_total: Array
-        pr_processed_in_avg: Array
+        pr_processed_in_avg: Ossert::Zero
         releases_total_gh: Array
         releases_total_rg: Array
         stale_branches: Array

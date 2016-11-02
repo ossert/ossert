@@ -51,6 +51,7 @@ RSpec.configure do |config|
     @c_project = 'scientist'
     @d_project = 'dry-web'
     @e_project = 'reifier'
+    @no_github_project = 'aaronh-chronic'
 
     threads = []
     threads << Thread.new do
@@ -76,6 +77,11 @@ RSpec.configure do |config|
     threads << Thread.new do
       VCR.use_cassette 'fetch_e_project' do
         Ossert::Project.fetch_all(@e_project, 'ClassE')
+      end
+    end
+    threads << Thread.new do
+      VCR.use_cassette 'fetch_no_github_project' do
+        Ossert::Project.fetch_all(@no_github_project, Ossert::Saveable::UNUSED_REFERENCE)
       end
     end
     threads.each(&:join)

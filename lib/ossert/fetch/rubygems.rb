@@ -51,7 +51,7 @@ module Ossert
         return unless project.github_alias.blank?
         match = info['source_code_uri'].try(:match, %r{github.com/([a-zA-Z0-9\.\_\-]+)/([a-zA-Z0-9\.\_\-]+)})
         match ||= info['homepage_uri'].try(:match, %r{github.com/([a-zA-Z0-9\.\_\-]+)/([a-zA-Z0-9\.\_\-]+)})
-        project.github_alias = "#{match[1]}/#{match[2]}" if match
+        project.github_alias = match ? "#{match[1]}/#{match[2]}" : NO_GITHUB_NAME
       end
 
       def process_releases

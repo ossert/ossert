@@ -8,6 +8,9 @@ describe Ossert do
     let(:projectC) { Ossert::Project.load_by_name(@c_project) }
     let(:projectD) { Ossert::Project.load_by_name(@d_project) }
     let(:projectE) { Ossert::Project.load_by_name(@e_project) }
+    let(:no_github_project) { Ossert::Project.load_by_name(@no_github_project) }
+
+    it { expect(no_github_project).to be_without_github_data }
 
     let(:project_A_time_range) do
       [Date.parse('01/04/2010'), Date.parse('01/10/2016')]

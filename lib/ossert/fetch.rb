@@ -37,6 +37,8 @@ module Ossert
         sleep(1)
       end
       nil
+    rescue => e
+      puts "Fetching Failed for '#{name}' with error: #{e.inspect}"
     end
     module_function :all
 
