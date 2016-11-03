@@ -8,12 +8,14 @@ module Ossert
       sidekiq_options retry: 3,
                       unique: :until_executed
 
-      def perform(pages)
+      def perform(pages, type = :total)
         pages = Array(pages)
+        bestgems_page_processor = Kernel.const_get(
+          "Ossert::Fetch::Bestgems#{type.to_s.capitalize}Stat"
+        )
         pages.each do |page|
           puts "Processing Bestgems page: '#{page}'"
-          Ossert::Fetch::BestgemsTotalStat.process_page(page) do |_, _, gem_name|
-
+          bestgems_page_processor.process_page(page) do |_, _, gem_name|
             puts "Processing project: '#{gem_name}'"
             pid = fork do
               Ossert.init
