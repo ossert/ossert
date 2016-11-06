@@ -21,11 +21,11 @@ end
 class Project < Sequel::Model
   set_primary_key [:name]
 
-  class << self
-    def random(count = 10)
-      where('random() < ?', count * 0.01).limit(count)
-    end
+  def_dataset_method(:random) do |count|
+    where('random() < ?', count * 0.05).limit(count)
+  end
 
+  class << self
     def later_than(id)
       where('id >= ?', id)
     end

@@ -81,8 +81,12 @@ module Ossert
         ::Project.filter(name: name).get(:name).present?
       end
 
+      def random_top(count = 10)
+        ::Project.where(reference: %w(ClassA ClassB)).random(count)
+      end
+
       def random(count = 10)
-        ::Project.random(count)
+        ::Project.dataset.random(count)
       end
 
       def find_by_name(name, reference = Ossert::Saveable::UNUSED_REFERENCE)

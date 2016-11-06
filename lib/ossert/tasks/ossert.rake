@@ -26,6 +26,12 @@ namespace :ossert do
     end
   end
 
+  desc 'Invoke data updates for stale projects'
+  task :refresh_data do
+    require './config/sidekiq.rb'
+    Ossert::Workers::RefreshFetch.perform_async
+  end
+
   desc 'Add or replace project name exception'
   task :exception, [:name, :github_name] do |_, args|
     raise 'Arguments name and GitHub name expected' unless args.name.present? && args.github_name.present?

@@ -6,6 +6,7 @@ module Ossert
     CONFIG_ROOT = File.join(File.dirname(__FILE__), '..', '..', 'config')
     CONST_NAME = 'Settings'
 
+    # TODO: use ERB, needed for Time syntetics
     def self.load(*configs)
       config_data = configs.each_with_object({}) do |config, result|
         if (path = File.join(CONFIG_ROOT, "#{config}.yml")) && File.exist?(path.to_s)
