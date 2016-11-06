@@ -11,19 +11,17 @@ namespace :ossert do
   end
 
   desc 'Collect reference projects'
-  task collect: ['db:dump'] do
-    begin
-      puts 'Run collecting process'
-      time = Benchmark.realtime do
+  task :collect_referencies do
+    puts 'Run collecting process'
+    time = Benchmark.realtime do
+      ::Project.db.transaction do
         Ossert::Project.cleanup_referencies!
         reference_projects = Ossert::Reference.prepare_projects!
-        Ossert::Reference.collect_stats_for_refs!(reference_projects)
+        Ossert::Reference.process_references(reference_projects)
       end
-
-      puts "Collecting process finished in #{time.round(3)} sec."
-    rescue
-      Rake::Task['db:restore:last'].invoke
     end
+
+    puts "Collecting process finished in #{time.round(3)} sec."
   end
 
   desc 'Invoke data updates for stale projects'

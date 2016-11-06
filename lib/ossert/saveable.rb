@@ -115,7 +115,7 @@ module Ossert
       end
 
       def cleanup_referencies!
-        ::Project.update(reference: UNUSED_REFERENCE)
+        ::Project.dataset.update(reference: UNUSED_REFERENCE)
       end
 
       # TODO: Danger! Later we'll need pagination here!

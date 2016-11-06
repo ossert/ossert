@@ -168,7 +168,7 @@ namespace :db do
     backup_dir = 'db/backups'
     if create && !Dir.exist?(backup_dir)
       puts "Creating #{backup_dir} .."
-      Dir.mkdir_p(backup_dir)
+      FileUtils.mkdir_p(backup_dir)
     end
     backup_dir
   end

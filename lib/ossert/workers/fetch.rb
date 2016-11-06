@@ -8,11 +8,11 @@ module Ossert
                       unique_expiration: 1.hour,
                       retry: 3
 
-      def perform(name)
-        puts "Fetching data for: '#{name}'"
+      def perform(name, reference = Ossert::Saveable::UNUSED_REFERENCE)
+        puts "Fetching data for: '#{name}' (ref: #{reference})"
         pid = fork do
           Ossert.init
-          Ossert::Project.fetch_all(name)
+          Ossert::Project.fetch_all(name, reference)
         end
         waitpid(pid)
       end

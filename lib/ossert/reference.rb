@@ -8,43 +8,36 @@ module Ossert
     end
     module_function :prepare_projects!
 
-    # Most resource consuming method
-    def collect_stats_for_refs!(refs)
-      threads = []
-      puts '==== COLLECTING REFERENCE PROJECTS ===='
-      refs.in_groups_of(3, false).each do |thread_batch|
-        threads << Thread.new(thread_batch) do |batch|
-          process_references batch
-        end
-      end
-      threads.each(&:join)
-      puts 'Done with reference projects.'
-    end
-    module_function :collect_stats_for_refs!
-
     def process_references(references)
+      require './config/sidekiq'
       Array(references).each do |reference|
         reference.project_names.each_with_object(reference.class.name.demodulize) do |project_name, klass|
-          Ossert::Project.fetch_all(project_name.dup, klass)
-          sleep(5) && GC.start
+          if Ossert::Project.exist?(project_name)
+            project = Ossert::Project.load_by_name(project_name)
+            project.reference = klass
+            project.dump
+          else
+            Ossert::Workers::Fetch.perform_async(project_name, klass)
+          end
         end
       end
     end
+    module_function :process_references
 
     class Base
       CLASSES = %w(ClassA ClassB ClassC ClassD ClassE).freeze
 
-      attr_reader :total, :representative, :pages, :project_names
+      attr_reader :representative, :pages, :project_names
 
-      def initialize(representative, total, pages)
+      def initialize(representative, pages)
         @representative = representative
-        @total = total
         @pages = pages
         @project_names = Set.new
         # 20 each page, total 5907 pages
       end
 
       def prepare_projects!
+        puts "Processing #{self.class.name}"
         all_pages = pages.to_a.shuffle
         all_projects = {}
         representative.times do
@@ -61,32 +54,31 @@ module Ossert
 
     class ClassA < Base
       def initialize
-        super(25, 500, 1..25)
-        # super(5, 500, 1..25)
+        super(50, 1..10)
       end
     end
 
     class ClassB < Base
       def initialize
-        super(25, 500, 26..50)
+        super(50, 11..100)
       end
     end
 
     class ClassC < Base
       def initialize
-        super(100, 10_000, 51..550)
+        super(50, 101..250)
       end
     end
 
     class ClassD < Base
       def initialize
-        super(100, 50_000, 551..2500)
+        super(50, 251..500)
       end
     end
 
     class ClassE < Base
       def initialize
-        super(100, 50_000, 2501..5000)
+        super(50, 501..2500)
       end
     end
   end
