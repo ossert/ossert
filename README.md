@@ -1,21 +1,29 @@
-Code style? Checked by [RuboCop](https://github.com/bbatsov/rubocop/) (crowdsourced code style metrics)
+Code quality? Checked by [RuboCop](https://github.com/bbatsov/rubocop/) (crowdsourced code quality metrics)
 What about library support?
 Introducing **Ossert**! Crowdsourced project support and availablity metrics.
 
 # ossert (OSS cERTificate) [![Build Status](https://travis-ci.org/ossert/ossert.svg?branch=master)](https://travis-ci.org/ossert/ossert) [![Inline docs](http://inch-ci.org/github/ossert/ossert.svg)](http://inch-ci.org/github/ossert/ossert)  [![Code Climate](https://codeclimate.com/github/ossert/ossert/badges/gpa.svg)](https://codeclimate.com/github/ossert/ossert)
 
 The main goal of project is to provide "certificate" for open-source software with different validity check, just to be more
-formal in estimation of projects' risks, value and ability to use. Also system is designed as open one, so any new checks and validations from
-community are appreciated.
+formal in estimation of projects' risks, value and ability to use in an enterprise.
+Also system is designed as open one, so any new checks and validations from community are appreciated.
 
 The simple structure is:
-- Checks DataSources (such as Github, Bestgems, Rubygems and so on) each provides a set of "attributes"
-- Validity checks based on "attributes", they provide just values which can be compared to other projects.
-  Their goal is not to say "Bad" or "Good" something is, but to provide some more detailed info about projects' legacy
-- We have "profile" page for each project, which shows values for some set of validity checks, as they were previously calculated
-  and could be refreshed on demand.
-- Also we have feature to compare several projects on same validity checks and see any deviations from relatively best or
-  worst of them
+- "Project" has set of raw attributes gathered from different data sources and metrics built upon them.
+- "Fetch" classes gathers data from sources like Rubygems, Bestgems, GitHub.
+- "Reference" class chooses reference projects from different popularity groups (from most to the least popular).
+- "Classifiers::Growing::Classifier" class prepares classification  by sections (Maintenance, Popularity, Maturity) using reference projects.
+  Each classifier section performs calculation upon its own metrics and weights.
+- "Classifiers::Growing::Check" running checks against classifier and prepares marks for particular project.
+
+Project tries to answer simple question: "Is this gem ready for production? Will it be available and consistent in a year?"
+Ossert marks projects with grades A, B, C, D, E. Highest grade means you possibly can trust that open-source project because it is
+used widely and supported in efficient way. Less grades means higher risks for production.
+
+Also you can check several alternatives against same checks to select most stable and mature from them.
+
+Long term milestone is to provide not only marks and metrics but also give a context of classification (trends, metadata, discussions, docs, users and so on).
+This tool should help you dive into any open-source library on any level of detalization, from overall marks to a particular change in time.
 
 ## Metrics
 
@@ -29,7 +37,6 @@ I choose to start with following basic validity checks
 - Contributors count
 - Watchers, Stargazers, Forks
 - Owners... (link Rubygems and Github by email)
-- Popularity Rating (https://www.ruby-toolbox.com/projects/delayed_job/popularity)
 
 #### Pulse, for last year/quarter/month (amount + delta from total)
 - Users count writing issues
@@ -56,19 +63,7 @@ I choose to start with following basic validity checks
 - Releases Count
 - Downloads divergence
 - Downloads degradation per release (Comes later)
-- Branches Count
-
-## OSSert Project Profile
-Somewhat like that https://gemnasium.com/razum2um/lurker, but about support quality.
-OsSert-profile for project contains:
-- Links from gemspec
-  - Website
-  - RDoc
-  - Wiki
-  - Source Code
-  - Bug Tracker
-- Project Community metrics described above
-- Project Agility metrics described above
+- Stale Branches Count
 
 ## Existining alternatives
 
@@ -162,25 +157,31 @@ After that you should set ENV variables:
 
 ```
 $ export GITHUB_TOKEN xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+$ export REDIS_URL redis://localhost/
 $ export DATABASE_URL postrgres://localhost/ossert
 $ export TEST_DATABASE_URL postrgres://localhost/ossert_test
 ```
 
 Then you can run:
 
-```ruby
+```
 bundle exec rake db:setup
 ```
 
 Or if you have previous dumps of data:
 
-```ruby
+```
 bundle exec rake db:restore:last
 ```
 
+
 ## Usage
 
-TODO: Write usage instructions here
+For interactive experiments run:
+
+```
+bin/console
+```
 
 ## Development
 
