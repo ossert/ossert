@@ -118,10 +118,15 @@ module Ossert
         ::Project.dataset.update(reference: UNUSED_REFERENCE)
       end
 
-      # TODO: Danger! Later we'll need pagination here!
       def load_all
         ::Project.paged_each.map do |stored_prj|
           deserialize(stored_prj)
+        end
+      end
+
+      def yield_all
+        ::Project.paged_each do |stored_prj|
+          yield deserialize(stored_prj)
         end
       end
 
