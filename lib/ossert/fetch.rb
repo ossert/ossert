@@ -39,6 +39,7 @@ module Ossert
       nil
     rescue => e
       puts "Fetching Failed for '#{name}' with error: #{e.inspect}"
+      puts e.backtrace
     end
     module_function :all
 

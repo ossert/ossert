@@ -13,7 +13,7 @@ module Ossert
     #                - instance method #metric_values returns values of metrics
     #                  in same order.
     #
-    # Returns QuarterStore instance.
+    # Returns nothing.
     def initialize(data_klass_name)
       @data_klass_name = data_klass_name
       @quarters = {}
@@ -22,7 +22,7 @@ module Ossert
     end
 
     def data_klass
-      Kernel.const_get(@data_klass_name)
+      @data_klass ||= Kernel.const_get(@data_klass_name)
     end
 
     # Public: Strict fetch of quarter for given date
@@ -80,16 +80,14 @@ module Ossert
     #
     # Returns Hash of quarter metrics and its values aggregated for last year.
     def last_year_as_hash(offset = 1)
-      cached_data_klass = data_klass
-      last_year_metrics = cached_data_klass.metrics.zip(
-        quarters.sort.last(4 + offset)
-                     .take(4)
-                     .map { |_, quarter| quarter.metric_values }
-                     .transpose
-                     .map { |x| x.reduce(:+) }
-      ).to_h
-      cached_data_klass.aggregated_metrics.each { |metric| last_year_metrics[metric] /= 4.0 }
-      last_year_metrics
+      data_klass.metrics.zip(aggregated_quarter(offset).metric_values).to_h
+    end
+
+    def aggregated_quarter(offset = 1)
+      last_quarters = quarters.sort.last(4 + offset).take(4)
+      last_quarters.inject(data_klass.new) do |acc, (_, quarter)|
+        acc << quarter
+      end
     end
 
     # Public: Fill quarter bounds and wholes in periods from first to last quarter.

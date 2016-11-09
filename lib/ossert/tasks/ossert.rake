@@ -14,6 +14,7 @@ namespace :ossert do
   task :collect_referencies do
     puts 'Run collecting process'
     time = Benchmark.realtime do
+      ::Ossert.init
       ::Project.db.transaction do
         Ossert::Project.cleanup_referencies!
         reference_projects = Ossert::Reference.prepare_projects!

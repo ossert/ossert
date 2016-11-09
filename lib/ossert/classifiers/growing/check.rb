@@ -116,10 +116,10 @@ module Ossert
 
           def grade_as_hash
             grade = { gain: 0, mark: 'E' }
-            max = GRADES.count
+            max = GRADES.count - 1
             check.each_with_index do |(current_grade, gain), decrease|
               next if gain <= trusted_probability
-              grade = { gain: (gain * (max - decrease)).to_f.round(2), mark: current_grade }
+              grade = { gain: (gain + (max - decrease)).to_f.round(2), mark: current_grade }
               break
             end
             grade

@@ -11,8 +11,8 @@ module Ossert
       def perform
         pid = fork do
           Ossert.init
-          ::Project.select(:name).where('updated_at < ?', 1.week.ago).paged_each do |project|
-            Ossert::Workers::Fetch.perform_async(project.name)
+          ::Project.select(:name, :reference).where('updated_at < ?', 1.week.ago).paged_each do |project|
+            Ossert::Workers::Fetch.perform_async(project.name, project.reference)
           end
         end
         waitpid(pid)

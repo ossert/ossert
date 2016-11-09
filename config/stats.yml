@@ -1,26 +1,19 @@
 stats:
   agility:
     total:
-      aggregated_metrics:
-        - issues_closed_percent
-        - issues_non_owner_percent
-        - issues_with_contrib_comments_percent
-        - issues_processed_in_avg
-        - pr_closed_percent
-        - pr_non_owner_percent
-        - pr_with_contrib_comments_percent
-        - pr_processed_in_avg
       metrics:
         - issues_closed_percent
         - issues_non_owner_percent
         - issues_with_contrib_comments_percent
         - issues_all_count
         - issues_processed_in_avg
+        - issues_processed_in_median
         - pr_closed_percent
         - pr_non_owner_percent
         - pr_with_contrib_comments_percent
         - pr_all_count
         - pr_processed_in_avg
+        - pr_processed_in_median
         - first_pr_date_int
         - last_pr_date_int
         - first_issue_date_int
@@ -39,7 +32,8 @@ stats:
         issues_non_owner: Array
         issues_with_contrib_comments: Array
         issues_total: Array
-        issues_processed_in_avg: Ossert::Zero
+        issues_processed_in_avg: Ossert::TooLong
+        issues_processed_in_median: Ossert::TooLong
         pr_open: Array
         pr_merged: Array
         pr_closed: Array
@@ -47,30 +41,28 @@ stats:
         pr_non_owner: Array
         pr_with_contrib_comments: Array
         pr_total: Array
-        pr_processed_in_avg: Ossert::Zero
+        pr_processed_in_avg: Ossert::TooLong
+        pr_processed_in_median: Ossert::TooLong
         releases_total_gh: Array
         releases_total_rg: Array
         stale_branches: Array
         branches: Array
-        first_pr_date:
-        last_pr_date:
-        first_issue_date:
-        last_issue_date:
-        last_release_date:
-        commits_count_since_last_release:
-        last_year_commits:
+        first_pr_date: Ossert::Zero
+        last_pr_date: Ossert::Zero
+        first_issue_date: Ossert::Zero
+        last_issue_date: Ossert::Zero
+        last_release_date: Ossert::Zero
+        commits_count_since_last_release: Ossert::Zero
+        last_year_commits: Ossert::Zero
     quarter:
-      aggregated_metrics:
-        - issues_closed_percent
-        - issues_processed_in_avg
-        - pr_closed_percent
-        - pr_processed_in_avg
       metrics:
         - issues_processed_in_avg
+        - issues_processed_in_median
         - issues_closed_percent
         - issues_actual_count
         - issues_all_count
         - pr_processed_in_avg
+        - pr_processed_in_median
         - pr_closed_percent
         - pr_actual_count
         - pr_all_count
@@ -90,12 +82,11 @@ stats:
         releases: Array
         releases_total_gh: Array
         releases_total_rg: Array
-        commits:
-        issues_processed_in_days:
-        pr_processed_in_days:
+        commits: Ossert::Zero
+        issues_processed_in_days: Array
+        pr_processed_in_days: Array
   community:
     total:
-      aggregated_metrics: []
       metrics:
         - dependants_count
         - users_creating_issues_count
@@ -121,11 +112,9 @@ stats:
         users_involved: Array
         owners_github: Array
         owners_rubygems: Array
-        total_downloads:
-        delta_downloads:
+        total_downloads: Ossert::Zero
+        delta_downloads: Ossert::Zero
     quarter:
-      aggregated_metrics:
-        - download_divergence
       metrics:
         - users_creating_issues_count
         - users_commenting_issues_count
@@ -146,6 +135,6 @@ stats:
         stargazers: Array
         forks: Array
         users_involved: Array
-        download_divergence:
-        total_downloads:
-        delta_downloads:
+        download_divergence: Ossert::Zero
+        total_downloads: Ossert::Zero
+        delta_downloads: Ossert::Zero

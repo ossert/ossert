@@ -64,13 +64,26 @@ describe Ossert do
         end
 
         describe '#metric_preview' do
-          let(:preview) { project.metric_preview('issues_processed_in_avg') }
+          context 'when metric is issues_processed_in_avg' do
+            let(:preview) { project.metric_preview('issues_processed_in_avg') }
 
-          it do
-            expect(preview[:last_year_mark]).to eq('e')
-            expect(preview[:last_year_val]).to eq('N/A&nbsp;E')
-            expect(preview[:total_mark]).to eq('b')
-            expect(preview[:total_val]).to eq('~1 month&nbsp;B')
+            it do
+              expect(preview[:last_year_mark]).to eq('b')
+              expect(preview[:last_year_val]).to eq('~1 month&nbsp;B')
+              expect(preview[:total_mark]).to eq('b')
+              expect(preview[:total_val]).to eq('~1 month&nbsp;B')
+            end
+          end
+
+          context 'when metric is issues_processed_in_median' do
+            let(:preview) { project.metric_preview('issues_processed_in_median') }
+
+            it do
+              expect(preview[:last_year_mark]).to eq('b')
+              expect(preview[:last_year_val]).to eq('~1 month&nbsp;B')
+              expect(preview[:total_mark]).to eq('b')
+              expect(preview[:total_val]).to eq('~1 month&nbsp;B')
+            end
           end
         end
 

@@ -36,11 +36,13 @@ module Ossert
         # 20 each page, total 5907 pages
       end
 
+      PER_PAGE = 20
+
       def prepare_projects!
         puts "Processing #{self.class.name}"
         all_pages = pages.to_a.shuffle
         all_projects = {}
-        representative.times do
+        (representative / PER_PAGE).times do
           current_page = all_pages.pop
           Fetch::BestgemsDailyStat.process_page(current_page) do |rank, downloads, name|
             all_projects[name] = { rank: rank, downloads: downloads }

@@ -17,10 +17,6 @@ module Ossert
           @attributes_names ||= attributes.keys
         end
 
-        def aggregated_metrics
-          @aggregated_metrics ||= config['aggregated_metrics']
-        end
-
         def metrics
           @metrics ||= config['metrics']
         end
@@ -51,6 +47,15 @@ module Ossert
             end
           end
         end
+      end
+
+      def <<(other_stats)
+        self.class.attributes_names.each do |attr|
+          next unless current_value = other_stats.send(attr)
+          send("#{attr}=", send(attr) + current_value)
+          send(attr).uniq! if send(attr).respond_to?(:uniq)
+        end
+        self
       end
 
       def initialize

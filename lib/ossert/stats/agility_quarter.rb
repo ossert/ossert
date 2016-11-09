@@ -20,12 +20,22 @@ module Ossert
         :pr_closed, :issues_all, :pr_all, :pr_actual
       )
 
-      def issues_processed_in_avg
+      def issues_processed_in_median
         median(issues_processed_in_days, default_value: PER_QUARTER_TOO_LONG)
       end
 
-      def pr_processed_in_avg
+      def issues_processed_in_avg
+        return PER_QUARTER_TOO_LONG if (count = Array(issues_processed_in_days).size).zero?
+        issues_processed_in_days.sum / count
+      end
+
+      def pr_processed_in_median
         median(pr_processed_in_days, default_value: PER_QUARTER_TOO_LONG)
+      end
+
+      def pr_processed_in_avg
+        return PER_QUARTER_TOO_LONG if (count = Array(pr_processed_in_days).size).zero?
+        pr_processed_in_days.sum / count
       end
 
       def issues_active

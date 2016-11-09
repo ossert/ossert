@@ -49,6 +49,12 @@ module Ossert
 
   NO_GITHUB_NAME = '__unknown__'
 
+  class TooLong
+    def self.new
+      Ossert::Stats::PER_YEAR_TOO_LONG
+    end
+  end
+
   class Zero
     def self.new
       0

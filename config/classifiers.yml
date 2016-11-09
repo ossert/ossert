@@ -1,6 +1,6 @@
 classifiers:
   growth:
-    trusted_probability: 0.66
+    trusted_probability: 0.65
     checks:
       - popularity
       - maintenance
@@ -29,6 +29,12 @@ classifiers:
       last_release_date_int:
         - 1476783369  # Best
         - 1161160504 # Worst
+      issues_processed_in_median:
+        - 7
+        - 120
+      pr_processed_in_median:
+        - 1
+        - 90
       issues_processed_in_avg:
         - 7
         - 120
@@ -43,6 +49,8 @@ classifiers:
       - pr_actual_count
       - issues_processed_in_avg
       - pr_processed_in_avg
+      - issues_processed_in_median
+      - pr_processed_in_median
       - first_issue_date_int
       - first_pr_date_int
     metrics:
@@ -69,10 +77,12 @@ classifiers:
           total_downloads: 1
       maintenance:
         last_year:
-          issues_processed_in_avg: 2
+          issues_processed_in_avg: 1
+          issues_processed_in_median: 1
           issues_closed_percent: 2
           issues_all_count: 2
-          pr_processed_in_avg: 2
+          pr_processed_in_avg: 1
+          pr_processed_in_median: 1
           pr_closed_percent: 2
           pr_all_count: 2
           releases_count: 4
@@ -82,12 +92,14 @@ classifiers:
           issues_non_owner_percent: 0.5
           issues_with_contrib_comments_percent: 0.5
           issues_all_count: 0.5
-          issues_processed_in_avg: 0.5
+          issues_processed_in_avg: 0.25
+          issues_processed_in_median: 0.25
           pr_closed_percent: 0.5
           pr_non_owner_percent: 0.5
           pr_with_contrib_comments_percent: 0.5
           pr_all_count: 0.5
-          pr_processed_in_avg: 0.5
+          pr_processed_in_avg: 0.25
+          pr_processed_in_median: 0.25
           releases_count: 1
           stale_branches_count: 1
           life_period: 1
@@ -103,10 +115,12 @@ classifiers:
           users_involved_count: 2
           users_involved_no_stars_count: 2
           total_downloads: 2
-          issues_processed_in_avg: 2
+          issues_processed_in_avg: 1
+          issues_processed_in_median: 1
           issues_closed_percent: 1
           issues_all_count: 1
-          pr_processed_in_avg: 1
+          pr_processed_in_avg: 0.5
+          pr_processed_in_median: 0.5
           pr_closed_percent: 1
           pr_all_count: 1
           releases_count: 2

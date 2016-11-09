@@ -191,45 +191,6 @@ module Ossert
         end
       end
 
-      def process_issues_and_prs_processing_days
-        @issues_processed_in_days = []
-        issues do |issue|
-          next if issue.key? :pull_request
-          next unless issue[:state] == 'closed'
-          next unless issue[:closed_at].present?
-          days_to_close = (Date.parse(issue[:closed_at]) - Date.parse(issue[:created_at])).to_i + 1
-          @issues_processed_in_days << days_to_close
-          (agility.quarters[issue[:closed_at]].issues_processed_in_days ||= []) << days_to_close
-        end
-
-        values = @issues_processed_in_days.to_a.sort
-        agility.total.issues_processed_in_avg = if values.count.odd?
-                                                  values[values.count / 2]
-                                                elsif values.count.zero?
-                                                  0
-                                                else
-                                                  ((values[values.count / 2 - 1] + values[values.count / 2]) / 2.0).to_i
-                                                end
-
-        @pulls_processed_in_days = []
-        pulls do |pull|
-          next unless pull[:state] == 'closed'
-          next unless pull[:closed_at].present?
-          days_to_close = (Date.parse(pull[:closed_at]) - Date.parse(pull[:created_at])).to_i + 1
-          @pulls_processed_in_days << days_to_close
-          (agility.quarters[pull[:closed_at]].pr_processed_in_days ||= []) << days_to_close
-        end
-
-        values = @pulls_processed_in_days.to_a.sort
-        agility.total.pr_processed_in_avg = if values.count.odd?
-                                              values[values.count / 2]
-                                            elsif values.count.zero?
-                                              0
-                                            else
-                                              ((values[values.count / 2 - 1] + values[values.count / 2]) / 2.0).to_i
-                                            end
-      end
-
       def process_actual_prs_and_issues
         actual_prs = Set.new
         actual_issues = Set.new
@@ -295,12 +256,13 @@ module Ossert
             agility.total.pr_total << pull[:url]
             agility.quarters[pull[:created_at]].pr_total << pull[:url]
 
-            if agility.total.first_pr_date.nil? || pull[:created_at] < agility.total.first_pr_date
-              agility.total.first_pr_date = pull[:created_at]
+            created_at = pull[:created_at].to_datetime.to_i
+            if agility.total.first_pr_date.zero? || created_at < agility.total.first_pr_date
+              agility.total.first_pr_date = created_at
             end
 
-            if agility.total.last_pr_date.nil? || pull[:created_at] > agility.total.last_pr_date
-              agility.total.last_pr_date = pull[:created_at]
+            if agility.total.last_pr_date.zero? || created_at > agility.total.last_pr_date
+              agility.total.last_pr_date = created_at
             end
 
             process_users_from_pull(pull)
@@ -308,7 +270,8 @@ module Ossert
         end
 
         values = @pulls_processed_in_days.to_a.sort
-        agility.total.pr_processed_in_avg = if values.count.odd?
+        agility.total.pr_processed_in_avg = values.count.positive? ? values.sum / values.count : 0
+        agility.total.pr_processed_in_median = if values.count.odd?
                                               values[values.count / 2]
                                             elsif values.count.zero?
                                               0
@@ -376,19 +339,22 @@ module Ossert
 
           agility.total.issues_total << issue[:url]
           agility.quarters[issue[:created_at]].issues_total << issue[:url]
-          if agility.total.first_issue_date.nil? || issue[:created_at] < agility.total.first_issue_date
-            agility.total.first_issue_date = issue[:created_at]
+
+          created_at = issue[:created_at].to_datetime.to_i
+          if agility.total.first_issue_date.zero? || created_at < agility.total.first_issue_date
+            agility.total.first_issue_date = created_at
           end
 
-          if agility.total.last_issue_date.nil? || issue[:created_at] > agility.total.last_issue_date
-            agility.total.last_issue_date = issue[:created_at]
+          if agility.total.last_issue_date.zero? || created_at > agility.total.last_issue_date
+            agility.total.last_issue_date = created_at
           end
 
           process_users_from_issue(issue)
         end
 
         values = @issues_processed_in_days.to_a.sort
-        agility.total.issues_processed_in_avg = if values.count.odd?
+        agility.total.issues_processed_in_avg = values.count.positive? ? values.sum / values.count : 0
+        agility.total.issues_processed_in_median = if values.count.odd?
                                                   values[values.count / 2]
                                                 elsif values.count.zero?
                                                   0
@@ -539,7 +505,9 @@ module Ossert
         end
       rescue Octokit::NotFound => e
         project.github_alias = NO_GITHUB_NAME
-        raise "Github NotFound Error: #{e.inspect}"
+        puts "Github NotFound Error: #{e.inspect}"
+      rescue Octokit::InvalidRepository => e
+        puts "Github InvalidRepository Error: #{e.inspect}"
       end
 
       MAX_ATTEMPTS = 5
