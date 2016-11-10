@@ -13,6 +13,10 @@ module Ossert
           @attributes ||= config['attributes']
         end
 
+        def uniq_attributes
+          @uniq_attributes ||= config['uniq_attributes'].to_a
+        end
+
         def attributes_names
           @attributes_names ||= attributes.keys
         end
@@ -53,7 +57,7 @@ module Ossert
         self.class.attributes_names.each do |attr|
           next unless current_value = other_stats.send(attr)
           send("#{attr}=", send(attr) + current_value)
-          send(attr).uniq! if send(attr).respond_to?(:uniq)
+          send(attr).uniq! if self.class.uniq_attributes.include?(attr)
         end
         self
       end
@@ -80,22 +84,17 @@ module Ossert
 
       def metrics_to_hash
         self.class.metrics.each_with_object({}) do |var, result|
-          result[var] = send(var)
-          # result[var] = if (value = send(var)).is_a? Array
-          #                 value.uniq
-          #               else
-          #                 value
-          #               end
+          value = send(var)
+          value.uniq! if self.class.uniq_attributes.include?(var)
+          result[var] = value
         end
       end
 
       def to_hash
         self.class.attributes_names.each_with_object({}) do |var, result|
-          result[var] = if (value = send(var)).is_a? Array
-                          value.uniq
-                        else
-                          value
-                        end
+          value = send(var)
+          value.uniq! if self.class.uniq_attributes.include?(var)
+          result[var] = value
         end
       end
 

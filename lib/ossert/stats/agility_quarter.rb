@@ -39,19 +39,19 @@ module Ossert
       end
 
       def issues_active
-        (issues_open + issues_actual).uniq - issues_closed
+        (issues_open | issues_actual) - issues_closed
       end
 
       def issues_all
-        (issues_open + issues_closed + issues_actual).uniq
+        (issues_open | issues_closed | issues_actual)
       end
 
       def pr_active
-        (pr_open + pr_actual).uniq - pr_closed
+        (pr_open | pr_actual) - pr_closed
       end
 
       def pr_all
-        (pr_open + pr_closed + pr_actual).uniq
+        (pr_open | pr_closed | pr_actual)
       end
 
       def releases_count

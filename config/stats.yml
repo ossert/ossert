@@ -24,6 +24,25 @@ stats:
         - stale_branches_count
         - life_period
         - last_changed
+      uniq_attributes:
+        - dependencies
+        - issues_open
+        - issues_closed
+        - issues_owner
+        - issues_non_owner
+        - issues_with_contrib_comments
+        - issues_total
+        - pr_open
+        - pr_merged
+        - pr_closed
+        - pr_owner
+        - pr_non_owner
+        - pr_with_contrib_comments
+        - pr_total
+        - releases_total_gh
+        - releases_total_rg
+        - stale_branches
+        - branches
       attributes:
         dependencies: Array
         issues_open: Array
@@ -68,6 +87,19 @@ stats:
         - pr_all_count
         - releases_count
         - commits
+      uniq_attributes:
+        - issues_open
+        - issues_closed
+        - issues_total
+        - issues_actual
+        - pr_open
+        - pr_closed
+        - pr_total
+        - pr_actual
+        - branches
+        - releases
+        - releases_total_gh
+        - releases_total_rg
       attributes:
         issues_open: Array
         issues_closed: Array
