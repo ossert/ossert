@@ -105,24 +105,23 @@ module Ossert
           end
 
           def grade
-            grade = 'E'
-            check.each_pair do |current_grade, gain|
-              next if gain <= trusted_probability
-              grade = current_grade
-              break
+            max = GRADES.count
+            sum = -0.6
+            check.sort.reverse.each do |(_, gain)|
+              sum += gain
+              sum += 0.1 if gain > trusted_probability
             end
-            grade
+            GRADES[(max - sum).to_i]
           end
 
           def grade_as_hash
-            grade = { gain: 0, mark: 'E' }
-            max = GRADES.count - 1
-            check.each_with_index do |(current_grade, gain), decrease|
-              next if gain <= trusted_probability
-              grade = { gain: (gain + (max - decrease)).to_f.round(2), mark: current_grade }
-              break
+            max = GRADES.count
+            sum = -0.6
+            check.sort.reverse.each do |(_, gain)|
+              sum += gain
+              sum += 0.1 if gain > trusted_probability
             end
-            grade
+            { gain: sum, mark: GRADES[(max - sum).to_i] }
           end
 
           protected
