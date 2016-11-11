@@ -35,6 +35,7 @@ translations:
   users_commenting_pr_count: 'Number of Users Commenting Pull Requests'
   watchers_count: 'Number of Watchers'
   stargazers_count: 'Number of Stargazers'
+  contributors_count: 'Number of Contributors'
   forks_count: 'Number of Forks'
   users_involved_count: 'Number of Total Users Involved'
   users_involved_no_stars_count: 'Number of Users Involved Without Stargazers'

@@ -71,6 +71,7 @@ classifiers:
           users_commenting_issues_count: 1
           users_creating_pr_count: 1
           users_commenting_pr_count: 1
+          contributors_count: 1
           watchers_count: 1
           forks_count: 1
           users_involved_no_stars_count: 1

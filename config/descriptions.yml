@@ -34,6 +34,7 @@ descriptions:
   users_creating_pr_count: Number of unique users that requested a pull
   users_commenting_pr_count: Number of unique users commented any pull request
   watchers_count: Number of unique watchers on Github
+  contributors_count: Number of unique contributors
   stargazers_count: Number of unique users that starred the project
   forks_count: Number of unique users that forked the project
   users_involved_count: Number of unique users made any action for the project like leaving comment or requesting a pull

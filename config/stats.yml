@@ -122,6 +122,7 @@ stats:
       metrics:
         - dependants_count
         - users_creating_issues_count
+        - contributors_count
         - users_commenting_issues_count
         - users_creating_pr_count
         - users_commenting_pr_count
