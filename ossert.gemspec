@@ -10,9 +10,9 @@ Gem::Specification.new do |spec|
   spec.authors       = ['Sergey Dolganov']
   spec.email         = ['sclinede@gmail.com']
 
-  spec.summary       = 'Write a short summary, because Rubygems requires one.'
-  spec.description   = 'Write a longer description or delete this line.'
-  spec.homepage      = 'https://github.com/sclinede/ossert'
+  spec.summary       = 'Open-source gems maintenance & maturity tracking'
+  spec.description   = 'Open-source gems maintenance & maturity tracking'
+  spec.homepage      = 'https://github.com/ossert/ossert'
   spec.license       = 'MIT'
 
   spec.files         = `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|spec|features)/}) }
