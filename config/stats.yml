@@ -130,7 +130,20 @@ stats:
         - forks_count
         - users_involved_count
         - users_involved_no_stars_count
-        - total_downloads
+        - total_downloads_count
+      uniq_attributes:
+        - dependants
+        - users_creating_issues
+        - users_commenting_issues
+        - users_creating_pr
+        - users_commenting_pr
+        - contributors
+        - watchers
+        - stargazers
+        - forks
+        - users_involved
+        - owners_github
+        - owners_rubygems
       attributes:
         dependants: Array
         users_creating_issues: Array
@@ -156,7 +169,19 @@ stats:
         - forks_count
         - users_involved_count
         - users_involved_no_stars_count
-        - download_divergence
+        - total_downloads_count
+      uniq_attributes:
+        - users_creating_issues
+        - users_commenting_issues
+        - users_creating_pr
+        - users_commenting_pr
+        - contributors
+        - stargazers
+        - forks
+        - users_involved
+        - owners_github
+        - owners_rubygems
+      absolute_attributes:
         - total_downloads
       attributes:
         users_creating_issues: Array

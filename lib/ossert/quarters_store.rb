@@ -83,6 +83,11 @@ module Ossert
       data_klass.metrics.zip(aggregated_quarter(offset).metric_values).to_h
     end
 
+    # Public: Generate aggregated quarter object for last year.
+    #
+    # offset - the Numeric (default: 1) in quarters for offset of when "last year" should ends
+    #
+    # Returns quarter Object with attributes aggregated for last year.
     def aggregated_quarter(offset = 1)
       last_quarters = quarters.sort.last(4 + offset).take(4)
       last_quarters.inject(data_klass.new) do |acc, (_, quarter)|
@@ -106,6 +111,11 @@ module Ossert
       @end_date = Time.at(periods_range.last)
     end
 
+    # Public: Iterate (and yields) through quarter dates in ascending order
+    #
+    # Yields the Numeric UNIX-timestamp inside of quarter
+    #
+    # Returns Range of quarters dates
     def with_quarters_dates
       sorted_quarters = quarters.keys.sort
       (sorted_quarters.first..sorted_quarters.last).step(93.days) { |period| yield(period) }
@@ -131,16 +141,24 @@ module Ossert
       quarters.sort.map { |time, quarter| yield(time, quarter) }
     end
 
+    # Public: Generate Hash for current data structure.
+    #         Keys are UNIX-timestamps (beginning of each quarter),
+    #         values are quarter objects explicitly converted to Hash.
+    #
+    # Returns Hash.
+    def to_hash
+      quarters.each_with_object({}) do |(time, quarter), result|
+        result[time] = quarter.to_hash
+      end
+    end
+
     # Public: Generate JSON for current data structure.
     #         Keys are UNIX-timestamps (beginning of each quarter),
     #         values are quarter objects explicitly converted to Hash.
     #
     # Returns String contains valid JSON.
     def to_json
-      hash = quarters.each_with_object({}) do |(time, quarter), result|
-        result[time] = quarter.to_hash
-      end
-      JSON.generate(hash)
+      MultiJson.dump(self)
     end
   end
 end

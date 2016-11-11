@@ -39,6 +39,6 @@ descriptions:
   users_involved_count: Number of unique users made any action for the project like leaving comment or requesting a pull
   users_involved_no_stars_count:
     Number of unique users that made any action for project excluding users that only give a Star on Github
-  total_downloads: Total number of downloads since first day of the project
+  total_downloads_count: Total number of downloads since first day of the project
   delta_downloads: Number of downloads that were made during period
   download_divergence: Downloads Growth From Previous Period %

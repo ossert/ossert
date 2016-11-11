@@ -64,7 +64,7 @@ classifiers:
           forks_count: 3
           users_involved_count: 3
           users_involved_no_stars_count: 3
-          total_downloads: 3
+          total_downloads_count: 3
         total:
           dependants_count: 4
           users_creating_issues_count: 1
@@ -74,7 +74,7 @@ classifiers:
           watchers_count: 1
           forks_count: 1
           users_involved_no_stars_count: 1
-          total_downloads: 1
+          total_downloads_count: 1
       maintenance:
         last_year:
           issues_processed_in_avg: 1
@@ -114,7 +114,7 @@ classifiers:
           forks_count: 2
           users_involved_count: 2
           users_involved_no_stars_count: 2
-          total_downloads: 2
+          total_downloads_count: 2
           issues_processed_in_avg: 1
           issues_processed_in_median: 1
           issues_closed_percent: 1
@@ -134,7 +134,7 @@ classifiers:
           watchers_count: 1
           forks_count: 1
           users_involved_no_stars_count: 1
-          total_downloads: 1
+          total_downloads_count: 1
           issues_closed_percent: 0.5
           issues_non_owner_percent: 0.5
           issues_with_contrib_comments_percent: 0.5

@@ -38,6 +38,6 @@ translations:
   forks_count: 'Number of Forks'
   users_involved_count: 'Number of Total Users Involved'
   users_involved_no_stars_count: 'Number of Users Involved Without Stargazers'
-  total_downloads: 'Number of Downloads'
+  total_downloads_count: 'Number of Downloads'
   delta_downloads: 'Number of Downloads Increased By'
   download_divergence: 'Downloads Growth From Previous Period %'

@@ -15,6 +15,10 @@ module Ossert
       def users_involved_no_stars_count
         (users_involved - stargazers).count
       end
+
+      def total_downloads_count
+        total_downloads
+      end
     end
   end
 end

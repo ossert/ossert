@@ -16,8 +16,12 @@ module Ossert
         (users_involved - stargazers).count
       end
 
-      def total_downloads
+      def total_downloads_count
         delta_downloads
+      end
+
+      def download_divergence
+        (delta_downloads.to_f / (1 + total_downloads.to_f)) * 100.0
       end
     end
   end

@@ -17,6 +17,10 @@ module Ossert
           @uniq_attributes ||= config['uniq_attributes'].to_a
         end
 
+        def absolute_attributes
+          @absolute_attributes ||= config['absolute_attributes'].to_a
+        end
+
         def attributes_names
           @attributes_names ||= attributes.keys
         end
@@ -55,16 +59,19 @@ module Ossert
 
       def <<(other_stats)
         self.class.attributes_names.each do |attr|
-          next unless current_value = other_stats.send(attr)
-          send("#{attr}=", send(attr) + current_value)
-          send(attr).uniq! if self.class.uniq_attributes.include?(attr)
+          next unless other_value = other_stats.instance_variable_get("@#{attr}")
+          new_value = other_value
+          new_value += instance_variable_get("@#{attr}") unless self.class.absolute_attributes.include?(attr)
+          new_value.uniq! if self.class.uniq_attributes.include?(attr)
+
+          instance_variable_set("@#{attr}", new_value)
         end
         self
       end
 
       def initialize
         self.class.attributes.each do |var, type|
-          send "#{var}=", Kernel.const_get(type).new if type
+          instance_variable_set("@#{var}", Kernel.const_get(type).new) if type
         end
       end
 
@@ -99,7 +106,7 @@ module Ossert
       end
 
       def to_json
-        MultiJson.dump(to_hash)
+        MultiJson.dump(self)
       end
     end
   end

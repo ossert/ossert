@@ -65,12 +65,11 @@ module Ossert
           /period/ => (lambda do |value|
             if (years = value.to_i / 365).positive?
               "#{years}+ years"
-            else
               'Less than a year'
+            else
             end
           end),
-          /count/ => ->(value) { value.to_i },
-          /downloads/ => ->(value) { value.ceil.to_s.gsub(/\d(?=(...)+$)/, '\0,') }
+          /downloads/ => ->(value) { value.ceil.to_s.reverse.gsub(/(\d{3})(?=\d)/, '\\1,').reverse }
         }.freeze
 
         def value(metric, value)

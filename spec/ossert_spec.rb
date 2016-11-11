@@ -27,7 +27,7 @@ describe Ossert do
       before { Ossert::Classifiers.train }
 
       let(:grades_A) do
-        { popularity: 'C', maintenance: 'B', maturity: 'C' }
+        { popularity: 'B', maintenance: 'B', maturity: 'B' }
       end
       let(:grades_B) do
         { popularity: 'A', maintenance: 'A', maturity: 'A' }
