@@ -30,7 +30,7 @@ describe Ossert do
         { popularity: 'B', maintenance: 'B', maturity: 'B' }
       end
       let(:grades_B) do
-        { popularity: 'A', maintenance: 'A', maturity: 'A' }
+        { popularity: 'A', maintenance: 'B', maturity: 'A' }
       end
       let(:grades_C) do
         { popularity: 'B', maintenance: 'B', maturity: 'B' }
@@ -39,7 +39,7 @@ describe Ossert do
         { popularity: 'D', maintenance: 'B', maturity: 'C' }
       end
       let(:grades_E) do
-        { popularity: 'E', maintenance: 'D', maturity: 'D' }
+        { popularity: 'E', maintenance: 'D', maturity: 'E' }
       end
 
       it do
@@ -50,12 +50,12 @@ describe Ossert do
         expect(projectE.grade_by_classifier).to eq(grades_E)
       end
 
-      it { expect(projectA.agility.quarters.last_year_as_hash).to be_a_kind_of(Hash) }
-      it { expect(projectA.agility.quarters.last_year_as_hash(3)).to be_a_kind_of(Hash) }
-      it { expect(projectA.agility.quarters.last_year_as_hash(5)).to be_a_kind_of(Hash) }
-      it { expect(projectA.agility.quarters.last_year_data).to be_a_kind_of(Array) }
-      it { expect(projectA.agility.quarters.last_year_data(3)).to be_a_kind_of(Array) }
-      it { expect(projectA.agility.quarters.last_year_data(5)).to be_a_kind_of(Array) }
+      context 'when non default last year offset' do
+        it { expect(projectA.agility.quarters.last_year_as_hash(3)).to be_a_kind_of(Hash) }
+        it { expect(projectA.agility.quarters.last_year_as_hash(5)).to be_a_kind_of(Hash) }
+        it { expect(projectA.agility.quarters.last_year_data(3)).to be_a_kind_of(Array) }
+        it { expect(projectA.agility.quarters.last_year_data(5)).to be_a_kind_of(Array) }
+      end
 
       context 'when project is decorated' do
         let(:project) { projectE.decorated }
@@ -64,6 +64,18 @@ describe Ossert do
         end
 
         describe '#metric_preview' do
+          context 'when metric is life_period' do
+            let(:preview) { project.metric_preview('life_period') }
+            let(:other_preview) { projectB.decorated.metric_preview('life_period') }
+
+            it do
+              expect(preview[:total_mark]).to eq('e')
+              expect(preview[:total_val]).to eq('Less than a year&nbsp;E')
+              expect(other_preview[:total_mark]).to eq('b')
+              expect(other_preview[:total_val]).to eq('2+ years&nbsp;B')
+            end
+          end
+
           context 'when metric is issues_processed_in_avg' do
             let(:preview) { project.metric_preview('issues_processed_in_avg') }
 

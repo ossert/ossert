@@ -64,7 +64,7 @@ classifiers:
           forks_count: 3
           users_involved_count: 3
           users_involved_no_stars_count: 3
-          total_downloads_count: 6
+          total_downloads_count: 8
         total:
           dependants_count: 6
           users_creating_issues_count: 1
@@ -75,7 +75,7 @@ classifiers:
           watchers_count: 1
           forks_count: 1
           users_involved_no_stars_count: 1
-          total_downloads_count: 6
+          total_downloads_count: 8
       maintenance:
         last_year:
           issues_processed_in_avg: 1

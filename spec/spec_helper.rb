@@ -40,7 +40,7 @@ end
 
 RSpec.configure do |config|
   config.raise_errors_for_deprecations!
-  config.before(:all) do
+  config.before(:suite) do
     db = Sequel.connect(DB_URL)
     db.run('TRUNCATE TABLE projects;')
     db.run('TRUNCATE TABLE classifiers;')
@@ -85,7 +85,10 @@ RSpec.configure do |config|
     end
     threads.each(&:join)
   end
-  config.after(:all) do
+  config.before(:all) do
+    init_projects
+  end
+  config.after(:suite) do
     db = Sequel.connect(DB_URL)
     db.run('TRUNCATE TABLE projects;')
   end

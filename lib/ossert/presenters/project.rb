@@ -63,10 +63,10 @@ module Ossert
             end
           end),
           /period/ => (lambda do |value|
-            if (years = value.to_i / 365).positive?
+            if (years = value.to_i / 1.year).positive?
               "#{years}+ years"
-              'Less than a year'
             else
+              'Less than a year'
             end
           end),
           /downloads/ => ->(value) { value.ceil.to_s.reverse.gsub(/(\d{3})(?=\d)/, '\\1,').reverse }
