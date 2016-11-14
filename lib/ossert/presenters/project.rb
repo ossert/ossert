@@ -159,18 +159,18 @@ module Ossert
       end
 
       def last_year_section(metric, section)
-        section_last_year = public_send("#{section}_last_year")[metric]
-        {
-          last_year_mark: section_last_year.try(:[], :mark),
-          last_year_val: section_last_year.try(:[], :text) || 'N/A'
-        }
+        section_result(metric, section, :last_year)
       end
 
       def total_section(metric, section)
-        section_total = public_send("#{section}_total")[metric]
+        section_result(metric, section, :total)
+      end
+
+      def section_result(metric, section, section_type)
+        data = public_send("#{section}_#{section_type}")[metric]
         {
-          total_mark: section_total.try(:[], :mark),
-          total_val: section_total.try(:[], :text) || 'N/A'
+          "#{section_type}_mark".to_sym => data.try(:[], :mark),
+          "#{section_type}_val".to_sym => data.try(:[], :text) || 'N/A'
         }
       end
 

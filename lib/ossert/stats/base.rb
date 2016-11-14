@@ -34,15 +34,19 @@ module Ossert
         end
 
         def define_ints(*attributes)
-          Array.wrap(attributes).each do |metric|
+          iterate_attributes(attributes) do |metric|
             define_method("#{metric}_int") { public_send(metric).to_i }
           end
         end
 
         def define_counts(*attributes)
-          Array.wrap(attributes).each do |metric|
+          iterate_attributes(attributes) do |metric|
             define_method("#{metric}_count") { public_send(metric).count }
           end
+        end
+
+        def iterate_attributes(attributes)
+          Array.wrap(attributes).each { |metric| yield metric }
         end
 
         def define_percent(attributes, default_value: 0)
@@ -59,7 +63,7 @@ module Ossert
 
       def <<(other_stats)
         self.class.attributes_names.each do |attr|
-          next unless other_value = other_stats.instance_variable_get("@#{attr}")
+          next unless (other_value = other_stats.instance_variable_get("@#{attr}"))
           new_value = other_value
           new_value += instance_variable_get("@#{attr}") unless self.class.absolute_attributes.include?(attr)
           new_value.uniq! if self.class.uniq_attributes.include?(attr)
@@ -91,9 +95,7 @@ module Ossert
 
       def metrics_to_hash
         self.class.metrics.each_with_object({}) do |var, result|
-          value = send(var)
-          value.uniq! if self.class.uniq_attributes.include?(var)
-          result[var] = value
+          result[var] = send(var)
         end
       end
 

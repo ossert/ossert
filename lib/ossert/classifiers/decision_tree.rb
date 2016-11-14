@@ -51,13 +51,6 @@ module Ossert
         }
       end
 
-      SECTION_DATA = {
-        agility_total: ->(project) { project.agility.total.metric_values },
-        agility_last_year: ->(project) { project.agility.quarters.last_year_data },
-        community_total: ->(project) { project.community.total.metric_values },
-        community_last_year: ->(project) { project.community.quarters.last_year_data }
-      }.freeze
-
       SECTION_METRICS = {
         agility_total: Stats::AgilityTotal.metrics,
         agility_last_year: Stats::AgilityQuarter.metrics,
@@ -69,7 +62,7 @@ module Ossert
         [:total, :last_year].each do |type|
           name = "#{section}_#{type}".to_sym
           define_method("#{name}_check") do |project|
-            public_send("#{name}_dec_tree").predict(SECTION_DATA[name].call(project))
+            public_send("#{name}_dec_tree").predict(Ossert::Classifiers::METRICS[name].call(project))
           end
         end
       end
@@ -99,7 +92,7 @@ module Ossert
 
         GRADES.each_with_object(train_group) do |grade, grouped_projects|
           grouped_projects[grade].each do |project|
-            SECTION_DATA.each do |section, data_collector|
+            Ossert::Classifiers::METRICS.each do |section, data_collector|
               result[section] << (data_collector.call(project) << grade)
             end
           end

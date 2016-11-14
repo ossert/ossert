@@ -89,13 +89,6 @@ module Ossert
       end
 
       class ClassifiersInitializer
-        CLASSIFIERS_METRICS = {
-          agility_total: ->(project) { project.agility.total.metrics_to_hash },
-          agility_last_year: ->(project) { project.agility.quarters.last_year_as_hash },
-          community_total: ->(project) { project.community.total.metrics_to_hash },
-          community_last_year: ->(project) { project.community.quarters.last_year_as_hash }
-        }.freeze
-
         def self.load_or_create
           if ::Classifier.actual?
             new.load
@@ -113,7 +106,7 @@ module Ossert
 
         def load
           @classifiers = {}
-          CLASSIFIERS_METRICS.keys.each do |section|
+          Ossert::Classifiers::METRICS.keys.each do |section|
             @classifiers[section] = JSON.parse(::Classifier[section.to_s].reference_values)
           end
           self
@@ -141,7 +134,7 @@ module Ossert
         end
 
         def new_classifiers
-          CLASSIFIERS_METRICS.keys.map { |type| [type, {}] }.to_h
+          Ossert::Classifiers::METRICS.keys.map { |type| [type, {}] }.to_h
         end
 
         def run
@@ -149,7 +142,7 @@ module Ossert
 
           @classifiers = GRADES.each_with_object(new_classifiers) do |grade, classifiers|
             @projects[grade].each do |project|
-              CLASSIFIERS_METRICS.each do |type, metrics|
+              Ossert::Classifiers::METRICS.each do |type, metrics|
                 classifiers[type][grade] = merge_metrics(classifiers[type][grade].to_h, metrics.call(project))
               end
             end

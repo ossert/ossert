@@ -105,13 +105,7 @@ module Ossert
           end
 
           def grade
-            max = GRADES.count
-            sum = -0.2
-            check.sort.reverse.each do |(_, gain)|
-              sum += gain
-              sum -= 0.1 if gain < trusted_probability
-            end
-            GRADES[(max - sum).to_i]
+            grade_as_hash[:mark]
           end
 
           def grade_as_hash
