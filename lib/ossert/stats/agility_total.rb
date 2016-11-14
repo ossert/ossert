@@ -50,10 +50,10 @@ module Ossert
       end
 
       def life_period
-        last_change = ([last_pr_date, last_issue_date] - [0]).max
+        last_change = ([last_pr_date.to_i, last_issue_date.to_i] - [0]).max
         return 0 unless last_change
 
-        first_change = ([first_pr_date, first_issue_date] - [0]).min
+        first_change = ([first_pr_date.to_i, first_issue_date.to_i] - [0]).min
         return 0 unless first_change
 
         (Time.at(last_change) - Time.at(first_change)).to_i
