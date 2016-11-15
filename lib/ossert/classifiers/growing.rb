@@ -31,6 +31,7 @@ module Ossert
 
       attr_reader :train_group
       attr_reader :agility_total_classifier, :community_total_classifier,
+                  :agility_quarter_classifier, :community_quarter_classifier,
                   :agility_last_year_classifier, :community_last_year_classifier
 
       def ready?
@@ -40,10 +41,10 @@ module Ossert
       def reference_values_per_grade
         {
           agility_total: classifier_to_metrics_per_grade(agility_total_classifier),
-          agility_quarter: classifier_to_metrics_per_grade(agility_last_year_classifier),
+          agility_quarter: classifier_to_metrics_per_grade(agility_quarter_classifier),
           agility_year: classifier_to_metrics_per_grade(agility_last_year_classifier),
           community_total: classifier_to_metrics_per_grade(community_total_classifier),
-          community_quarter: classifier_to_metrics_per_grade(community_last_year_classifier),
+          community_quarter: classifier_to_metrics_per_grade(community_quarter_classifier),
           community_year: classifier_to_metrics_per_grade(community_last_year_classifier)
         }
       end

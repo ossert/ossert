@@ -65,6 +65,15 @@ module Ossert
       quarters.sort.map { |unix_timestamp, quarter| [Time.at(unix_timestamp), quarter] }.to_h
     end
 
+    # Public: Get last finished quarter.
+    #
+    # offset - the Numeric (default: 1) in quarters for offset of last finished quarter
+    #
+    # Returns Object of stats class
+    def last(offset = 1)
+      quarters.sort.last(1 + offset).first.second
+    end
+
     # Public: Get quarters metric values aggregated for last year.
     #
     # offset - the Numeric (default: 1) in quarters for offset of when "last year" should ends

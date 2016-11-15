@@ -29,6 +29,7 @@ module Ossert
         # value, Float !
         def with_reference(text, value, metric, type)
           return (text.to_i.positive? ? "+#{text}" : text).to_s if type == :delta
+
           metric_by_ref = @reference[type][metric.to_s]
           reference = Project::CLASSES.inject('NaN') do |acc, ref|
             metric_by_ref[ref][:range].cover?(value) ? ref : acc
@@ -153,20 +154,12 @@ module Ossert
         preview[:tooltip] = MultiJson.dump(tooltip_data(metric))
         preview[:translation] = Ossert.t(metric)
 
-        preview.merge!(last_year_section(metric, section))
-        preview.merge!(total_section(metric, section))
+        preview.merge!(section_metric_data(metric, section, :last_year))
+        preview.merge!(section_metric_data(metric, section, :total))
         preview
       end
 
-      def last_year_section(metric, section)
-        section_result(metric, section, :last_year)
-      end
-
-      def total_section(metric, section)
-        section_result(metric, section, :total)
-      end
-
-      def section_result(metric, section, section_type)
+      def section_metric_data(metric, section, section_type)
         data = public_send("#{section}_#{section_type}")[metric]
         {
           "#{section_type}_mark".to_sym => data.try(:[], :mark),
