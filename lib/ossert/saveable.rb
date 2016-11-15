@@ -82,7 +82,7 @@ module Ossert
       end
 
       def random_top(count = 10)
-        ::Project.where(reference: %w(ClassA ClassB)).random(count)
+        ::Project.where(reference: %w(ClassA ClassB ClassC)).random(count)
       end
 
       def random(count = 10)
