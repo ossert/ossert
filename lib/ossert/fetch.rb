@@ -6,6 +6,7 @@ require 'benchmark'
 require 'ossert/fetch/github'
 require 'ossert/fetch/rubygems'
 require 'ossert/fetch/bestgems'
+require 'ossert/fetch/stackoverflow'
 
 
 module Ossert
@@ -14,7 +15,7 @@ module Ossert
   # fetching HTTP API.
   # TODO: Add logging
   module Fetch
-    ALL_FETCHERS = [Rubygems, Bestgems, GitHub].freeze
+    ALL_FETCHERS = [StackOverflow].freeze
 
     # Public: Fetch data for project using all fetchers by default process method
     #
@@ -101,6 +102,8 @@ module Ossert
 
       class NotFound < StandardError; end
       class UnexpectedResponseError < StandardError; end
+      class WrongContentType < StandardError; end
+      class RateLimitExceeded < StandardError; end
 
       # Public: Get data via HTTP GET for given API path
       #
@@ -113,15 +116,17 @@ module Ossert
       #   # => Some JSON from api
       #
       # Returns nothing.
-      def get(path)
-        raise ArgumentError unless path.end_with? type
-        response = agent.get("#{api_endpoint}#{path}")
+      def get(path, params = nil)
+        response = agent.get("#{@api_endpoint}#{path}", params)
+
         case response.status
-        when 404
+        when 404 
           raise NotFound
-        when 200
-          JSON.parse(response.body)
-        else
+        when 429 
+          raise RateLimitExceeded
+        when 200 
+          JSON.parse(response.body, symbolize_names: true)
+        else 
           raise UnexpectedResponseError
         end
       end

@@ -43,3 +43,7 @@ descriptions:
   total_downloads_count: Total number of downloads since first day of the project
   delta_downloads: Number of downloads that were made during period
   download_divergence: Downloads Growth From Previous Period %
+
+  questions: Number of questions concerning a project
+  mentions: Mentions of gem in general subreddits
+  discussions_count: Number of discussions in a dedicated subreddit

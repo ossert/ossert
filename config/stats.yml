@@ -132,6 +132,9 @@ stats:
         - users_involved_count
         - users_involved_no_stars_count
         - total_downloads_count
+        - questions_count
+        - mentions_count
+        - topics_count
       uniq_attributes:
         - dependants
         - users_creating_issues
@@ -160,6 +163,9 @@ stats:
         owners_rubygems: Array
         total_downloads: Ossert::Zero
         delta_downloads: Ossert::Zero
+        questions_count: Ossert::Zero
+        mentions_count: Ossert::Zero
+        topics_count: Ossert::Zero
     quarter:
       metrics:
         - users_creating_issues_count
@@ -184,6 +190,15 @@ stats:
         - owners_rubygems
       absolute_attributes:
         - total_downloads
+        - questions
+        - answers
+        - resolved_questions_percent
+        - question_views
+        - avg_time_to_answer
+        - median_time_to_answer
+        - last_question_date
+        - last_answer_date
+        - last_mentions
       attributes:
         users_creating_issues: Array
         users_commenting_issues: Array
