@@ -3,7 +3,7 @@ module Ossert
   class Project
     include Ossert::Saveable
 
-    attr_accessor :name, :github_alias, :rubygems_alias,
+    attr_accessor :name, :github_alias, :rubygems_alias, :subreddit,
                   :community, :agility, :reference,
                   :meta, :created_at, :updated_at
 
@@ -63,11 +63,18 @@ module Ossert
       Classifiers::DecisionTree.current.check(self)
     end
 
-    def initialize(name, github_alias = nil, rubygems_alias = nil, reference = nil)
+    def initialize(name, exc_names = nil, rubygems_alias = nil, reference = nil)
       @name = name.dup
-      @github_alias = github_alias
       @rubygems_alias = (rubygems_alias || name).dup
-      @reference = reference.dup
+      @reference = reference ? reference.dup : nil
+
+      if exc_names
+        @github_alias = exc_names.github_alias
+        @subreddit = exc_names.reddit_name
+      else
+        @github_alias = NO_GITHUB_NAME
+        @subreddit = nil
+      end
 
       @agility = Agility.new
       @community = Community.new

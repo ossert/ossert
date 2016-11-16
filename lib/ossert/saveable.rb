@@ -91,7 +91,7 @@ module Ossert
 
       def find_by_name(name, reference = Ossert::Saveable::UNUSED_REFERENCE)
         if (name_exception = ::NameException.find(name: name))
-          new(name, name_exception.github_name, name, reference)
+          new(name, name_exception, name, reference)
         else
           new(name, nil, name, reference)
         end
