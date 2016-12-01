@@ -164,8 +164,6 @@ stats:
         delta_downloads: Ossert::Zero
         questions_count: Ossert::Zero
         questions_resolved_count: Ossert::Zero
-        mentions_count: Ossert::Zero
-        topics_count: Ossert::Zero
     quarter:
       metrics:
         - users_creating_issues_count
