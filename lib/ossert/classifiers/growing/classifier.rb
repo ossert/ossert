@@ -36,12 +36,17 @@ module Ossert
         def run_aggregation
           GRADES.each_with_index do |grade, idx|
             classifier[grade].each_pair do |metric, values|
-              sibling_class_values = []
-              sibling_class_values = classifier[GRADES[idx + 1]][metric] if (idx + 1) < GRADES.count
+              all_values = values
+              if (idx + 1) < GRADES.count
+                all_values += classifier[GRADES[idx + 1]][metric]
+              end
 
-              all_values = sibling_class_values + values
-              (classifier[grade][metric] = (values.max || 0)) && next if all_values.count <= 2
-              classifier[grade][metric] = (all_values.sum / all_values.count).round(2)
+              classifier[grade][metric] =
+                if all_values.count <= 2
+                  values.max || 0
+                else
+                  (all_values.sum / all_values.count).round(2)
+                end
             end
           end
         end

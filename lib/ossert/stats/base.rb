@@ -52,10 +52,11 @@ module Ossert
         def define_percent(attributes, default_value: 0)
           attributes.to_h.each do |metric, total|
             define_method("#{metric}_percent") do
-              total_count = public_send(total).count
+              total_count = get_count(total)
               return default_value if total_count.zero?
+              metric_count = get_count(metric)
 
-              ((public_send(metric).count.to_d / total_count.to_d) * 100).round(2)
+              (metric_count.to_d / total_count.to_d * 100).round(2)
             end
           end
         end
@@ -87,6 +88,15 @@ module Ossert
         return values[middle_idx] if count.odd?
 
         (values[middle_idx - 1] + values[middle_idx]) / 2
+      end
+
+      def get_count(metric)
+        count_method = "#{metric}_count"
+        if self.class.method_defined? count_method
+          public_send(count_method)
+        else
+          public_send(metric).count
+        end
       end
 
       def metric_values
