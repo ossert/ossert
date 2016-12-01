@@ -6,12 +6,12 @@ module Ossert
   module Classifiers
     # Public: Map for metrics values accessors
     METRICS = {
-      agility_total: ->(project) { project.agility.total.metrics_to_hash },
-      agility_quarter: ->(project) { project.agility.quarters.last.metrics_to_hash },
-      agility_last_year: ->(project) { project.agility.quarters.last_year_as_hash },
-      community_total: ->(project) { project.community.total.metrics_to_hash },
-      community_quarter: ->(project) { project.community.quarters.last.metrics_to_hash },
-      community_last_year: ->(project) { project.community.quarters.last_year_as_hash }
+      agility_total:       ->(project) { project.agility.total.metrics_to_hash           },
+      agility_quarter:     ->(project) { project.agility.quarters.last.metrics_to_hash   },
+      agility_last_year:   ->(project) { project.agility.quarters.last_year_as_hash      },
+      community_total:     ->(project) { project.community.total.metrics_to_hash         },
+      community_quarter:   ->(project) { project.community.quarters.last.metrics_to_hash },
+      community_last_year: ->(project) { project.community.quarters.last_year_as_hash    }
     }.freeze
 
     # Public: Prepare classifiers.
