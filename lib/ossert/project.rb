@@ -3,7 +3,7 @@ module Ossert
   class Project
     include Ossert::Saveable
 
-    attr_accessor :name, :github_alias, :rubygems_alias, :subreddit,
+    attr_accessor :name, :github_alias, :rubygems_alias,
                   :community, :agility, :reference,
                   :meta, :created_at, :updated_at
 
