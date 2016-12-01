@@ -147,7 +147,7 @@ module Ossert
           def strategy
             {
               last_year: :agility,
-              total: :agility
+              total: [:agility, :community]
             }
           end
         end

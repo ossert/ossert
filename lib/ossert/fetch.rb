@@ -15,7 +15,7 @@ module Ossert
   # fetching HTTP API.
   # TODO: Add logging
   module Fetch
-    ALL_FETCHERS = [StackOverflow].freeze
+    ALL_FETCHERS = [Rubygems, Bestgems, GitHub, StackOverflow].freeze
 
     # Public: Fetch data for project using all fetchers by default process method
     #
@@ -120,13 +120,13 @@ module Ossert
         response = agent.get("#{@api_endpoint}#{path}", params)
 
         case response.status
-        when 404 
+        when 404
           raise NotFound
-        when 429 
+        when 429
           raise RateLimitExceeded
-        when 200 
+        when 200
           JSON.parse(response.body, symbolize_names: true)
-        else 
+        else
           raise UnexpectedResponseError
         end
       end
