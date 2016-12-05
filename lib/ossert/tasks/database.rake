@@ -28,13 +28,23 @@ namespace :db do
     Rake::Task['db:version'].execute
   end
 
+  task rollback: :load_config do
+    version = current_version
+
+    if version.positive?
+      Sequel::Migrator.run(
+        DB,
+        File.expand_path('../../../../db/migrate', __FILE__),
+        target: version - ENV.fetch('STEP', 1).to_i
+      )
+    end
+
+    Rake::Task['db:version'].execute
+  end
+
   desc 'Prints current schema version'
   task :version do
-    version = if DB.tables.include?(:schema_info)
-                DB[:schema_info].first[:version]
-              end || 0
-
-    puts "Schema Version: #{version}"
+    puts "Schema Version: #{current_version}"
   end
 
   task :load_config do
@@ -175,5 +185,9 @@ namespace :db do
 
   def with_config
     yield 'ossert', ENV.fetch('DATABASE_URL')
+  end
+
+  def current_version
+    DB.tables.include?(:schema_info) && DB[:schema_info].first[:version] || 0
   end
 end
