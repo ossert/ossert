@@ -7,12 +7,12 @@ require 'ossert/fetch/github'
 require 'ossert/fetch/rubygems'
 require 'ossert/fetch/bestgems'
 
-# TODO: Add logging
 
 module Ossert
   # Public: Various classes and methods for fetching data from different sources.
   # Such as GitHub, Rubygems, Bestgems. Also provides simple functionality for
   # fetching HTTP API.
+  # TODO: Add logging
   module Fetch
     ALL_FETCHERS = [Rubygems, Bestgems, GitHub].freeze
 

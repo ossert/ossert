@@ -7,6 +7,7 @@ module Ossert
                   :community, :agility, :reference,
                   :meta, :created_at, :updated_at
 
+    # Public: Default structure of meta data for project
     META_STUB = {
       homepage_url: nil,
       docs_url: nil,
@@ -23,6 +24,12 @@ module Ossert
     }.freeze
 
     class << self
+      # Public: Gather all available data for a project and save it.
+      #
+      # name - a String which specifies gem name to search for.
+      # reference - a String that represents type of reference of the project (default: 'unused').
+      #
+      # Returns nothing
       def fetch_all(name, reference = Ossert::Saveable::UNUSED_REFERENCE)
         project = find_by_name(name, reference)
 
@@ -31,17 +38,26 @@ module Ossert
         project.dump
       end
 
+      # Public: Select all reference projects grouped by reference type.
+      #
+      # Returns a Hash with reference type as a key and projects Array as a value.
       def projects_by_reference
         load_referenced.group_by(&:reference)
       end
     end
 
+    # Public: Prepare grade of this project using growing classifier.
+    #
+    # Returns a Hash with subject as a key and its grade as a value.
     def grade_by_growing_classifier
       raise unless Classifiers::Growing.current.ready?
       Classifiers::Growing.current.grade(self)
     end
     alias grade_by_classifier grade_by_growing_classifier
 
+    # Public: Prepare analyze of this project using decision tree.
+    #
+    # Returns a Hash with subject as a key and a Hash of grade and its details as a value.
     def analyze_by_decisision_tree
       raise unless Classifiers::DecisionTree.current.ready?
       Classifiers::DecisionTree.current.check(self)
@@ -58,6 +74,9 @@ module Ossert
       @meta = META_STUB.dup
     end
 
+    # Public: Assign state with given data
+    #
+    # Returns nothing
     def assign_data(meta:, agility:, community:, created_at:, updated_at:)
       @agility = agility
       @community = community
@@ -66,10 +85,14 @@ module Ossert
       @updated_at = updated_at
     end
 
+    # Public: Prepare presenter for current project.
+    #
+    # Returns Ossert::Presenters::Project instance for current project.
     def decorated
       @decorated ||= Ossert::Presenters::Project.new(self)
     end
 
+    # Public: Default structure for time bounds calculation
     TIME_BOUNDS_CONFIG = {
       base_value: {
         start: nil,
@@ -85,6 +108,10 @@ module Ossert
       }
     }.freeze
 
+    # Public: Find time bounds for quarters data of a project.
+    # When extended dates provided result bounds are extended.
+    #
+    # Returns an Array with low and high bounds values for quarters of a project.
     def prepare_time_bounds!(extended_start: nil, extended_end: nil)
       config = TIME_BOUNDS_CONFIG.dup
       config[:base_value][:start] = Time.now.utc
@@ -94,16 +121,25 @@ module Ossert
 
       agility.quarters.fullfill! && community.quarters.fullfill!
 
-      [:start, :end].map { |time_bound| time_bound_values(time_bound, config).to_date }
+      [:start, :end].map { |time_bound| time_bound_value(time_bound, config).to_date }
     end
 
-    def time_bound_values(time_bound, config)
+    # Public: Prepare value of time bound using config
+    #
+    # time_bound - is a Symbol [:start, :end] that used to access data
+    # config - is a Hash that defines calculation process
+    #
+    # Returns UNIX timestamp as an Integer, that is calculated by given config for given bound.
+    def time_bound_value(time_bound, config)
       [
         config[:base_value][time_bound], config[:extended][time_bound],
         agility.quarters.send("#{time_bound}_date"), community.quarters.send("#{time_bound}_date")
       ].send(config[:aggregation][time_bound])
     end
 
+    # Public: Convert meta data to JSON format
+    #
+    # Returns a String which contains JSON-encoded meta data of a project.
     def meta_to_json
       MultiJson.dump(meta)
     end

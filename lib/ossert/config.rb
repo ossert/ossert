@@ -3,10 +3,19 @@ require 'yaml'
 
 module Ossert
   class Config
+    # Public: Path to directory where config files are stored.
     CONFIG_ROOT = File.join(File.dirname(__FILE__), '..', '..', 'config')
+
+    # Public: Name of constant which is used to access config.
     CONST_NAME = 'Settings'
 
+    # Public: Load configuration files into memory.
+    # Currently works with plain old YAML files.
     # TODO: use ERB, needed for Time syntetics
+    #
+    # configs - an Array of config names relative to configs root.
+    #
+    # Returns nothing.
     def self.load(*configs)
       config_data = configs.each_with_object({}) do |config, result|
         if (path = File.join(CONFIG_ROOT, "#{config}.yml")) && File.exist?(path.to_s)
