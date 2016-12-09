@@ -19,8 +19,12 @@ require 'vcr'
 VCR.configure do |c|
   c.configure_rspec_metadata!
 
-  c.filter_sensitive_data('<<ACCESS_TOKEN>>') do
-    test_github_token
+  c.filter_sensitive_data('<<GITHUB_TOKEN>>') do
+    env_token_for :github
+  end
+
+  c.filter_sensitive_data('<<SO_TOKEN>>') do
+    env_token_for :so
   end
 
   c.ignore_request do |request|
@@ -104,8 +108,8 @@ def init_projects
   @github_not_found_project = 'rack-mount'
 end
 
-def test_github_token
-  ENV.fetch 'GITHUB_TOKEN', 'x' * 40
+def env_token_for(source)
+  ENV.fetch "#{source}_TOKEN".upcase, 'x' * 40
 end
 
 def fixture_path

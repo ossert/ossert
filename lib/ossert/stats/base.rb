@@ -90,6 +90,11 @@ module Ossert
         (values[middle_idx - 1] + values[middle_idx]) / 2
       end
 
+      # Public: Get a number of elements in a given attribute
+      #
+      # metric String or Symbol of Array-like attribute to count
+      #
+      # Returns Number of elements Int
       def get_count(metric)
         count_method = "#{metric}_count"
         if self.class.method_defined? count_method
