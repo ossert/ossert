@@ -26,10 +26,10 @@ describe Ossert do
     it do
       expect(projectA.community.total.metrics_to_hash).to eq({
         "contributors_count" => 43,
-        "dependants_count" => 1983,
+        "dependants_count" => 1987,
         "forks_count" => 98,
-        "questions_count" => 81,
-        "questions_resolved_percent" => 40.74,
+        "questions_count" => 82,
+        "questions_resolved_percent" => 40.24,
         "stargazers_count" => 538,
         "total_downloads_count" => 117960880,
         "users_commenting_issues_count" => 110,
@@ -102,10 +102,10 @@ describe Ossert do
     it do
       expect(projectB.community.total.metrics_to_hash).to eq({
         "contributors_count" => 153,
-        "dependants_count" => 52166,
+        "dependants_count" => 52391,
         "forks_count" => 375,
-        "questions_count" => 5239,
-        "questions_resolved_percent" => 56.48,
+        "questions_count" => 5249,
+        "questions_resolved_percent" => 56.47,
         "stargazers_count" => 764,
         "total_downloads_count" => 123254906,
         "users_commenting_issues_count" => 71,
@@ -180,8 +180,8 @@ describe Ossert do
         "contributors_count" => 16,
         "dependants_count" => 0,
         "forks_count" => 94,
-        "questions_count" => 4,
-        "questions_resolved_percent" => 75.0,
+        "questions_count" => 5,
+        "questions_resolved_percent" => 60.0,
         "stargazers_count" => 3699,
         "total_downloads_count" => 149174,
         "users_commenting_issues_count" => 23,
