@@ -42,3 +42,5 @@ translations:
   total_downloads_count: 'Number of Downloads'
   delta_downloads: 'Number of Downloads Increased By'
   download_divergence: 'Downloads Growth From Previous Period %'
+  questions_count: 'Number of questions'
+  questions_resolved_percent: 'Resolved questions %'
