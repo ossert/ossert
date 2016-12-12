@@ -4,6 +4,8 @@ Introducing **Ossert**! Crowdsourced project support and availablity metrics.
 
 # ossert (OSS cERTificate) [![Build Status](https://travis-ci.org/ossert/ossert.svg?branch=master)](https://travis-ci.org/ossert/ossert) [![Inline docs](http://inch-ci.org/github/ossert/ossert.svg)](http://inch-ci.org/github/ossert/ossert)  [![Code Climate](https://codeclimate.com/github/ossert/ossert/badges/gpa.svg)](https://codeclimate.com/github/ossert/ossert)
 
+[![Join the chat at https://gitter.im/ossert_app/Lobby](https://badges.gitter.im/ossert_app/Lobby.svg)](https://gitter.im/ossert_app/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 The main goal of project is to provide "certificate" for open-source software with different validity check, just to be more
 formal in estimation of projects' risks, value and ability to use in an enterprise.
 Also system is designed as open one, so any new checks and validations from community are appreciated.
