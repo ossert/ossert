@@ -83,6 +83,7 @@ classifiers:
           users_involved_no_stars_count: 1
           total_downloads_count: 8
           questions_count: 2
+          questions_resolved_percent: 1
       maintenance:
         last_year:
           issues_processed_in_avg: 1
@@ -112,7 +113,6 @@ classifiers:
           stale_branches_count: 1
           life_period: 1
           last_changed: 1
-          questions_resolved_percent: 0.5
       maturity:
         last_year:
           users_creating_issues_count: 2
@@ -159,3 +159,5 @@ classifiers:
           stale_branches_count: 1
           life_period: 1
           last_changed: 1
+          questions_count: 1
+          questions_resolved_percent: 0.5
