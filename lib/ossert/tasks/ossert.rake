@@ -10,6 +10,32 @@ namespace :ossert do
     end
   end
 
+  namespace :refresh do
+    desc 'Refresh StackOverflow data for all projects'
+    task :stackoverflow do
+      require './config/sidekiq.rb'
+      Ossert::Workers::PartialRefreshFetch.perform_async(:StackOverflow)
+    end
+
+    desc 'Refresh Rubygems data for all projects'
+    task :rubygems do
+      require './config/sidekiq.rb'
+      Ossert::Workers::PartialRefreshFetch.perform_async(:Rubygems)
+    end
+
+    desc 'Refresh GitHub data for all projects'
+    task :github do
+      require './config/sidekiq.rb'
+      Ossert::Workers::PartialRefreshFetch.perform_async(:GitHub)
+    end
+
+    desc 'Refresh Bestgems data for all projects'
+    task :bestgems do
+      require './config/sidekiq.rb'
+      Ossert::Workers::PartialRefreshFetch.perform_async(:Bestgems)
+    end
+  end
+
   desc 'Collect reference projects'
   task :collect_referencies do
     puts 'Run collecting process'

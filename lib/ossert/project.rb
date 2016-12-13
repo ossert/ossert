@@ -38,6 +38,22 @@ module Ossert
         project.dump
       end
 
+      # Public: Update existed project with a single fetcher
+      #
+      # fetcher - a Fetcher class for specific source
+      # name - a String which specifies gem name to search for.
+      # reference - a String that represents type of reference of the project (default: 'unused').
+      #
+      # Returns nothing
+      def update_with_one_fetcher(fetcher, name, reference = Ossert::Saveable::UNUSED_REFERENCE)
+        project = load_by_name(name)
+        project.reference = reference
+
+        Ossert::Fetch.only fetcher, project
+        project.prepare_time_bounds!
+        project.dump
+      end
+
       # Public: Select all reference projects grouped by reference type.
       #
       # Returns a Hash with reference type as a key and projects Array as a value.

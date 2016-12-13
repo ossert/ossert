@@ -11,8 +11,8 @@ require 'ossert/fetch/stackoverflow'
 
 module Ossert
   # Public: Various classes and methods for fetching data from different sources.
-  # Such as GitHub, Rubygems, Bestgems. Also provides simple functionality for
-  # fetching HTTP API.
+  # Such as GitHub, Rubygems, Bestgems, StackOverflow. Also provides simple
+  # functionality for fetching HTTP API.
   # TODO: Add logging
   module Fetch
     ALL_FETCHERS = [Rubygems, Bestgems, GitHub, StackOverflow].freeze
@@ -46,7 +46,8 @@ module Ossert
 
     # Public: Fetch data for project using given fetchers by process method
     #
-    # fetchers - The Array or one of Ossert::Fetch::GitHub, Ossert::Fetch::Bestgems, Ossert::Fetch::Rubygems to
+    # fetchers - The Array or one of Ossert::Fetch::GitHub, Ossert::Fetch::Bestgems,
+    #            Ossert::Fetch::Rubygems, Ossert::Fetch::StackOverflow to
     #            use for processing
     # project  - The Ossert::Project instance to fill using fetchers
     # process  - The Symbol method name used for processing by fetchers (default: :process)
