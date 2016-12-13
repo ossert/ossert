@@ -58,6 +58,7 @@ module Ossert
           end
 
           { text: "#{text}&nbsp;#{Project::KLASS_2_GRADE[reference]}",
+            value: value,
             mark: Project::KLASS_2_GRADE[reference].downcase }
         rescue => e
           puts "NO DATA FOR METRIC: '#{metric}'"
@@ -181,11 +182,28 @@ module Ossert
         preview
       end
 
+      def metric_history(metric)
+        return [] if (section = Ossert::Stats.guess_section_by_metric(metric)) == :not_found
+        return [] unless Kernel.const_get("Ossert::Stats::#{section.capitalize}Quarter").metrics.include? metric
+
+        history = []
+        @project.send(section).quarters.reverse_each_sorted do |quarter, data|
+          decorated_metric = decorator.metric(metric, data.send(metric), "#{section}_quarter".to_sym)
+          history << {
+            value: decorated_metric[:value],
+            title: decorated_metric[:text],
+            grade: decorated_metric[:mark]
+          }
+        end
+        history
+      end
+
       def section_metric_data(metric, section, section_type)
         data = public_send("#{section}_#{section_type}")[metric]
         {
           "#{section_type}_mark".to_sym => data.try(:[], :mark),
-          "#{section_type}_val".to_sym => data.try(:[], :text) || 'N/A'
+          "#{section_type}_text".to_sym => data.try(:[], :text) || 'N/A',
+          "#{section_type}_val".to_sym => data.try(:[], :value) || 'N/A'
         }
       end
 

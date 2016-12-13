@@ -138,7 +138,17 @@ module Ossert
     #
     # Returns Array of sorted pairs of time and quarter object.
     def each_sorted
-      quarters.sort.map { |time, quarter| yield(time, quarter) }
+      quarters.sort.each { |time, quarter| yield(time, quarter) }
+    end
+
+    # Public: Iterate (and yields) through quarters in descending order
+    #
+    # Yields the Numeric UNIX-timestamp beginning of quarter
+    #        the Object for quarter data
+    #
+    # Returns Array of sorted pairs of time and quarter object.
+    def reverse_each_sorted
+      quarters.sort.reverse.each { |time, quarter| yield(time, quarter) }
     end
 
     # Public: Generate Hash for current data structure.
