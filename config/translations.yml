@@ -1,4 +1,24 @@
 translations:
+  # Common
+  participate: "Participate on Github"
+  random_projects: "Random ready analyzes:"
+  no_github_data: "Warning: no data found on GitHub for the project"
+  not_found:
+    "Sorry, but gem <big> \"%{name}\" </big> was not analyzed yet. </br> \
+    You can try <a href=\"/suggest/%{name}\"> suggest </a> it."
+  welcome:
+    Welcome to Ossert!
+  intro:
+    "%{text} </br> \
+    You can search for a finished analyzes of a project via its name on Rubygems"
+  maintenance_description:
+    Maintenance is metric calculated from project activity for the last year and total from all time. This way we can see if project's development is dynamic and core team is responsive or project is unstable and non-trusted.
+  popularity_description:
+    Popularity is metric calculated from user activity for the last year and total from all time. This way we can see if projects popularity rises or is already in decline.
+  maturity_description:
+    Maturity is metric calculated from both project and users activity for the last year and total from all time. This way we can see if project reached high growth level or just on its seedling stage.
+
+
   # Agility
   dependencies_count: 'Number of Runtime Dependencies'
   issues_closed_percent: 'Issues Closed %'
