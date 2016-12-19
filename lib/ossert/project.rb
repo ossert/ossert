@@ -71,6 +71,11 @@ module Ossert
     end
     alias grade_by_classifier grade_by_growing_classifier
 
+    def grade_by_cluster
+      raise unless Classifiers::Cluster.current.ready?
+      Classifiers::Cluster.current.grade(self)
+    end
+
     # Public: Prepare analyze of this project using decision tree.
     #
     # Returns a Hash with subject as a key and a Hash of grade and its details as a value.
@@ -160,12 +165,28 @@ module Ossert
       MultiJson.dump(meta)
     end
 
+    def data_for(section:, period:)
+      public_send(section).public_send("#{period}_as_hash")
+    end
+
     class BaseStore
       attr_accessor :quarters, :total, :total_prediction, :quarter_prediction
 
       def initialize(quarters: nil, total: nil)
         @quarters = quarters || QuartersStore.new(self.class.quarter_stats_klass_name)
         @total = total || ::Kernel.const_get(self.class.total_stats_klass_name).new
+      end
+
+      def total_as_hash
+        total.metrics_to_hash
+      end
+
+      def quarter_as_hash
+        quarters.last.metrics_to_hash
+      end
+
+      def last_year_as_hash
+        quarters.last_year_as_hash
       end
     end
 

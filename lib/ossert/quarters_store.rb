@@ -71,7 +71,8 @@ module Ossert
     #
     # Returns Object of stats class
     def last(offset = 1)
-      quarters.sort.last(1 + offset).first.second
+      last_quarter = quarters.sort.last(1 + offset).take(1).first.try(:second)
+      last_quarter || data_klass.new
     end
 
     # Public: Get quarters metric values aggregated for last year.
