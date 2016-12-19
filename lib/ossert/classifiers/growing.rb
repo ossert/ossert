@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 require 'ossert/classifiers/growing/classifier'
-require 'ossert/classifiers/growing/check'
 
 module Ossert
   module Classifiers
@@ -21,7 +20,7 @@ module Ossert
         end
 
         def config
-          @config ||= Settings['classifiers']['growth']
+          @config ||= Settings['classifiers_growth']
         end
       end
 

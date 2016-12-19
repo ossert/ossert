@@ -1,5 +1,4 @@
-classifiers:
-  growth:
+classifiers_growth:
     trusted_probability: 0.65
     checks:
       - popularity

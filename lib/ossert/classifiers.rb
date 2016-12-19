@@ -1,9 +1,29 @@
 # frozen_string_literal: true
 require 'ossert/classifiers/decision_tree'
 require 'ossert/classifiers/growing'
+require 'ossert/classifiers/cluster'
+require 'ossert/classifiers/check'
 
 module Ossert
   module Classifiers
+    SECTIONS = %i(agility community)
+    PERIODS = %i(total quarter last_year)
+
+    GRADES = %w(
+      ClassA
+      ClassB
+      ClassC
+      ClassD
+      ClassE
+    ).freeze
+    REVERSED_GRADE = {
+      'ClassA' => 'ClassE',
+      'ClassB' => 'ClassD',
+      'ClassC' => 'ClassC',
+      'ClassD' => 'ClassB',
+      'ClassE' => 'ClassA'
+    }.freeze
+
     # Public: Map for metrics values accessors
     METRICS = {
       agility_total:       ->(project) { project.agility.total.metrics_to_hash           },
@@ -18,6 +38,7 @@ module Ossert
     # It warms up classifiers upon existing data.
     def train
       Growing.new.train
+      Cluster.current.train
       # Stale. Very untrusty
       # DecisionTree.new(projects_by_reference).train
     end

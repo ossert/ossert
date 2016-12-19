@@ -35,6 +35,7 @@ Gem::Specification.new do |spec|
   spec.add_runtime_dependency 'nokogiri'
   spec.add_runtime_dependency 'graphr'
   spec.add_runtime_dependency 'rake', '~> 10.0'
+  spec.add_runtime_dependency 'gnuplot'
 
   spec.add_development_dependency 'memory_profiler'
   spec.add_development_dependency 'rubocop'
