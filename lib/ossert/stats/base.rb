@@ -10,11 +10,13 @@ module Ossert
       class << self
         attr_accessor :section, :section_type
 
-        # @!attribute [r] section
-        #   @return [String] name of the metric section (agility or community)
+        # @!attribute [rw] section
+        # name of the metric section (agility or community)
+        # @return [String] name of the section
 
-        # @!attribute [r] section_type
-        #   @return [String] name of the metric section type (quarters or total)
+        # @!attribute [rw] section_type
+        # name of the metric section type (quarters or total)
+        # @return [String] name of the type
 
         def config
           @config ||= ::Settings['stats'][section][section_type]
@@ -62,7 +64,7 @@ module Ossert
 
         # Define length helpers for attributes in runtime
         #
-        # @param *attributes [Array<String>, Array<Symbol>]
+        # @param attributes [Array<String>, Array<Symbol>]
         #   A list of attributes
         #
         # The method defines instance methods for given metrics
@@ -87,7 +89,7 @@ module Ossert
 
         # Define percentage helpers for attributes in runtime
         #
-        # @param *attributes [Hash<Symbol, Symbol>, Hash<String, String>]
+        # @param attributes [Hash<Symbol, Symbol>, Hash<String, String>]
         #   A list of attributes where key is a considered as a part
         #   of the value.
         #
@@ -124,7 +126,7 @@ module Ossert
 
         # Define median helpers for attributes in runtime
         #
-        # @param *attributes [Array<String>, Array<Symbol>]
+        # @param attributes [Array<String>, Array<Symbol>]
         #   A list of attributes
         #
         # The method defines instance methods for given metrics
@@ -149,7 +151,7 @@ module Ossert
 
         # Define average helpers for attributes in runtime
         #
-        # @param *attributes [Array<String>, Array<Symbol>]
+        # @param attributes [Array<String>, Array<Symbol>]
         #   A list of attributes
         #
         # The method defines instance methods for given metrics
@@ -180,7 +182,7 @@ module Ossert
 
         # Define sum helpers for attributes in runtime
         #
-        # @param *attributes [Array<String>, Array<Symbol>]
+        # @param attributes [Array<String>, Array<Symbol>]
         #   A list of attributes
         #
         # The method defines instance methods for given metrics
