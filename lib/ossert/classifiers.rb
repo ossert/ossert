@@ -8,6 +8,7 @@ module Ossert
   module Classifiers
     SECTIONS = %i(agility community)
     PERIODS = %i(total quarter last_year)
+    CLASSIFIERS = SECTIONS.product(PERIODS).map { |s, p| "#{s}_#{p}".to_sym }
 
     GRADES = %w(
       ClassA
