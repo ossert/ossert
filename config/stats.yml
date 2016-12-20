@@ -134,6 +134,7 @@ stats:
         - total_downloads_count
         - questions_count
         - questions_resolved_percent
+        - last_question_date_int
       uniq_attributes:
         - dependants
         - users_creating_issues
@@ -164,6 +165,7 @@ stats:
         delta_downloads: Ossert::Zero
         questions_count: Ossert::Zero
         questions_resolved_count: Ossert::Zero
+        last_question_date: Ossert::Zero
     quarter:
       metrics:
         - users_creating_issues_count
@@ -175,6 +177,13 @@ stats:
         - users_involved_count
         - users_involved_no_stars_count
         - total_downloads_count
+        - questioner_rep_median
+        - question_view_sum
+        - answers_avg
+        - question_score_sum
+        - questioners_count
+        - questions_count
+        - questions_resolved_percent
       uniq_attributes:
         - users_creating_issues
         - users_commenting_issues
@@ -186,6 +195,9 @@ stats:
         - users_involved
         - owners_github
         - owners_rubygems
+        - questioners
+        - questions
+        - questions_resolved
       absolute_attributes:
         - total_downloads
       attributes:
@@ -200,3 +212,10 @@ stats:
         download_divergence: Ossert::Zero
         total_downloads: Ossert::Zero
         delta_downloads: Ossert::Zero
+        questions: Array
+        questions_resolved: Array
+        questioners: Array
+        questioner_rep: Array
+        question_view: Array
+        question_score: Array
+        answers: Array

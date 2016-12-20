@@ -6,15 +6,15 @@ module Ossert
       self.section_type = 'total'
       create_attributes_accessors
 
-      define_percent(
-        questions_resolved: :questions
-      )
+      define_percent(questions_resolved: :questions)
 
       define_counts(
         :users_creating_issues, :users_commenting_issues, :users_creating_pr,
         :users_commenting_pr, :contributors, :watchers, :stargazers, :forks,
         :users_involved, :dependants
       )
+
+      define_ints(:last_question_date)
 
       def users_involved_no_stars_count
         (users_involved - stargazers).count
