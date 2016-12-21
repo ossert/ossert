@@ -28,6 +28,13 @@ classifiers_cluster:
           users_involved_count: 3
           users_involved_no_stars_count: 3
           total_downloads_count: 8
+          questioner_rep_median: 1
+          question_view_sum: 5
+          answers_avg: 3
+          question_score_sum: 3
+          questioners_count: 2
+          questions_count: 5
+          questions_resolved_percent: 2
         total:
           dependants_count: 6
           users_creating_issues_count: 1
@@ -41,6 +48,7 @@ classifiers_cluster:
           total_downloads_count: 8
           questions_count: 2
           questions_resolved_percent: 1
+          last_question_date_int: 1
       maintenance:
         last_year:
           issues_processed_in_avg: 1
@@ -81,6 +89,11 @@ classifiers_cluster:
           users_involved_count: 2
           users_involved_no_stars_count: 2
           total_downloads_count: 2
+          question_view_sum: 2
+          question_score_sum: 0.5
+          questioners_count: 2
+          questions_count: 2
+          questions_resolved_percent: 0.5
           issues_processed_in_avg: 1
           issues_processed_in_median: 1
           issues_closed_percent: 1
@@ -118,3 +131,4 @@ classifiers_cluster:
           last_changed: 1
           questions_count: 1
           questions_resolved_percent: 0.5
+          last_question_date_int: 0.5

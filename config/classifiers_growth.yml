@@ -63,6 +63,47 @@ classifiers_growth:
           - 0
           - 0
           - 0
+        community_last_year:
+          - 10
+          - 2
+          - 1
+          - 0
+          - 0
+      questioner_rep_median:
+        default:
+          - 160
+          - 140
+          - 85
+          - 43
+          - 0
+      question_view_sum:
+        default:
+          - 300
+          - 140
+          - 100
+          - 50
+          - 0
+      answers_avg:
+        default:
+          - 0.25
+          - 0.12
+          - 0.8
+          - 0.1
+          - 0
+      question_score_sum:
+        default:
+          - 10
+          - 4
+          - 3
+          - 1
+          - 0
+      questioners_count:
+        default:
+          - 9
+          - 2
+          - 1
+          - 0
+          - 0
     reversed:
       - stale_branches_count
       - issues_active_percent
