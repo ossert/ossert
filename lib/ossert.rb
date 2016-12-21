@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 require 'ossert/version'
 require 'sequel'
-require 'active_support/all' # remove later, we use only quarters and index_by here
+require 'active_support/all' # TODO: remove later
 require 'json'
 require 'oj'
 
