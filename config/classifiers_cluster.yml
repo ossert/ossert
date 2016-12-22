@@ -48,7 +48,6 @@ classifiers_cluster:
           total_downloads_count: 8
           questions_count: 2
           questions_resolved_percent: 1
-          last_question_date_int: 1
       maintenance:
         last_year:
           issues_processed_in_avg: 1
@@ -131,4 +130,3 @@ classifiers_cluster:
           last_changed: 1
           questions_count: 1
           questions_resolved_percent: 0.5
-          last_question_date_int: 0.5

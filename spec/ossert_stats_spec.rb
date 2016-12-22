@@ -11,7 +11,14 @@ describe Ossert do
 
     it do
       expect(projectA.community.quarters.last_year_as_hash).to eq({
+        "answers_avg" => 0.4,
         "forks_count" => 9.0,
+        "question_score_sum" => 2.0,
+        "question_view_sum" => 1776.0,
+        "questioner_rep_median" => 13.0,
+        "questioners_count" => 10.0,
+        "questions_count" => 10.0,
+        "questions_resolved_percent" => 30.0,
         "stargazers_count" => 61.0,
         "total_downloads_count" => 42186016.0,
         "users_commenting_issues_count" => 7.0,
@@ -28,8 +35,9 @@ describe Ossert do
         "contributors_count" => 43,
         "dependants_count" => 1987,
         "forks_count" => 98,
-        "questions_count" => 82,
-        "questions_resolved_percent" => 40.24,
+        "last_question_date_int" => 1481301360,
+        "questions_count" => 83,
+        "questions_resolved_percent" => 39.76,
         "stargazers_count" => 538,
         "total_downloads_count" => 117960880,
         "users_commenting_issues_count" => 110,
@@ -87,7 +95,14 @@ describe Ossert do
 
     it do
       expect(projectB.community.quarters.last_year_as_hash).to eq({
+        "answers_avg" => 1.15,
         "forks_count" => 72.0,
+        "question_score_sum" => 475.0,
+        "question_view_sum" => 140633.0,
+        "questioner_rep_median" => 92.0,
+        "questioners_count" => 670.0,
+        "questions_count" => 768.0,
+        "questions_resolved_percent" => 57.03,
         "stargazers_count" => 354.0,
         "total_downloads_count" => 38294565.0,
         "users_commenting_issues_count" => 42.0,
@@ -104,8 +119,9 @@ describe Ossert do
         "contributors_count" => 153,
         "dependants_count" => 52391,
         "forks_count" => 375,
-        "questions_count" => 5249,
-        "questions_resolved_percent" => 56.47,
+        "last_question_date_int" => 1482361502,
+        "questions_count" => 5269,
+        "questions_resolved_percent" => 56.48,
         "stargazers_count" => 764,
         "total_downloads_count" => 123254906,
         "users_commenting_issues_count" => 71,
@@ -163,7 +179,14 @@ describe Ossert do
 
     it do
       expect(projectC.community.quarters.last_year_as_hash).to eq({
+        "answers_avg" => 0.0,
         "forks_count" => 80.0,
+        "question_score_sum" => 0.0,
+        "question_view_sum" => 0.0,
+        "questioner_rep_median" => 0.0,
+        "questioners_count" => 0.0,
+        "questions_count" => 0.0,
+        "questions_resolved_percent" => 0.0,
         "stargazers_count" => 2805.0,
         "total_downloads_count" => 123520.0,
         "users_commenting_issues_count" => 15.0,
@@ -180,6 +203,7 @@ describe Ossert do
         "contributors_count" => 16,
         "dependants_count" => 0,
         "forks_count" => 94,
+        "last_question_date_int" => 1480670475,
         "questions_count" => 5,
         "questions_resolved_percent" => 60.0,
         "stargazers_count" => 3699,
@@ -239,7 +263,14 @@ describe Ossert do
 
     it do
       expect(projectD.community.quarters.last_year_as_hash).to eq({
+        "answers_avg" => 0.0,
         "forks_count" => 7.0,
+        "question_score_sum" => 0.0,
+        "question_view_sum" => 0.0,
+        "questioner_rep_median" => 0.0,
+        "questioners_count" => 0.0,
+        "questions_count" => 0.0,
+        "questions_resolved_percent" => 0.0,
         "stargazers_count" => 134.0,
         "total_downloads_count" => 2471.0,
         "users_commenting_issues_count" => 5.0,
@@ -256,6 +287,7 @@ describe Ossert do
         "contributors_count" => 8,
         "dependants_count" => 1,
         "forks_count" => 8,
+        "last_question_date_int" => 0,
         "questions_count" => 0,
         "questions_resolved_percent" => 0,
         "stargazers_count" => 136,
@@ -315,7 +347,14 @@ describe Ossert do
 
     it do
       expect(projectE.community.quarters.last_year_as_hash).to eq({
+        "answers_avg" => 0.0,
         "forks_count" => 1.0,
+        "question_score_sum" => 0.0,
+        "question_view_sum" => 0.0,
+        "questioner_rep_median" => 0.0,
+        "questioners_count" => 0.0,
+        "questions_count" => 0.0,
+        "questions_resolved_percent" => 0.0,
         "stargazers_count" => 10.0,
         "total_downloads_count" => 3302.0,
         "users_commenting_issues_count" => 1.0,
@@ -332,6 +371,7 @@ describe Ossert do
         "contributors_count" => 1,
         "dependants_count" => 0,
         "forks_count" => 1,
+        "last_question_date_int" => 0,
         "questions_count" => 0,
         "questions_resolved_percent" => 0,
         "stargazers_count" => 10,
