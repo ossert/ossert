@@ -51,19 +51,21 @@ module Ossert
         classes = CLASSES.reverse
         section = Ossert::Stats.guess_section_by_metric(metric)
         ranks = classes.inject([]) do |preview, klass|
-          base = { type: KLASS_2_GRADE[klass].downcase, year: ' N/A ', total: ' N/A ' }
-          preview << [:year, :total].each_with_object(base) do |section_type, result|
-            next unless (metric_data = metric_tooltip_data(metric, section, section_type, klass)).present?
-            result[section_type] = metric_data
+          base = { type: KLASS_2_GRADE[klass].downcase, last_year: ' N/A ', total: ' N/A ' }
+          rank = [:last_year, :total].each_with_object(base) do |period, result|
+            next unless (metric_data = metric_tooltip_data(metric, section, period, klass)).present?
+            result[period] = metric_data
           end
+          rank[:year] = rank.delete(:last_year)
+          preview << rank
         end
 
         { title: Ossert.t(metric), description: Ossert.descr(metric), ranks: ranks }
       end
 
-      def metric_tooltip_data(metric, section, section_type, klass)
+      def metric_tooltip_data(metric, section, period, klass)
         return if section == :not_found # this should not happen
-        reference_section = [section, section_type].join('_')
+        reference_section = [section, period].join('_')
         return unless (metric_by_grades = @reference[reference_section.to_sym][metric.to_s])
 
         [
