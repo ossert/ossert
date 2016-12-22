@@ -152,7 +152,7 @@ describe Ossert do
     let(:cluster_ref_values) { cluster_classifier.reference_values_per_grade }
 
     it { expect(cluster_ref_values[:agility_total]['pr_closed_percent'].keys).to eq(Ossert::Classifiers::GRADES) }
-    it { expect(projectE.grade_by_cluster).to eq(:popularity=>nil, :maintenance=>"E", :maturity=>"E") }
+    it { expect(projectE.grade_by_cluster).to eq(:popularity=>"E", :maintenance=>"E", :maturity=>"E") }
   end
 
   describe 'Ossert::Presenters::Project' do
@@ -183,6 +183,8 @@ describe Ossert do
     end
     it do
       expect(decorated_project.community_quarter(Time.parse('01.01.2016'))).to eq({
+        "Average number of answers" => "  0&nbsp;E <> 0\n",
+        "Median questioner reputation" => "  0&nbsp;E <> 0\n",
         "Number of Downloads" => "  15,435&nbsp;D <> +10,981\n",
         "Number of Forks" => "  51&nbsp;A <> +43\n",
         "Number of Stargazers" => "  2013&nbsp;A <> +1536\n",
@@ -191,7 +193,13 @@ describe Ossert do
         "Number of Users Commenting Pull Requests" => "  19&nbsp;A <> +13\n",
         "Number of Users Creating Issues" => "  6&nbsp;A <> +5\n",
         "Number of Users Creating Pull Requests" => "  5&nbsp;A <> 0\n",
-        "Number of Users Involved Without Stargazers" => "  50&nbsp;A <> +39\n"
+        "Number of Users Involved Without Stargazers" => "  50&nbsp;A <> +39\n",
+        "Number of questioners" => "  0&nbsp;D <> 0\n",
+        "Number of questions" => "  0&nbsp;C <> 0\n",
+        "Resolved questions %" => "  0%&nbsp;A <> 0%\n",
+        "Sum of question scores" => "  0&nbsp;E <> 0\n",
+        "Sum of question views" => "  0&nbsp;E <> 0\n",
+
       })
     end
     it do
@@ -212,7 +220,14 @@ describe Ossert do
     end
     it do
       expect(decorated_project.community_quarter_values(Time.parse('01.01.2016'))).to eq({
+        "answers_avg" => 0,
         "forks_count" => 51,
+        "question_score_sum" => 0,
+        "question_view_sum" => 0,
+        "questioner_rep_median" => 0,
+        "questioners_count" => 0,
+        "questions_count" => 0,
+        "questions_resolved_percent" => 0,
         "stargazers_count" => 2013,
         "total_downloads_count" => 15435,
         "users_commenting_issues_count" => 7,

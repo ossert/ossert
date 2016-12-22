@@ -174,7 +174,7 @@ module Ossert
               if (stat = public_send(metric).compact).empty?
                 0.0
               else
-                stat.reduce(:+) / stat.size.to_f
+                (stat.reduce(:+) / stat.size.to_f).round(2)
               end
             end
           end
