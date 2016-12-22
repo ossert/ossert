@@ -45,3 +45,9 @@ descriptions:
   download_divergence: Downloads Growth From Previous Period %
   questions_count: Number of questions on StackOverflow concerning a project
   questions_resolved_percent: Percent of questions marked as solved
+  last_question_date_int: Date of the latest question
+  questioner_rep_median: Median of all questioner reputation
+  question_view_sum: Total number of all question views
+  answers_avg: Average number of answers
+  question_score_sum: Total number of question scores
+  questioners_count: Number of unique authors of questions
