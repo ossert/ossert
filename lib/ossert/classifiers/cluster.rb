@@ -3,8 +3,9 @@ require 'kmeans-clusterer'
 
 module Ossert
   module Classifiers
-    class Cluster
+    class Cluster < Base
       THRESHOLDS_PATH = File.join(Ossert::Config::CONFIG_ROOT, 'cluster/thresholds.yml')
+      DISTRIBUTION_PATH = File.join(Ossert::Config::CONFIG_ROOT, 'cluster/distribution.yml')
 
       def self.current
         @current ||= new(YAML::load_file(THRESHOLDS_PATH))
@@ -14,50 +15,9 @@ module Ossert
         @config ||= Settings['classifiers_cluster']
       end
 
-      def self.reversed_metrics
-        @reversed_metrics ||= config['reversed']
-      end
-
       def initialize(thresholds)
+        super
         @thresholds = thresholds
-        @classifiers = {}
-      end
-
-      def ready?
-        [@classifiers[:agility_total],
-         @classifiers[:community_total],
-         @classifiers[:agility_last_year],
-         @classifiers[:community_last_year]].all? { |c| c.present? }
-      end
-
-      def process_using(action, project, last_year_offset = 1)
-        Check.send(action,
-                   self.class.config,
-                   project,
-                   CLASSIFIERS.map { |name| [name, @classifiers[name]] }.to_h,
-                   last_year_offset)
-      end
-
-      def grade(*args)
-        process_using(*args.unshift(:grade))
-      end
-
-      def check(*args)
-        process_using(*args.unshift(:check))
-      end
-
-      def reference_values_per_grade
-        SECTION.product(PERIODS).map do |section, period|
-          ["#{section}_#{period}".to_sym, classifier_to_metrics_per_grade(section, period)]
-        end.to_h
-      end
-
-      def classifier_to_metrics_per_grade(section, period)
-        @classifiers["#{section}_#{period}"].each_with_object({}) do |(grade, metrics), res|
-          metrics.each do |metric, value|
-            (res[metric] ||= {})[grade] = value
-          end
-        end
       end
 
       def train
@@ -68,85 +28,11 @@ module Ossert
         @classifiers
       end
 
-      class ThresholdToRange
-        def self.range_for(metric, value, grade)
-          new(metric, value, grade).range
-        end
-
-        def initialize(metric, value, grade)
-          @metric = metric
-          @value = value
-          @grade = grade
-        end
-
-        def range
-          if reversed_metrics.include?(@metric)
-            Reversed.new(@value, @grade).range
-          else
-            Base.new(@value, @grade).range
-          end
-        end
-
-        def reversed_metrics
-          @reversed_metrics ||= Ossert::Classifiers::Cluster.config['reversed']
-        end
-
-        class Base
-          def initialize(value, grade)
-            @value = value
-            @full_range = (grade == last_grade)
-          end
-
-          def range
-            return full_range if full_range?
-            start_value...end_value
-          end
-
-          private
-
-          def full_range?
-            @full_range
-          end
-
-          def last_grade
-            GRADES.last
-          end
-
-          def full_range
-            -Float::INFINITY...Float::INFINITY
-          end
-
-          def start_value
-            @value
-          end
-
-          def end_value
-            Float::INFINITY
-          end
-        end
-
-        class Reversed < Base
-          def last_grade
-            GRADES.first
-          end
-
-          def start_value
-            -Float::INFINITY
-          end
-
-          def end_value
-            @value
-          end
-        end
-      end
-
       def run_thresholds
-        SECTIONS.each do |section|
-          PERIODS.each do |period|
-            GRADES.each_with_index do |grade, idx|
-              @thresholds[section][period].each_pair do |metric, values|
-                ((@classifiers["#{section}_#{period}".to_sym] ||= {})[grade] ||= {})[metric] = values[idx]
-              end
+        SECTIONS.product(PERIODS).each do |section, period|
+          GRADES.each_with_index do |grade, idx|
+            @thresholds[section][period].each_pair do |metric, values|
+              @classifiers["#{section}_#{period}".to_sym][grade][metric] = values[idx]
             end
           end
         end
@@ -159,7 +45,9 @@ module Ossert
             classifier[grade].each_pair do |metric, value|
               classifier[grade][metric] = {
                 threshold: value,
-                range: ThresholdToRange.range_for(metric, value, grade)
+                range: ThresholdToRange.new(
+                  metric, value, grade, reversed: ->(m) { reversed_metrics.include?(m) }
+                ).range
               }
             end
           end
@@ -169,7 +57,7 @@ module Ossert
       def run_reverse
         CLASSIFIERS.each do |classifier_name|
           classifier = @classifiers[classifier_name]
-          self.class.reversed_metrics.each do |reversed_metric|
+          reversed_metrics.each do |reversed_metric|
             GRADES.first(GRADES.count / 2).each do |grade|
               grade_metrics = classifier[grade]
               next unless grade_metrics[reversed_metric].present?
@@ -209,40 +97,72 @@ module Ossert
           end
         end
 
-        write_yaml do |yaml|
-          (yaml[section] ||= {})[period] = {}
+        write_yaml(DISTRIBUTION_PATH) do |distrib_yaml|
+          write_yaml do |yaml|
+            (yaml[section] ||= {})[period] = {}
+            (distrib_yaml[section] ||= {})[period] = {}
 
-          section_klass.metrics.each do |metric|
-            kmeans = KMeansClusterer.run 5, data[period][metric], scale_data: true
-            centroids = kmeans.clusters.map { |c| c.centroid.to_a.first.round(2) }.sort.reverse
-            thresholds =  if reversed_metrics.include?(metric)
-                            [
-                              centroids[0],
-                              centroids[0..2].sum / 3.0,
-                              centroids[1..3].sum / 3.0,
-                              centroids[2..4].sum / 3.0,
-                              centroids[3..4].sum / 2.0
-                            ]
-                          else
-                            [
-                              centroids[0..2].sum / 3.0,
-                              centroids[1..3].sum / 3.0,
-                              centroids[2..4].sum / 3.0,
-                              centroids[3..4].sum / 2.0,
-                              centroids[4],
-                            ]
-                          end
+            section_klass.metrics.each do |metric|
+              # Find the best number of clusters to fit the data
+              ks = 3.upto(10).to_a
+              errors, silhouettes = [], []
 
-            yaml[section][period][metric] = centroids
+              runs = ks.map do |k|
+                kmeans = KMeansClusterer.run k, data[period][metric], runs: 3
+                error, ss = kmeans.error, kmeans.silhouette
+                errors << error
+                silhouettes << ss
+                puts "#{k}\t#{ss.round(2)}\t\t#{error.round(1)}"
+                kmeans
+              end
+
+              index_of_max_ss = silhouettes.index silhouettes.max
+              bestrun = runs[index_of_max_ss]
+
+              centroids = bestrun.clusters.map do |cluster|
+                values = data[period][metric].flatten.values_at(*cluster.points.map(&:id))
+                result = (values.inject(&:+) / values.count.to_f).round(2)
+
+                (distrib_yaml[section][period][metric] ||= {})[result] = values.count
+
+                result
+              end.sort.reverse
+
+              distrib_yaml[section][period][metric] = distrib_yaml[section][period][metric].sort.reverse.to_h
+
+
+              # Hardcode way to make centroids more accessible for arbitrary project
+              #
+              # centroids = kmeans.clusters.map { |c| c.centroid.to_a.first.round(2) }.sort.reverse
+              # thresholds =  if reversed_metrics.include?(metric)
+              #                 [
+              #                   centroids[0],
+              #                   (centroids[0..2].sum / 3.0).round(2),
+              #                   (centroids[1..3].sum / 3.0).round(2),
+              #                   (centroids[2..4].sum / 3.0).round(2),
+              #                   (centroids[3..4].sum / 2.0).round(2)
+              #                 ]
+              #               else
+              #                 [
+              #                   (centroids[0..2].sum / 3.0).round(2),
+              #                   (centroids[1..3].sum / 3.0).round(2),
+              #                   (centroids[2..4].sum / 3.0).round(2),
+              #                   (centroids[3..4].sum / 2.0).round(2),
+              #                   centroids[4],
+              #                 ]
+              #               end
+
+              yaml[section][period][metric] = centroids
+            end
           end
         end
       end
 
-      def self.write_yaml
+      def self.write_yaml(name = THRESHOLDS_PATH)
         require 'yaml'
-        yaml = YAML::load_file('./config/cluster/thresholds.yml')
+        yaml = YAML::load_file(name)
         yield yaml
-        File.open('./config/cluster/thresholds.yml', 'w') {|f| f.write yaml.to_yaml }
+        File.open(name, 'w') {|f| f.write yaml.to_yaml }
       end
     end
   end

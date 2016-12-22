@@ -31,7 +31,7 @@ class Project < Sequel::Model
     end
 
     def referenced
-      where('reference <> ?', Ossert::Saveable::UNUSED_REFERENCE)
+      where('reference <> ? AND github_name <> ?', Ossert::Saveable::UNUSED_REFERENCE, Ossert::NO_GITHUB_NAME)
     end
   end
 

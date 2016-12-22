@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+require 'ossert/classifiers/base'
 require 'ossert/classifiers/decision_tree'
 require 'ossert/classifiers/growing'
 require 'ossert/classifiers/cluster'
@@ -25,16 +26,6 @@ module Ossert
       'ClassE' => 'ClassA'
     }.freeze
 
-    # Public: Map for metrics values accessors
-    METRICS = {
-      agility_total:       ->(project) { project.agility.total.metrics_to_hash           },
-      agility_quarter:     ->(project) { project.agility.quarters.last.metrics_to_hash   },
-      agility_last_year:   ->(project) { project.agility.quarters.last_year_as_hash      },
-      community_total:     ->(project) { project.community.total.metrics_to_hash         },
-      community_quarter:   ->(project) { project.community.quarters.last.metrics_to_hash },
-      community_last_year: ->(project) { project.community.quarters.last_year_as_hash    }
-    }.freeze
-
     # Public: Prepare classifiers.
     # It warms up classifiers upon existing data.
     def train
@@ -44,5 +35,74 @@ module Ossert
       # DecisionTree.new(projects_by_reference).train
     end
     module_function :train
+
+    class ThresholdToRange
+      def initialize(metric, value, grade, reversed: ->(_) { false })
+        @metric = metric
+        @value = value
+        @grade = grade
+        @reversed = reversed
+      end
+
+      def range
+        if reversed?(@metric)
+          Reversed.new(@value, @grade).range
+        else
+          Base.new(@value, @grade).range
+        end
+      end
+
+      def reversed?(metric_name)
+        @reversed.(metric_name)
+      end
+
+      class Base
+        def initialize(value, grade)
+          @value = value
+          @full_range = (grade == last_grade)
+        end
+
+        def range
+          return full_range if full_range?
+          start_value...end_value
+        end
+
+        private
+
+        def full_range?
+          @full_range
+        end
+
+        def last_grade
+          GRADES.last
+        end
+
+        def full_range
+          -Float::INFINITY...Float::INFINITY
+        end
+
+        def start_value
+          @value
+        end
+
+        def end_value
+          Float::INFINITY
+        end
+      end
+
+      class Reversed < Base
+        def last_grade
+          GRADES.first
+        end
+
+        def start_value
+          -Float::INFINITY
+        end
+
+        def end_value
+          @value
+        end
+      end
+    end
   end
 end

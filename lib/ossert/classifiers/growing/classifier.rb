@@ -1,27 +1,13 @@
 # frozen_string_literal: true
 module Ossert
   module Classifiers
-    class Growing
+    class Growing < Base
       class Classifier
-        GRADES = %w(
-          ClassA
-          ClassB
-          ClassC
-          ClassD
-          ClassE
-        ).freeze
-        REVERSED_GRADE = {
-          'ClassA' => 'ClassE',
-          'ClassB' => 'ClassD',
-          'ClassC' => 'ClassC',
-          'ClassD' => 'ClassB',
-          'ClassE' => 'ClassA'
-        }.freeze
-
-        attr_reader :classifier, :config
-        def initialize(classifier, config)
+        attr_reader :classifier, :config, :name
+        def initialize(classifier, config, name)
           @classifier = classifier
           @config = config
+          @name = name
         end
 
         def train
@@ -30,7 +16,7 @@ module Ossert
           run_values_to_ranges
           run_reverse
 
-          classifier
+          [name, classifier]
         end
 
         def run_aggregation
@@ -51,12 +37,17 @@ module Ossert
           end
         end
 
+        def reversed_metrics
+          @reversed_metrics ||= config['reversed']
+        end
+
         def run_syntetics
-          config['syntetics'].each do |synt_metric, values_range|
+          config['syntetics'].each do |synt_metric, values_ranges|
             real_values = classifier.values.map { |metrics| metrics[synt_metric] }.compact
             next if real_values.empty?
 
-            values_range = Array.wrap(values_range)
+            # TODO: reorganize
+            values_range = Array.wrap(values_ranges.fetch(name) { values_ranges.fetch('default') })
             values_range = values_range.reverse if reversed_metrics.include? synt_metric
             step_threshold = syntetic_step_threshold(values_range)
 
@@ -80,86 +71,12 @@ module Ossert
             classifier[grade].each_pair do |metric, value|
               classifier[grade][metric] = {
                 threshold: value,
-                range: ThresholdToRange.range_for(metric, value, grade)
+                range: ThresholdToRange.new(
+                  metric, value, grade, reversed: ->(m) { reversed_metrics.include?(m) }
+                ).range
               }
             end
           end
-        end
-
-        class ThresholdToRange
-          def self.range_for(metric, value, grade)
-            new(metric, value, grade).range
-          end
-
-          def initialize(metric, value, grade)
-            @metric = metric
-            @value = value
-            @grade = grade
-          end
-
-          def range
-            if reversed_metrics.include?(@metric)
-              Reversed.new(@value, @grade).range
-            else
-              Base.new(@value, @grade).range
-            end
-          end
-
-          def reversed_metrics
-            @reversed_metrics ||= Ossert::Classifiers::Growing.config['reversed']
-          end
-
-          class Base
-            def initialize(value, grade)
-              @value = value
-              @full_range = (grade == last_grade)
-            end
-
-            def range
-              return full_range if full_range?
-              start_value...end_value
-            end
-
-            private
-
-            def full_range?
-              @full_range
-            end
-
-            def last_grade
-              GRADES.last
-            end
-
-            def full_range
-              -Float::INFINITY...Float::INFINITY
-            end
-
-            def start_value
-              @value
-            end
-
-            def end_value
-              Float::INFINITY
-            end
-          end
-
-          class Reversed < Base
-            def last_grade
-              GRADES.first
-            end
-
-            def start_value
-              -Float::INFINITY
-            end
-
-            def end_value
-              @value
-            end
-          end
-        end
-
-        def reversed_metrics
-          @reversed_metrics ||= config['reversed']
         end
 
         def run_reverse

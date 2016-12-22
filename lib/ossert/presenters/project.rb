@@ -140,11 +140,11 @@ module Ossert
       end
 
       def community_last_year
-        @community_last_year ||= decorator.metrics @project.community.quarters.last_year_as_hash, :community_year
+        @community_last_year ||= decorator.metrics @project.community.quarters.last_year_as_hash, :community_last_year
       end
 
       def agility_last_year
-        @agility_last_year ||= decorator.metrics @project.agility.quarters.last_year_as_hash, :agility_year
+        @agility_last_year ||= decorator.metrics @project.agility.quarters.last_year_as_hash, :agility_last_year
       end
 
       def metric_preview(metric)
