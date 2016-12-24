@@ -3,14 +3,20 @@ require 'kmeans-clusterer'
 
 module Ossert
   module Classifiers
+    # Class for Cluster classification. Uses K-Means clusterization.
     class Cluster < Base
       THRESHOLDS_PATH = File.join(Ossert::Config::CONFIG_ROOT, 'cluster/thresholds.yml')
       DISTRIBUTION_PATH = File.join(Ossert::Config::CONFIG_ROOT, 'cluster/distribution.yml')
 
+      # Prepare and return cluster classifier instance for current
+      # configuration state. Uses cluster/thresholds.yml configuration file.
+      #
+      # @return [Ossert::Classifiers::Cluster] initialized cluster classifer
       def self.current
         @current ||= new(YAML::load_file(THRESHOLDS_PATH))
       end
 
+      # @return [Hash] the configuration of Cluster classifier.
       def self.config
         @config ||= Settings['classifiers_cluster']
       end
@@ -20,6 +26,10 @@ module Ossert
         @thresholds = thresholds
       end
 
+      # Run training process using current classifier state.
+      #
+      # @return [Hash<Symbol, Hash>] collection of classifiers for all combinations
+      #   of data sections and periods.
       def train
         run_thresholds
         run_values_to_ranges
@@ -28,6 +38,10 @@ module Ossert
         @classifiers
       end
 
+      # Prepare @classifiers threshold values for each metric and all
+      # section vs period combinations.
+      #
+      # @return not specified.
       def run_thresholds
         SECTIONS.product(PERIODS).each do |section, period|
           GRADES.each_with_index do |grade, idx|
@@ -38,6 +52,10 @@ module Ossert
         end
       end
 
+      # Transform @classifiers threshold metric values to hashes
+      # with threshold and range covered.
+      #
+      # @return not specified.
       def run_values_to_ranges
         CLASSIFIERS.each do |classifier_name|
           classifier = @classifiers[classifier_name]
@@ -54,6 +72,9 @@ module Ossert
         end
       end
 
+      # Transform @classifiers values of reversed metrics to the correct state.
+      #
+      # @return not specified.
       def run_reverse
         CLASSIFIERS.each do |classifier_name|
           classifier = @classifiers[classifier_name]
@@ -61,7 +82,7 @@ module Ossert
             GRADES.first(GRADES.count / 2).each do |grade|
               grade_metrics = classifier[grade]
               next unless grade_metrics[reversed_metric].present?
-              reversed_grade_metrics = classifier[REVERSED_GRADE[grade]]
+              reversed_grade_metrics = classifier[REVERSED_GRADES[grade]]
 
               reversed_grade_metrics[reversed_metric], grade_metrics[reversed_metric] =
                 grade_metrics[reversed_metric], reversed_grade_metrics[reversed_metric]
@@ -70,6 +91,11 @@ module Ossert
         end
       end
 
+      # Run train process of all Stats for each period on all exisitng projects.
+      # Result is saved to cluster/thresholds.yml config file.
+      # (see .train_section_metrics_thresholds)
+      #
+      # @return not specified.
       def self.train_all_sections_thresholds
         {
           Ossert::Stats::AgilityQuarter => [:quarter, :last_year],
@@ -83,9 +109,19 @@ module Ossert
         end
       end
 
+      # Run train process given section_klass [Stats::Base descendants] and period.
+      # K-Means clusterization algorithm is used to prepare clusters.
+      # The centroids of clusters are used as a base for thresholds calculation.
+      #
+      # @param section_klass [Stats::Base descendant, .metrics] the class which
+      #   specifies which metrics to collect and analyze using K-Means.
+      # @param period [Symbol] the period specifiation for data extract from a
+      #   project
+      # @return not specified.
       def self.train_section_metrics_thresholds(section_klass, period)
-        raise ArgumentError unless period.to_sym.in? %i(total last_year quarter)
+        raise ArgumentError unless PERIODS.include?(period)
 
+        # TODO: move demodulize and whole logic to Utils somewhere
         section = section_klass.to_s.demodulize.underscore.split('_').first.to_sym
         data = {period => {}}
 
@@ -158,11 +194,19 @@ module Ossert
         end
       end
 
+      # Write yielded hash to a file name
+      #
+      # @param name [String] the file path where to write YAML
+      # @yieldparam [Hash] the Hash read from the file and which will be
+      #   committed to a file on complete
+      # @return not specified.
       def self.write_yaml(name = THRESHOLDS_PATH)
         require 'yaml'
         yaml = YAML::load_file(name)
         yield yaml
         File.open(name, 'w') {|f| f.write yaml.to_yaml }
+      ensure
+        File.close(name)
       end
     end
   end

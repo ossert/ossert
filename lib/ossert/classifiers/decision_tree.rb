@@ -5,17 +5,13 @@ require 'decisiontree'
 module Ossert
   module Classifiers
     class DecisionTree
-      GRADES = %w(
-        ClassA
-        ClassB
-        ClassC
-        ClassD
-        ClassE
-      ).freeze
-
       class << self
         attr_accessor :all
 
+        # Prepare and return decision tree classifier instance for existing
+        # refernce projects.
+        #
+        # @return [Ossert::Classifiers::DecisionTree] initialized cluster classifer
         def for_current_projects
           new(Project.projects_by_reference)
         end
@@ -92,8 +88,8 @@ module Ossert
 
         GRADES.each_with_object(train_group) do |grade, grouped_projects|
           grouped_projects[grade].each do |project|
-            Ossert::Classifiers::METRICS.each do |section, data_collector|
-              result[section] << (data_collector.call(project) << grade)
+            SECTIONS.product(PERIODS).each do |section, period|
+              result[section] << (project.data_for(section: section, period: period) << grade)
             end
           end
         end

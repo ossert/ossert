@@ -165,10 +165,17 @@ module Ossert
       MultiJson.dump(meta)
     end
 
-    def data_for(section:, period:)
-      public_send(section).public_send("#{period}_as_hash")
+    # Request data for given section, period and options
+    #
+    # @param section [String] name of data section
+    # @param period [String] name of data period subset
+    # @param opts [Hash] of extra options for data accessors
+    # @return [Hash<String, Float>] of found metrics data
+    def data_for(section:, period:, opts: {})
+      public_send(section).public_send("#{period}_as_hash", opts)
     end
 
+    # Abstract class for project data access
     class BaseStore
       attr_accessor :quarters, :total, :total_prediction, :quarter_prediction
 
@@ -177,37 +184,47 @@ module Ossert
         @total = total || ::Kernel.const_get(self.class.total_stats_klass_name).new
       end
 
-      def total_as_hash
+      # @return [Hash<String, Float>] of total metrics data
+      def total_as_hash(*)
         total.metrics_to_hash
       end
 
-      def quarter_as_hash
+      # @return [Hash<String, Float>] of last quarter metrics data
+      def quarter_as_hash(*)
         quarters.last.metrics_to_hash
       end
 
-      def last_year_as_hash
-        quarters.last_year_as_hash
+      # @param last_year_offset [Numeric] from current time back in history
+      # @return [Hash<String, Float>] of last year metrics data
+      def last_year_as_hash(last_year_offset: 1)
+        quarters.last_year_as_hash(last_year_offset)
       end
     end
 
+    # Class for agility data access
     class Agility < BaseStore
       class << self
+        # @return [String] name of quarter stats class to use
         def quarter_stats_klass_name
           'Ossert::Stats::AgilityQuarter'
         end
 
+        # @return [String] name of total stats class to use
         def total_stats_klass_name
           'Ossert::Stats::AgilityTotal'
         end
       end
     end
 
+    # Class for community data access
     class Community < BaseStore
       class << self
+        # @return [String] name of quarter stats class to use
         def quarter_stats_klass_name
           'Ossert::Stats::CommunityQuarter'
         end
 
+        # @return [String] name of total stats class to use
         def total_stats_klass_name
           'Ossert::Stats::CommunityTotal'
         end
