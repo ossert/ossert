@@ -6,21 +6,21 @@ classifiers_growth:
       - maturity
     syntetics:
       download_divergence:
-        default: 5
+        default: [5, 0]
       stale_branches_count:
-        default: 15
+        default: [0, 15]
       pr_actual_count:
-        default: 100
+        default: [0, 100]
       pr_active_percent:
-        default: 90
+        default: [0, 90]
       pr_closed_percent:
-        default: 90
+        default: [90, 0]
       issues_actual_count:
-        default: 200
+        default: [0, 200]
       issues_active_percent:
-        default: 90
+        default: [0, 90]
       issues_closed_percent:
-        default: 90
+        default: [90, 0]
       dependants_count:
         default:
           - 500

@@ -7,24 +7,18 @@ require 'ossert/classifiers/check'
 
 module Ossert
   module Classifiers
+    # The list of available data sections.
     SECTIONS = %i(agility community)
+    # The list of available data periods.
     PERIODS = %i(total quarter last_year)
+    # The list of available classifiers.
+    # It is calculated from all combinations of SECTIONS and PERIODS.
     CLASSIFIERS = SECTIONS.product(PERIODS).map { |s, p| "#{s}_#{p}".to_sym }
 
-    GRADES = %w(
-      ClassA
-      ClassB
-      ClassC
-      ClassD
-      ClassE
-    ).freeze
-    REVERSED_GRADE = {
-      'ClassA' => 'ClassE',
-      'ClassB' => 'ClassD',
-      'ClassC' => 'ClassC',
-      'ClassD' => 'ClassB',
-      'ClassE' => 'ClassA'
-    }.freeze
+    # The list of available grades for a project and its metrics.
+    GRADES = %w(ClassA ClassB ClassC ClassD ClassE).freeze
+    # The map of available grades to its reversed version.
+    REVERSED_GRADES = GRADES.zip(GRADES.reverse).to_h.freeze
 
     # Public: Prepare classifiers.
     # It warms up classifiers upon existing data.
@@ -36,6 +30,7 @@ module Ossert
     end
     module_function :train
 
+    # Helper class for threshold value to range conversion
     class ThresholdToRange
       def initialize(metric, value, grade, reversed: ->(_) { false })
         @metric = metric
@@ -44,6 +39,7 @@ module Ossert
         @reversed = reversed
       end
 
+      # @return [Range] for the given instance
       def range
         if reversed?(@metric)
           Reversed.new(@value, @grade).range
@@ -52,54 +48,65 @@ module Ossert
         end
       end
 
+      # Check the metric if it reversed.
+      #
+      # @param metric_name [String] to check.
+      # @return [true, false] check result.
       def reversed?(metric_name)
         @reversed.(metric_name)
       end
 
+      # Class for base threshold to range behavior
       class Base
         def initialize(value, grade)
           @value = value
-          @full_range = (grade == last_grade)
+          @grade = grade
         end
 
+        # @return [Range] for current instance state
         def range
-          return full_range if full_range?
           start_value...end_value
         end
 
         private
 
-        def full_range?
-          @full_range
+        # @return [true, false] if current value is the worst one.
+        def worst_value?
+          @grade == worst_grade
         end
 
-        def last_grade
+        # @return [one of GRADES] which to treat as the worst one.
+        def worst_grade
           GRADES.last
         end
 
-        def full_range
-          -Float::INFINITY...Float::INFINITY
-        end
-
+        # @return [Float] where to start the result range
         def start_value
+          return -Float::INFINITY if worst_value?
           @value
         end
 
+        # @return [Float] where to end the result range
         def end_value
           Float::INFINITY
         end
       end
 
+      # Class for reversed threshold to range behavior
       class Reversed < Base
-        def last_grade
+        # @return [one of GRADES] which to treat as the worst one.
+        def worst_grade
           GRADES.first
         end
 
+        # @return [Float] where to start the result range
         def start_value
           -Float::INFINITY
         end
 
+        # @return [Float] where to end the result range
         def end_value
+          return Float::INFINITY if worst_value?
           @value
         end
       end

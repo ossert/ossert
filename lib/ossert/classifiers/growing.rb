@@ -7,10 +7,15 @@ module Ossert
       class << self
         attr_accessor :all
 
+        # Prepare and return growing classifier instance.
+        # The last prepared growing classifier.
+        #
+        # @return [Ossert::Classifiers::Growing] initialized growing classifer
         def current
           all.last
         end
 
+        # @return [Hash] the configuration of Growing classifier.
         def config
           @config ||= Settings['classifiers_growth']
         end
@@ -21,6 +26,10 @@ module Ossert
         (self.class.all ||= []) << self
       end
 
+      # Run training process using current classifier state.
+      #
+      # @return [Hash<Symbol, Hash>] collection of classifiers for all combinations
+      #   of data sections and periods.
       def train
         classifiers_initializer = ClassifiersInitializer.load_or_create
         classifiers_initializer.run
@@ -29,7 +38,11 @@ module Ossert
         end.to_h
       end
 
+      # Class for Growing classifier initialization
       class ClassifiersInitializer
+        # Load or create classifier using stored state.
+        #
+        # @return [ClassifierInitializer] the prepared class instance.
         def self.load_or_create
           if ::Classifier.actual?
             new.load
@@ -38,6 +51,7 @@ module Ossert
           end
         end
 
+        # @return [Hash<Symbol, Hash>] classifiers with their metrics data
         attr_reader :classifiers
 
         def initialize(grouped_projects = nil)
@@ -45,6 +59,9 @@ module Ossert
           @classifiers = {}
         end
 
+        # Load classifiers state from storage
+        #
+        # @return [ClassifiersInitializer] the updated instance.
         def load
           @classifiers = {}
           CLASSIFIERS.each do |classifier_name|
@@ -53,6 +70,11 @@ module Ossert
           self
         end
 
+        # Merge metric values for given storage and metrics.
+        #
+        # @param storage [Hash] which stores metric values
+        # @param metrics [Array<String>] that are merged
+        # @return not specified.
         def merge_metrics(storage, metrics)
           metrics.each do |metric, value|
             storage.store(
@@ -63,6 +85,9 @@ module Ossert
           storage
         end
 
+        # Save current state of classifiers to storage.
+        #
+        # @return not specified.
         def save
           ::Classifier.dataset.delete
 
@@ -74,10 +99,17 @@ module Ossert
           end
         end
 
+        # Initialize data for all classifiers.
+        #
+        # @return not specified.
         def new_classifiers
           CLASSIFIERS.map { |classifier_name| [classifier_name, {}] }.to_h
         end
 
+        # Collect data for classifiers using current state projects in storage.
+        # By the way, saves classifiers to storage for future retrieval.
+        #
+        # @return not specified.
         def run
           return if @classifiers.present?
 

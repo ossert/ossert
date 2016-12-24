@@ -179,7 +179,7 @@ module Ossert
         end
 
         @grade = check_results.last(2).first.map { |k, v| [k, v[:mark].downcase] }.to_h
-        @fast_preview_graph = fast_preview_graph_data(lookback, check_results)
+        @fast_preview_graph = fast_preview_graph_data(check_results, lookback)
       end
       attr_reader :grade, :fast_preview_graph
 

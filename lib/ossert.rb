@@ -47,6 +47,7 @@ module Ossert
   end
   module_function :translations
 
+  # The reserved GitHub name for a project not found on GitHub
   NO_GITHUB_NAME = '__unknown__'
 
   class TooLong

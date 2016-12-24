@@ -38,6 +38,7 @@ Gem::Specification.new do |spec|
   spec.add_runtime_dependency 'gnuplot'
 
   spec.add_development_dependency 'memory_profiler'
+  spec.add_development_dependency 'yard'
   spec.add_development_dependency 'rubocop'
   spec.add_development_dependency 'bundler', '~> 1.11'
   spec.add_development_dependency 'pry'
