@@ -29,5 +29,14 @@ module Ossert
       raise "YAML syntax error occurred while parsing #{path}. " \
             "Error: #{e.message}"
     end
+
+    # Prepare path relative to the config root.
+    #
+    # @param relative_path [String] path to file/directory relative to current
+    #   config directory.
+    # @return [String] absolute path for given relative one.
+    def self.path(relative_path)
+      File.join(Ossert::Config::CONFIG_ROOT, relative_path)
+    end
   end
 end

@@ -60,15 +60,14 @@ namespace :ossert do
   desc 'Add or replace project name exception'
   task :exception, [:name, :github_name] do |_, args|
     raise 'Arguments name and GitHub name expected' unless args.name.present? && args.github_name.present?
-    exceptions_repo = ExceptionsRepo.new(Ossert.rom)
-    if exceptions_repo[args.name]
+    if NameException.find(args.name)
       exceptions_repo.update(
         args.name,
         name: args.name,
         github_name: args.github_name
       )
     else
-      exceptions_repo.create(
+      NameException.create(
         name: args.name,
         github_name: args.github_name
       )

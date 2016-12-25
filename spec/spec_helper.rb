@@ -2,18 +2,24 @@
 require 'simplecov'
 SimpleCov.start
 
+if ENV['CI']
+  require 'codecov'
+  SimpleCov.formatter = SimpleCov::Formatter::Codecov
+end
+
 $LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
+
+ENV['TEST'] = '1'
 
 require 'sequel'
 require 'ossert'
-
-DB_URL = ENV.fetch('TEST_DATABASE_URL')
-Ossert.init(DB_URL)
 
 require 'multi_json'
 require 'rspec'
 require 'webmock/rspec'
 require 'base64'
+
+require 'sidekiq/testing'
 
 require 'vcr'
 VCR.configure do |c|
@@ -42,11 +48,27 @@ VCR.configure do |c|
   c.hook_into :webmock
 end
 
+TEST_CONFIG_ROOT = File.join(File.dirname(__FILE__), '..', 'tmp', 'config')
+DB_URL = ENV.fetch('TEST_DATABASE_URL')
+
 RSpec.configure do |config|
   config.raise_errors_for_deprecations!
   config.before(:suite) do
+    FileUtils.mkdir_p(TEST_CONFIG_ROOT)
+    FileUtils.cp_r("#{Ossert::Config::CONFIG_ROOT}/.", TEST_CONFIG_ROOT)
+
+    config_root_const = 'CONFIG_ROOT'
+    Ossert::Config.send(:remove_const, config_root_const)
+    Ossert::Config.const_set(config_root_const, TEST_CONFIG_ROOT)
+    Ossert::Config.load(
+      :stats, :classifiers_growth, :classifiers_cluster, :translations, :descriptions
+    )
+
+    Ossert.init(DB_URL)
+
     db = Sequel.connect(DB_URL)
     db.run('TRUNCATE TABLE projects;')
+    db.run('TRUNCATE TABLE exceptions;')
     db.run('TRUNCATE TABLE classifiers;')
 
     init_projects

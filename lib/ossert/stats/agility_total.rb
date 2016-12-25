@@ -29,16 +29,8 @@ module Ossert
         commits_count_since_last_release.is_a?(Array) ? 0 : commits_count_since_last_release
       end
 
-      def issues_active
-        issues_open - issues_closed
-      end
-
       def issues_all
         issues_open + issues_closed
-      end
-
-      def pr_active
-        pr_open - pr_closed
       end
 
       def pr_all
@@ -57,10 +49,6 @@ module Ossert
         return 0 unless first_change
 
         (Time.at(last_change) - Time.at(first_change)).to_i
-      end
-
-      def life_period_months
-        life_period / 1.month
       end
 
       def releases_count

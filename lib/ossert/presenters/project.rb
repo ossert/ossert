@@ -14,6 +14,28 @@ module Ossert
         @decorator = Decorator.new(@reference)
       end
 
+      # Prepare a preview structure of all data for a project.
+      #
+      # @param project [Ossert::Project] to take data from
+      # @return [Hash] of preview data
+      def self.preview_for(project)
+        locals = {
+          project: project,
+          metric_lookup: {},
+          popularity_metrics: Stats.popularity_metrics,
+          maintenance_metrics: Stats.maintenance_metrics,
+          maturity_metrics: Stats.maturity_metrics
+        }
+        Ossert::Presenters::Project.with_presenter(project) do |project_decorated|
+          (locals[:popularity_metrics] + locals[:maintenance_metrics] + locals[:maturity_metrics]).each do |metric|
+            locals[:metric_lookup][metric] = project_decorated.metric_preview(metric)
+          end
+          locals[:fast_preview_graph] = project_decorated.fast_preview_graph
+          locals[:analysis] = project_decorated.grade
+        end
+        locals
+      end
+
       def self.with_presenter(project)
         presenter = new(project)
         presenter.prepare!

@@ -2,7 +2,7 @@ Code quality? Checked by [RuboCop](https://github.com/bbatsov/rubocop/) (crowdso
 What about library support?
 Introducing **Ossert**! Crowdsourced project support and availablity metrics.
 
-# ossert (OSS cERTificate) [![Build Status](https://travis-ci.org/ossert/ossert.svg?branch=master)](https://travis-ci.org/ossert/ossert) [![Inline docs](http://inch-ci.org/github/ossert/ossert.svg)](http://inch-ci.org/github/ossert/ossert)  [![Code Climate](https://codeclimate.com/github/ossert/ossert/badges/gpa.svg)](https://codeclimate.com/github/ossert/ossert)
+# ossert (OSS cERTificate) [![Build Status](https://travis-ci.org/ossert/ossert.svg?branch=master)](https://travis-ci.org/ossert/ossert) [![Inline docs](http://inch-ci.org/github/ossert/ossert.svg)](http://inch-ci.org/github/ossert/ossert)  [![Code Climate](https://codeclimate.com/github/ossert/ossert/badges/gpa.svg)](https://codeclimate.com/github/ossert/ossert) [![Code Coverage](https://codecov.io/gh/ossert/ossert/coverage.svg?branch=master)](https://codecov.io/gh/ossert/ossert)
 
 [![Join the chat at https://gitter.im/ossert_app/Lobby](https://badges.gitter.im/ossert_app/Lobby.svg)](https://gitter.im/ossert_app/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 

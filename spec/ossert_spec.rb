@@ -2,12 +2,13 @@
 require 'spec_helper'
 
 describe Ossert do
+  let(:projectA) { Ossert::Project.load_by_name(@a_project) }
+  let(:projectB) { Ossert::Project.load_by_name(@b_project) }
+  let(:projectC) { Ossert::Project.load_by_name(@c_project) }
+  let(:projectD) { Ossert::Project.load_by_name(@d_project) }
+  let(:projectE) { Ossert::Project.load_by_name(@e_project) }
+
   describe 'common behaviour' do
-    let(:projectA) { Ossert::Project.load_by_name(@a_project) }
-    let(:projectB) { Ossert::Project.load_by_name(@b_project) }
-    let(:projectC) { Ossert::Project.load_by_name(@c_project) }
-    let(:projectD) { Ossert::Project.load_by_name(@d_project) }
-    let(:projectE) { Ossert::Project.load_by_name(@e_project) }
     let(:no_github_project) { Ossert::Project.load_by_name(@no_github_project) }
     let(:github_not_found_project) { Ossert::Project.load_by_name(@github_not_found_project) }
 
@@ -140,5 +141,201 @@ describe Ossert do
         )
       end
     end
+  end
+
+  describe 'Ossert::Classifiers::Cluster' do
+    before do
+      Ossert::Classifiers::Cluster.train_all_sections_thresholds
+      cluster_classifier.train
+    end
+    let(:cluster_classifier) { Ossert::Classifiers::Cluster.current }
+    let(:cluster_ref_values) { cluster_classifier.reference_values_per_grade }
+
+    it { expect(cluster_ref_values[:agility_total]['pr_closed_percent'].keys).to eq(Ossert::Classifiers::GRADES) }
+    it { expect(projectE.grade_by_cluster).to eq(:popularity=>nil, :maintenance=>"E", :maturity=>"E") }
+  end
+
+  describe 'Ossert::Presenters::Project' do
+    let(:decorated_project) { projectC.decorated }
+    before { Ossert::Classifiers.train }
+    it do
+      expect(Ossert::Presenters::Project.preview_for(projectB)[:analysis]).to eq(
+        :popularity=>"a",
+        :maintenance=>"b",
+        :maturity=>"a"
+      )
+    end
+    it do
+      expect(decorated_project.agility_quarter(Time.parse('01.01.2016'))).to eq({
+        "Average Issue Processing Time" => "  ~24 days&nbsp;A <> ~-58 months\n",
+        "Average Pull Request Processing Time" => "  ~17 days&nbsp;A <> ~4 days\n",
+        "Issues Closed %" => "  70%&nbsp;C <> +70%\n",
+        "Median Issue Processing Time" => "  ~1 day&nbsp;A <> ~-58 months\n",
+        "Median Pull Request Processing Time" => "  ~16 days&nbsp;A <> ~1 day\n",
+        "Number of Commits Made" => "  11&nbsp;A <> +4\n",
+        "Number of Issues" => "  10&nbsp;A <> +8\n",
+        "Number of Legacy Issues" => "  2&nbsp;A <> +1\n",
+        "Number of Legacy Pull Requests" => "  3&nbsp;A <> +3\n",
+        "Number of Pull Requests" => "  13&nbsp;A <> +7\n",
+        "Number of Releases" => "  1&nbsp;A <> +1\n",
+        "Pull Requests Closed %" => "  70%&nbsp;C <> +19%\n",
+      })
+    end
+    it do
+      expect(decorated_project.community_quarter(Time.parse('01.01.2016'))).to eq({
+        "Number of Downloads" => "  15,435&nbsp;D <> +10,981\n",
+        "Number of Forks" => "  51&nbsp;A <> +43\n",
+        "Number of Stargazers" => "  2013&nbsp;A <> +1536\n",
+        "Number of Total Users Involved" => "  2063&nbsp;A <> +1575\n",
+        "Number of Users Commenting Issues" => "  7&nbsp;A <> +6\n",
+        "Number of Users Commenting Pull Requests" => "  19&nbsp;A <> +13\n",
+        "Number of Users Creating Issues" => "  6&nbsp;A <> +5\n",
+        "Number of Users Creating Pull Requests" => "  5&nbsp;A <> 0\n",
+        "Number of Users Involved Without Stargazers" => "  50&nbsp;A <> +39\n"
+      })
+    end
+    it do
+      expect(decorated_project.agility_quarter_values(Time.parse('01.01.2016'))).to eq({
+        "commits" => 11,
+        "issues_actual_count" => 2,
+        "issues_all_count" => 10,
+        "issues_closed_percent" => 70,
+        "issues_processed_in_avg" => 24,
+        "issues_processed_in_median" => 1,
+        "pr_actual_count" => 3,
+        "pr_all_count" => 13,
+        "pr_closed_percent" => 69,
+        "pr_processed_in_avg" => 17,
+        "pr_processed_in_median" => 16,
+        "releases_count" => 1
+      })
+    end
+    it do
+      expect(decorated_project.community_quarter_values(Time.parse('01.01.2016'))).to eq({
+        "forks_count" => 51,
+        "stargazers_count" => 2013,
+        "total_downloads_count" => 15435,
+        "users_commenting_issues_count" => 7,
+        "users_commenting_pr_count" => 19,
+        "users_creating_issues_count" => 6,
+        "users_creating_pr_count" => 5,
+        "users_involved_count" => 2063,
+        "users_involved_no_stars_count" => 50,
+      })
+    end
+  end
+
+  describe 'Ossert::Classifiers::DecisionTree' do
+    before { Ossert::Classifiers.train }
+    it do
+      expect(projectE.analyze_by_decisision_tree).to eq(
+        :agility => {:total=>"ClassE", :last_year=>"ClassE"},
+        :community => {:total=>"ClassE", :last_year=>"ClassE"},
+      )
+    end
+  end
+
+  describe 'Ossert::Reference' do
+    before do
+      VCR.use_cassette 'fetch_b_reference' do
+        reference.prepare_projects!
+        reference.project_names = Set.new(reference.project_names.to_a.last(1))
+        reference.project_names << projectB.name
+
+        Ossert::Reference.process_references(reference)
+      end
+    end
+    let(:reference) { Ossert::Reference::ClassB.new(20, [70]) }
+    let(:last_ref_project) { Ossert::Project.load_by_name(reference.project_names.to_a.last) }
+
+    it { expect(last_ref_project.reference).to eq 'ClassB' }
+  end
+
+  describe 'Ossert::Saveable' do
+    let(:invalid_project) do
+      projectE.github_alias = nil
+      projectE
+    end
+
+    it { expect { invalid_project.dump }.to raise_error(Ossert::Saveable::RecordInvalid) }
+    it { expect { projectD.dump_attribute(:tratata_data) }.to raise_error(KeyError) }
+    it { expect { projectD.dump_attribute(:agility_total_data) }.not_to raise_error }
+    it { expect { projectD.dump_attribute(:community_total_data) }.not_to raise_error }
+    it { expect { projectD.dump_attribute(:agility_quarters_data) }.not_to raise_error }
+    it { expect { projectD.dump_attribute(:community_quarters_data) }.not_to raise_error }
+    it { expect { Ossert::Project.random_top }.not_to raise_error }
+    it { expect { Ossert::Project.random }.not_to raise_error }
+    it { expect(Ossert::Project.load_later_than(0)).not_to be_empty }
+
+    context 'when NameException exists' do
+      before { NameException.create(name: projectE.name, github_name: 'pow-wow/exception') }
+      after { NameException.where(name: projectE.name).delete }
+      it do
+        expect(Ossert::Project.find_by_name(projectE.name).github_alias).to eq('pow-wow/exception')
+      end
+    end
+  end
+
+  describe 'Ossert::Workers::FetchBestgemsPage' do
+    before { allow(Ossert::Project).to receive(:fetch_all) }
+    before { allow(Ossert).to receive(:init) }
+
+    describe 'ForkProcessing' do
+      class SumInFork
+        include Ossert::Workers::ForkProcessing
+
+        attr_reader :result
+
+        def initialize
+          @result = nil
+        end
+
+        def sum(a, b)
+          process_in_fork(force: true) { @result = a + b }
+        end
+      end
+      # not working... need to figure out why
+    end
+
+    describe 'FetchBestgemsPage' do
+      it do
+        VCR.use_cassette 'fetch_bestgems_page' do
+          Ossert::Workers::FetchBestgemsPage.new.perform(1)
+        end
+      end
+    end
+
+    describe 'Fetch' do
+      it { Ossert::Workers::Fetch.new.perform('rack') }
+    end
+
+    describe 'PartialFetch' do
+      it do
+        VCR.use_cassette 'fetch_partial_rubygems' do
+          Ossert::Workers::PartialFetch.new.perform('Rubygems', projectE.name)
+        end
+      end
+    end
+
+    describe 'PartialRefreshFetch' do
+      it { Ossert::Workers::PartialRefreshFetch.new.perform('Bestgems') }
+    end
+
+    describe 'RefreshFetch' do
+      it { Ossert::Workers::RefreshFetch.new.perform }
+    end
+  end
+
+  describe 'Ossert::Fetch' do
+    let(:project) { Ossert::Project.load_by_name(project_name) }
+    let(:project_name) { projectD.name }
+
+    before do
+      VCR.use_cassette 'fetch_a_rubygems' do
+        Ossert::Project.update_with_one_fetcher(Ossert::Fetch::Rubygems, project_name)
+      end
+    end
+
+    it { expect(project.github_alias).to eq 'dry-rb/dry-web' }
   end
 end

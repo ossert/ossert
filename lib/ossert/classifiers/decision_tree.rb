@@ -34,6 +34,9 @@ module Ossert
                   :community_total_dec_tree,
                   :community_last_year_dec_tree
 
+      # Run a decision tree predict process for given project.
+      #
+      # @return [Hash] grades indexed by data section and period.
       def check(project)
         {
           agility: {
@@ -55,14 +58,16 @@ module Ossert
       }.freeze
 
       [:community, :agility].each do |section|
-        [:total, :last_year].each do |type|
-          name = "#{section}_#{type}".to_sym
+        [:total, :last_year].each do |period|
+          name = "#{section}_#{period}".to_sym
           define_method("#{name}_check") do |project|
-            public_send("#{name}_dec_tree").predict(Ossert::Classifiers::METRICS[name].call(project))
+            public_send("#{name}_dec_tree").predict(project.data_for(section: section, period: period).values)
           end
         end
       end
 
+      # @return [true, false] the check if all classifiers are exist and
+      #   initialized.
       def ready?
         agility_total_dec_tree.presence &&
           agility_last_year_dec_tree.presence &&
@@ -70,12 +75,16 @@ module Ossert
           community_last_year_dec_tree.presence
       end
 
+      # Run training process using current classifier state.
+      #
+      # @return not specified
       def train
         data = initialize_data
 
         trees = SECTION_METRICS.map do |section, metrics|
           ::DecisionTree::ID3Tree.new(metrics, data[section], 'ClassE', :continuous)
-        end.tap(&:train)
+        end
+        trees.each(&:train)
 
         @agility_total_dec_tree,
         @agility_last_year_dec_tree,
@@ -83,13 +92,24 @@ module Ossert
         @community_last_year_dec_tree = trees
       end
 
+      # Initialize data for classifiers using data from train group projects.
+      #
+      # @return not specified
       def initialize_data
-        result = { agility_total: [], agility_last_year: [], community_total: [], community_last_year: [] }
+        result = {
+          agility_total: [],
+          agility_last_year: [],
+          agility_quarter: [],
+          community_total: [],
+          community_last_year: [],
+          community_quarter: []
+        }
 
         GRADES.each_with_object(train_group) do |grade, grouped_projects|
           grouped_projects[grade].each do |project|
             SECTIONS.product(PERIODS).each do |section, period|
-              result[section] << (project.data_for(section: section, period: period) << grade)
+              classifier_name = "#{section}_#{period}".to_sym
+              result[classifier_name] << (project.data_for(section: section, period: period).values << grade)
             end
           end
         end
