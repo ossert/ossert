@@ -5,15 +5,15 @@ module Ossert
   module Classifiers
     # Class for Cluster classification. Uses K-Means clusterization.
     class Cluster < Base
-      THRESHOLDS_PATH = File.join(Ossert::Config::CONFIG_ROOT, 'cluster/thresholds.yml')
-      DISTRIBUTION_PATH = File.join(Ossert::Config::CONFIG_ROOT, 'cluster/distribution.yml')
+      THRESHOLDS_PATH = 'cluster/thresholds.yml'
+      DISTRIBUTION_PATH = 'cluster/distribution.yml'
 
       # Prepare and return cluster classifier instance for current
       # configuration state. Uses cluster/thresholds.yml configuration file.
       #
       # @return [Ossert::Classifiers::Cluster] initialized cluster classifer
       def self.current
-        @current ||= new(YAML::load_file(THRESHOLDS_PATH))
+        @current ||= new(YAML::load_file(Config.path(THRESHOLDS_PATH)))
       end
 
       # @return [Hash] the configuration of Cluster classifier.
@@ -133,22 +133,28 @@ module Ossert
           end
         end
 
-        write_yaml(DISTRIBUTION_PATH) do |distrib_yaml|
+        write_yaml(Config.path(DISTRIBUTION_PATH)) do |distrib_yaml|
           write_yaml do |yaml|
             (yaml[section] ||= {})[period] = {}
             (distrib_yaml[section] ||= {})[period] = {}
 
             section_klass.metrics.each do |metric|
               # Find the best number of clusters to fit the data
-              ks = 3.upto(10).to_a
+              # ks = 3.upto(5).to_a
+              ks = [5] # Using 5 to have valid number of thresholds
               errors, silhouettes = [], []
 
               runs = ks.map do |k|
-                kmeans = KMeansClusterer.run k, data[period][metric], runs: 3
-                error, ss = kmeans.error, kmeans.silhouette
+                begin
+                  kmeans = KMeansClusterer.run k, data[period][metric], runs: 3
+                  error, ss = kmeans.error, kmeans.silhouette
+                rescue ArgumentError, RuntimeError
+                  errors << 0.0
+                  silhouettes << 0.0
+                  next(kmeans)
+                end
                 errors << error
                 silhouettes << ss
-                puts "#{k}\t#{ss.round(2)}\t\t#{error.round(1)}"
                 kmeans
               end
 
@@ -157,7 +163,8 @@ module Ossert
 
               centroids = bestrun.clusters.map do |cluster|
                 values = data[period][metric].flatten.values_at(*cluster.points.map(&:id))
-                result = (values.inject(&:+) / values.count.to_f).round(2)
+                result = (values.inject(&:+) / values.count.to_f).round(2) unless values.count.zero?
+                result ||= 0.0
 
                 (distrib_yaml[section][period][metric] ||= {})[result] = values.count
 
@@ -200,13 +207,11 @@ module Ossert
       # @yieldparam [Hash] the Hash read from the file and which will be
       #   committed to a file on complete
       # @return not specified.
-      def self.write_yaml(name = THRESHOLDS_PATH)
+      def self.write_yaml(name = Config.path(THRESHOLDS_PATH))
         require 'yaml'
-        yaml = YAML::load_file(name)
+        yaml = File.exist?(name) ? YAML::load_file(name) : {}
         yield yaml
         File.open(name, 'w') {|f| f.write yaml.to_yaml }
-      ensure
-        File.close(name)
       end
     end
   end

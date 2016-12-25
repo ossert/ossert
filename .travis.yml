@@ -5,6 +5,8 @@ before_install: gem install bundler -v 1.11.2
 cache: bundler
 addons:
   postgresql: "9.4"
+services:
+  - redis
 env:
   global:
     - GITHUB_TOKEN="6a21f190e3422bf89afa8b360d923b0c30e8fbfa"

@@ -26,7 +26,7 @@ module Ossert
       Growing.new.train
       Cluster.current.train
       # Stale. Very untrusty
-      # DecisionTree.new(projects_by_reference).train
+      DecisionTree.new(Project.projects_by_reference).train
     end
     module_function :train
 
@@ -59,7 +59,7 @@ module Ossert
       # Class for base threshold to range behavior
       class Base
         def initialize(value, grade)
-          @value = value
+          @value = value.to_f
           @grade = grade
         end
 

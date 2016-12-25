@@ -131,16 +131,6 @@ module Ossert
       (sorted_quarters.first..sorted_quarters.last).step(93.days) { |period| yield(period) }
     end
 
-    # Public: Iterate (and yields) through quarters in descending order
-    #
-    # Yields the Numeric UNIX-timestamp beginning of quarter
-    #        the Object for quarter data
-    #
-    # Returns Array of sorted pairs of time and quarter object.
-    def reverse_each_sorted
-      quarters.sort.reverse.map { |time, quarter| yield(time, quarter) }
-    end
-
     # Public: Iterate (and yields) through quarters in ascending order
     #
     # Yields the Numeric UNIX-timestamp beginning of quarter

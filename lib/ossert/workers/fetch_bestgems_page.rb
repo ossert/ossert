@@ -3,7 +3,7 @@ module Ossert
   module Workers
     class FetchBestgemsPage
       include Sidekiq::Worker
-      include Process
+      include ForkProcessing
 
       sidekiq_options retry: 3,
                       unique: :until_executed
@@ -17,13 +17,11 @@ module Ossert
           puts "Processing Bestgems page: '#{page}'"
           bestgems_page_processor.process_page(page) do |_, _, gem_name|
             puts "Processing project: '#{gem_name}'"
-            pid = fork do
+            process_in_fork do
               Ossert.init
               next(puts("Skipping project: '#{gem_name}'")) if Ossert::Project.exist?(gem_name)
               Ossert::Project.fetch_all(gem_name)
-              sleep(10)
             end
-            waitpid(pid)
           end
         end
       end

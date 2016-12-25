@@ -27,7 +27,8 @@ module Ossert
     class Base
       CLASSES = %w(ClassA ClassB ClassC ClassD ClassE).freeze
 
-      attr_reader :representative, :pages, :project_names
+      attr_reader :representative, :pages
+      attr_accessor :project_names
 
       def initialize(representative, pages)
         @representative = representative
@@ -55,32 +56,32 @@ module Ossert
     end
 
     class ClassA < Base
-      def initialize
-        super(50, 1..10)
+      def initialize(representative = 50, pages = 1..10)
+        super
       end
     end
 
     class ClassB < Base
-      def initialize
-        super(50, 11..100)
+      def initialize(representative = 50, pages = 11..100)
+        super
       end
     end
 
     class ClassC < Base
-      def initialize
-        super(50, 101..250)
+      def initialize(representative = 50, pages = 101..250)
+        super
       end
     end
 
     class ClassD < Base
-      def initialize
-        super(50, 251..500)
+      def initialize(representative = 50, pages = 251..500)
+        super
       end
     end
 
     class ClassE < Base
-      def initialize
-        super(50, 501..2500)
+      def initialize(representative = 50, pages = 501..2500)
+        super
       end
     end
   end

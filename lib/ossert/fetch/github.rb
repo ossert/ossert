@@ -91,10 +91,6 @@ module Ossert
         request(:tags, @repo_name, &block)
       end
 
-      def commits(from, to, &block)
-        request(:commits, @repo_name, since: from, until: to, &block)
-      end
-
       def last_year_commits
         last_year_commits = []
         retry_count = 3
@@ -133,10 +129,6 @@ module Ossert
         client.commits_since(@repo_name, date)
       end
 
-      def latest_release
-        @latest_release ||= client.latest_release(@repo_name)
-      end
-
       # Add class with processing types, e.g. top_contributors, commits and so on
 
       def process_top_contributors
@@ -172,23 +164,6 @@ module Ossert
 
         agility.total.last_release_date = latest_release_date # wrong: last_release_commit[:commit][:committer][:date]
         agility.total.commits_count_since_last_release = commits_since(Time.at(latest_release_date).utc).length
-      end
-
-      def process_quarters_issues_and_prs_processing_days
-        issues do |issue|
-          next if issue.key? :pull_request
-          next unless issue[:state] == 'closed'
-          next unless issue[:closed_at].present?
-          days_to_close = (Date.parse(issue[:closed_at]) - Date.parse(issue[:created_at])).to_i + 1
-          (agility.quarters[issue[:closed_at]].issues_processed_in_days ||= []) << days_to_close
-        end
-
-        pulls do |pull|
-          next unless pull[:state] == 'closed'
-          next unless pull[:closed_at].present?
-          days_to_close = (Date.parse(pull[:closed_at]) - Date.parse(pull[:created_at])).to_i + 1
-          (agility.quarters[pull[:closed_at]].pr_processed_in_days ||= []) << days_to_close
-        end
       end
 
       def process_actual_prs_and_issues

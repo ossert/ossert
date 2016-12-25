@@ -19,7 +19,7 @@ module Ossert
       value = ATTRIBUTE_EXTRACT_VALUE_MAP.fetch(attriibute).call(self)
 
       raise 'Not saved yet, sorry!' unless (found_project = ::Project.find(name: name))
-      found_project.update(name, attriibute => value, updated_at: Time.now.utc)
+      found_project.update(attriibute => value, updated_at: Time.now.utc)
       nil
     end
 
@@ -122,10 +122,6 @@ module Ossert
         ::Project.paged_each do |stored_prj|
           yield deserialize(stored_prj)
         end
-      end
-
-      def dump
-        projects.each(&:dump)
       end
 
       private

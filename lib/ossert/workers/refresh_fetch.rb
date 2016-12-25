@@ -3,19 +3,18 @@ module Ossert
   module Workers
     class RefreshFetch
       include Sidekiq::Worker
-      include Process
+      include ForkProcessing
       sidekiq_options unique: :until_executed,
                       unique_expiration: 1.hour,
                       retry: 3
 
       def perform
-        pid = fork do
+        process_in_fork do
           Ossert.init
           ::Project.select(:name, :reference).where('updated_at < ?', 1.week.ago).paged_each do |project|
             Ossert::Workers::Fetch.perform_async(project.name, project.reference)
           end
         end
-        waitpid(pid)
       end
     end
   end
