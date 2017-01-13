@@ -2,7 +2,6 @@
 module Ossert
   module Fetch
     # Class implementing `StackOverflow` crawler.
-    # An example of the typical response is listed in the end of the file.
     class StackOverflow
       attr_reader :client, :project
 
@@ -12,7 +11,7 @@ module Ossert
 
       # @!attribute [r] project
       # project which will be filled during the processing step of the fetcher
-      # @return [Project] project filled by this fetcher
+      # @return [Ossert::Project] project filled by this fetcher
 
       # for delegators
       extend Forwardable
@@ -119,9 +118,9 @@ module Ossert
           if question[:is_answered]
             quarter.questions_resolved << question[:question_id]
           end
-          if question[:owner] && !quarter.questioners.include?(question[:owner][:user_id])
+          if question[:owner][:user_id] && !quarter.questioners.include?(question[:owner][:user_id])
             quarter.questioners << question[:owner][:user_id]
-            quarter.questioner_rep << question[:owner][:reputation] # TODO: couple with questioner
+            quarter.questioner_rep << question[:owner][:reputation] # TODO: see the last issue in docs/so-fetcher.md
           end
           quarter.question_view << question[:view_count]
           quarter.question_score << question[:score]

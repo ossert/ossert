@@ -15,8 +15,8 @@ module Ossert
         # @return [String] name of the section
 
         # @!attribute [rw] section_type
-        # name of the metric section type (quarters or total)
-        # @return [String] name of the type
+        # name of the period for calculated metrics (quarters or total)
+        # @return [String] name of the period
 
         def config
           @config ||= ::Settings['stats'][section][section_type]
@@ -171,7 +171,7 @@ module Ossert
         def define_average(*attributes)
           iterate_attributes(attributes) do |metric|
             define_method("#{metric}_avg") do
-              if (stat = public_send(metric).compact).empty?
+              if (stat = public_send(metric)).empty?
                 0.0
               else
                 (stat.reduce(:+) / stat.size.to_f).round(2)
@@ -202,7 +202,7 @@ module Ossert
         def define_sum(*attributes)
           iterate_attributes(attributes) do |metric|
             define_method("#{metric}_sum") do
-              public_send(metric).compact.reduce(:+) || 0
+              public_send(metric).reduce(:+) || 0
             end
           end
         end
@@ -239,7 +239,7 @@ module Ossert
       #
       # @return [Numeric] Median value for the given values
       def median(values, default_value: 0)
-        values = Array(values.compact).sort
+        values = Array(values).sort
         return default_value if (count = values.count).zero?
 
         middle_idx = values.count / 2
