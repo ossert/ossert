@@ -120,7 +120,8 @@ module Ossert
           end
           if question[:owner][:user_id] && !quarter.questioners.include?(question[:owner][:user_id])
             quarter.questioners << question[:owner][:user_id]
-            quarter.questioner_rep << question[:owner][:reputation] # TODO: see the last issue in docs/so-fetcher.md
+            quarter.questioner_rep << question[:owner][:reputation]
+            # TODO: see the last issue in docs/so-fetcher.md#user-content-reputation-bug
           end
           quarter.question_view << question[:view_count]
           quarter.question_score << question[:score]
