@@ -157,7 +157,7 @@ describe Ossert do
         "pr_processed_in_median" => 58,
         "pr_with_contrib_comments_percent" => 63.46.to_d,
         "releases_count" => 92,
-        "stale_branches_count" => 4,
+        "stale_branches_count" => 5,
       })
     end
 
@@ -233,7 +233,7 @@ describe Ossert do
         "pr_processed_in_median" => 14,
         "pr_with_contrib_comments_percent" => 87.18.to_d,
         "releases_count" => 6,
-        "stale_branches_count" => 0,
+        "stale_branches_count" => 1,
       })
     end
 
@@ -385,7 +385,7 @@ describe Ossert do
         "pr_processed_in_median" => 0,
         "pr_with_contrib_comments_percent" => 0,
         "releases_count" => 6,
-        "stale_branches_count" => 0,
+        "stale_branches_count" => 1,
       })
     end
   end

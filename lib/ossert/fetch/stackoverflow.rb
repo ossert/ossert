@@ -29,7 +29,9 @@ module Ossert
         @client = SimpleClient.new(BASE_URL)
         @project = project
         @cmn_params = SEARCH_PARAMS.merge(q: "\"#{project.name}\"")
-        @cmn_params[:key] = ENV['SO_TOKEN'] if ENV.has_key? 'SO_TOKEN'
+        if (token = Utils::KeysStorage::SO.call).present?
+          @cmn_params[:key] = token
+        end
       end
 
       # Public: Trigger fetching

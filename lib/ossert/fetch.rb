@@ -3,6 +3,7 @@ require 'nokogiri'
 require 'open-uri'
 require 'benchmark'
 
+require 'ossert/fetch/utils/keys_storage'
 require 'ossert/fetch/github'
 require 'ossert/fetch/rubygems'
 require 'ossert/fetch/bestgems'
