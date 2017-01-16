@@ -4,7 +4,7 @@ module Ossert
       module KeysStorage
         class Base
           def self.call
-            new(self.name.upcase).call
+            new(self.name.split('::').last.upcase).call
           end
 
           def initialize(name)
