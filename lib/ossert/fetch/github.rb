@@ -10,7 +10,7 @@ module Ossert
       def_delegators :project, :agility, :community, :meta
 
       def initialize(project)
-        @client = ::Octokit::Client.new(access_token: ENV['GITHUB_TOKEN'])
+        @client = ::Octokit::Client.new(access_token: Utils::KeysStorage::GitHub.call)
         client.default_media_type = 'application/vnd.github.v3.star+json'
         client.auto_paginate = true
 
