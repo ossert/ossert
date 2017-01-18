@@ -10,7 +10,7 @@ module Ossert
 
       def perform(fetcher_name, name, reference = Ossert::Saveable::UNUSED_REFERENCE)
         return unless fetcher = Kernel.const_get("Ossert::Fetch::#{fetcher_name}")
-        puts "Fetching data for: '#{name}' (ref: #{reference}) only from #{fetcher_name}"
+        logger.info "Fetching data for: '#{name}' (ref: #{reference}) only from #{fetcher_name}"
         process_in_fork do
           Ossert.init
           Ossert::Project.update_with_one_fetcher(fetcher, name, reference)

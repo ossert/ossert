@@ -14,12 +14,12 @@ module Ossert
           "Ossert::Fetch::Bestgems#{type.to_s.capitalize}Stat"
         )
         pages.each do |page|
-          puts "Processing Bestgems page: '#{page}'"
+          logger.info "Processing Bestgems page: '#{page}'"
           bestgems_page_processor.process_page(page) do |_, _, gem_name|
-            puts "Processing project: '#{gem_name}'"
+            logger.info "Processing project: '#{gem_name}'"
             process_in_fork do
               Ossert.init
-              next(puts("Skipping project: '#{gem_name}'")) if Ossert::Project.exist?(gem_name)
+              next(logger.info("Skipping project: '#{gem_name}'")) if Ossert::Project.exist?(gem_name)
               Ossert::Project.fetch_all(gem_name)
             end
           end

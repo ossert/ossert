@@ -9,7 +9,7 @@ module Ossert
                       retry: 3
 
       def perform(name, reference = Ossert::Saveable::UNUSED_REFERENCE)
-        puts "Fetching data for: '#{name}' (ref: #{reference})"
+        logger.info "Fetching data for: '#{name}' (ref: #{reference})"
         process_in_fork do
           Ossert.init
           Ossert::Project.fetch_all(name, reference)
