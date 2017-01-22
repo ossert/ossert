@@ -22,7 +22,9 @@ class Project < Sequel::Model
   set_primary_key [:name]
 
   def_dataset_method(:random) do |count|
-    where('github_name <> ? AND random() < ?', Ossert::NO_GITHUB_NAME, count * 0.05).limit(count)
+    where('github_name <> ?', Ossert::NO_GITHUB_NAME)
+      .order(Sequel.lit('random()'))
+      .limit(count)
   end
 
   class << self
