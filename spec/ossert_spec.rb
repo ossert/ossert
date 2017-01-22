@@ -263,7 +263,7 @@ describe Ossert do
     it { expect { projectD.dump_attribute(:community_total_data) }.not_to raise_error }
     it { expect { projectD.dump_attribute(:agility_quarters_data) }.not_to raise_error }
     it { expect { projectD.dump_attribute(:community_quarters_data) }.not_to raise_error }
-    it { expect { Ossert::Project.random_top }.not_to raise_error }
+    it { expect(Ossert::Project.random_top.map(&:name)).to match_array([@a_project, @b_project, @c_project]) }
     it { expect { Ossert::Project.random }.not_to raise_error }
     it { expect(Ossert::Project.load_later_than(0)).not_to be_empty }
 
