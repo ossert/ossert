@@ -66,8 +66,8 @@ module Ossert
         classes = CLASSES.reverse
         section = Ossert::Stats.guess_section_by_metric(metric)
         ranks = classes.inject([]) do |preview, klass|
-          base = { type: KLASS_2_GRADE[klass].downcase, last_year: ' N/A ', total: ' N/A ' }
-          rank = [:last_year, :total].each_with_object(base) do |period, result|
+          base = { type: KLASS_2_GRADE[klass].downcase, quarter: ' N/A ', last_year: ' N/A ', total: ' N/A ' }
+          rank = [:quarter, :last_year, :total].each_with_object(base) do |period, result|
             next unless (metric_data = metric_tooltip_data(metric, section, period, klass)).present?
             result[period] = metric_data
           end

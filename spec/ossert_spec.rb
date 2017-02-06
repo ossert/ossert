@@ -64,6 +64,25 @@ describe Ossert do
           project.preview_reference_values_for(metric_name, section)
         end
 
+        describe '#tooltip_data' do
+          let(:tooltip_data) { projectB.decorated.tooltip_data('issues_all_count') }
+
+          it do
+            expect(tooltip_data).to eq(
+              :description => "Total number of issues with any status",
+              :ranks => [{:type=>"a", :quarter=>"&gt;&nbsp; 1", :total=>"&gt;&nbsp; 92", :year=>"&gt;&nbsp; 8"},
+                         # Strange behavior with B values higher then A. Do we need to change initial projects list?
+                         {:type=>"b", :quarter=>"&gt;&nbsp; 27", :total=>"&gt;&nbsp; 68", :year=>"&gt;&nbsp; 51"},
+                         {:type=>"c", :quarter=>"&gt;&nbsp; 4", :total=>"&gt;&nbsp; 19", :year=>"&gt;&nbsp; 14"},
+                         {:type=>"d", :quarter=>"&gt;&nbsp; 8", :total=>"&gt;&nbsp; 10", :year=>"&gt;&nbsp; 10"},
+                         {:type=>"e", :quarter=>"&gt;&nbsp; 0", :total=>"&gt;&nbsp; 2", :year=>"&gt;&nbsp; 2"}],
+              :title => "Number of Issues"
+            )
+          end
+          #
+          #
+        end
+
         describe '#metric_preview' do
           context 'when metric is life_period' do
             let(:preview) { project.metric_preview('life_period') }
@@ -71,9 +90,11 @@ describe Ossert do
 
             it do
               expect(preview[:total_mark]).to eq('e')
-              expect(preview[:total_val]).to eq('Less than a year&nbsp;E')
+              expect(preview[:total_text]).to eq('Less than a year&nbsp;E')
+              expect(preview[:total_val]).to eq(87828.0)
               expect(other_preview[:total_mark]).to eq('b')
-              expect(other_preview[:total_val]).to eq('2+ years&nbsp;B')
+              expect(other_preview[:total_text]).to eq('2+ years&nbsp;B')
+              expect(other_preview[:total_val]).to eq(75673089.0)
             end
           end
 
@@ -82,9 +103,11 @@ describe Ossert do
 
             it do
               expect(preview[:last_year_mark]).to eq('b')
-              expect(preview[:last_year_val]).to eq('~1 month&nbsp;B')
+              expect(preview[:last_year_text]).to eq('~1 month&nbsp;B')
+              expect(preview[:last_year_val]).to eq(44.0)
               expect(preview[:total_mark]).to eq('b')
-              expect(preview[:total_val]).to eq('~1 month&nbsp;B')
+              expect(preview[:total_text]).to eq('~1 month&nbsp;B')
+              expect(preview[:total_val]).to eq(44.0)
             end
           end
 
@@ -93,9 +116,11 @@ describe Ossert do
 
             it do
               expect(preview[:last_year_mark]).to eq('b')
-              expect(preview[:last_year_val]).to eq('~1 month&nbsp;B')
+              expect(preview[:last_year_text]).to eq('~1 month&nbsp;B')
+              expect(preview[:last_year_val]).to eq(44.0)
               expect(preview[:total_mark]).to eq('b')
-              expect(preview[:total_val]).to eq('~1 month&nbsp;B')
+              expect(preview[:total_text]).to eq('~1 month&nbsp;B')
+              expect(preview[:total_val]).to eq(44.0)
             end
           end
         end
