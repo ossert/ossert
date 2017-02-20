@@ -11,7 +11,9 @@ module Ossert
       def perform
         process_in_fork do
           Ossert.init
-          ::Project.select(:name, :reference).where('updated_at < ?', 1.week.ago).paged_each do |project|
+          ::Project.select(:name, :reference).where('updated_at < ?', 1.month.ago)
+                   .order(:updated_at)
+                   .paged_each do |project|
             Ossert::Workers::Fetch.perform_async(project.name, project.reference)
           end
         end
