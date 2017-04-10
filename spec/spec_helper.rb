@@ -20,6 +20,7 @@ require 'webmock/rspec'
 require 'base64'
 
 require 'sidekiq/testing'
+require 'timecop'
 
 require 'vcr'
 VCR.configure do |c|
@@ -71,6 +72,7 @@ RSpec.configure do |config|
     db.run('TRUNCATE TABLE exceptions;')
     db.run('TRUNCATE TABLE classifiers;')
 
+    Timecop.freeze(Time.parse('2017-02-20').utc)
     init_projects
 
     threads = []
@@ -115,6 +117,7 @@ RSpec.configure do |config|
     init_projects
   end
   config.after(:suite) do
+    Timecop.return
     db = Sequel.connect(DB_URL)
     db.run('TRUNCATE TABLE projects;')
   end

@@ -73,7 +73,7 @@ module Ossert
     end
 
     def without_github_data?
-      github_alias == NO_GITHUB_NAME
+      github_alias.in? [NO_GITHUB_NAME, NOT_FOUND_GITHUB_NAME]
     end
 
     module ClassMethods

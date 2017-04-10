@@ -22,7 +22,7 @@ class Project < Sequel::Model
   set_primary_key [:name]
 
   def_dataset_method(:random) do |count|
-    where('github_name <> ?', Ossert::NO_GITHUB_NAME)
+    where('github_name NOT IN (?, ?)', Ossert::NO_GITHUB_NAME, Ossert::NOT_FOUND_GITHUB_NAME)
       .order(Sequel.lit('random()'))
       .limit(count)
   end
@@ -33,7 +33,12 @@ class Project < Sequel::Model
     end
 
     def referenced
-      where('reference <> ? AND github_name <> ?', Ossert::Saveable::UNUSED_REFERENCE, Ossert::NO_GITHUB_NAME)
+      where(
+        'reference <> ? AND github_name NOT IN (?, ?)',
+        Ossert::Saveable::UNUSED_REFERENCE,
+        Ossert::NO_GITHUB_NAME,
+        Ossert::NOT_FOUND_GITHUB_NAME
+      )
     end
   end
 

@@ -479,7 +479,7 @@ module Ossert
           community.quarters[forker[:created_at]].users_involved << forker[:owner][:login]
         end
       rescue Octokit::NotFound => e
-        project.github_alias = NO_GITHUB_NAME
+        project.github_alias = NOT_FOUND_GITHUB_NAME
         puts "Github NotFound Error: #{e.inspect}"
       rescue Octokit::InvalidRepository => e
         puts "Github InvalidRepository Error: #{e.inspect}"
@@ -504,7 +504,7 @@ module Ossert
       def generate_anonymous
         @anonymous_count ||= 0
         @anonymous_count += 1
-        "anonymous_#{@anonymous_count}"
+        "anonymous_#{@repo_name}_#{@anonymous_count}"
       end
     end
   end
