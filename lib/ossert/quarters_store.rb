@@ -162,13 +162,14 @@ module Ossert
       end
     end
 
+    # TODO: Return after getting rid of ActiveSupport
     # Public: Generate JSON for current data structure.
     #         Keys are UNIX-timestamps (beginning of each quarter),
     #         values are quarter objects explicitly converted to Hash.
     #
     # Returns String contains valid JSON.
-    def to_json
-      MultiJson.dump(self)
-    end
+    # def to_json
+    #   MultiJson.dump(self)
+    # end
   end
 end

@@ -280,9 +280,10 @@ module Ossert
         end
       end
 
-      def to_json
-        MultiJson.dump(self)
-      end
+      # TODO: Return after getting rid of ActiveSupport
+      # def to_json
+      #   MultiJson.dump(to_hash)
+      # end
     end
   end
 end

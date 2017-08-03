@@ -87,7 +87,7 @@ module Ossert
             end
           end),
           /period/ => (lambda do |value|
-            if (years = value.to_i / 1.year).positive?
+            if (years = value.to_i / 1.year.to_i).positive?
               "#{years}+ years"
             else
               'Less than a year'

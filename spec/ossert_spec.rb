@@ -79,8 +79,6 @@ describe Ossert do
               :title => "Number of Issues"
             )
           end
-          #
-          #
         end
 
         describe '#metric_preview' do
