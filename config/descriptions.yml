@@ -1,53 +1,53 @@
 descriptions:
   # Agility
-  dependencies_count: Total number of external dependecies used in runtime
-  issues_closed_percent: Percent of closed issues from the total number
-  issues_non_owner_percent: Percent of issues created by non-owners of the repo from the total number
-  issues_with_contrib_comments_percent: Percent of issues with contributor comments from the total number
-  issues_all_count: Total number of issues with any status
-  issues_processed_in_avg: Average time to close issue up to day
-  issues_processed_in_median: Median time to close issue up to day
-  first_issue_date_int: Date when first issue was created
-  last_issue_date_int:  Date when last issue was created
-  pr_closed_percent: Percent of closed pull requests from the total number
-  pr_non_owner_percent: Percent of pull requests created by non-owners of the repo from the total number
-  pr_with_contrib_comments_percent: Percent of pull requests with contributor comments from the total number
-  pr_all_count: Total number of pull requests with any status
-  pr_processed_in_avg: Average time to close pull request up to day
-  pr_processed_in_median: Median time to close pull request up to day
-  first_pr_date_int: Date when first pull requests was created
-  last_pr_date_int: Date when last pull requests was created
-  pr_actual_count: Number of pull requests that were still open on the start of the period
-  last_release_date_int: Date of latest release of the project
-  releases_count: Total number of releases for period
-  commits_count_since_last_release_count: How many commits where made since the last project release
-  stale_branches_count: Number of stale branches, where stale means that the branch was not updated for whole quarter
-  life_period: Time period since the moment of first action till the last one
-  last_changed: Date of last change of the project
-  issues_actual_count: Number of issues that were open on the start of the period
-  commits: How many commits where made during the period
+  dependencies_count: Total number of external dependencies at runtime
+  issues_closed_percent: Percentage of issues closed
+  issues_non_owner_percent: Percentage of issues created by non-owners
+  issues_with_contrib_comments_percent: Percentage of issues with contributor comments
+  issues_all_count: Total number of issues, with any status
+  issues_processed_in_avg: Average time to close an issue, rounded to days
+  issues_processed_in_median: Median time to close an issue, rounded to days
+  first_issue_date_int: Date when the first issue was created
+  last_issue_date_int:  Date when the last issue was created
+  pr_closed_percent: Percentage of closed pull requests
+  pr_non_owner_percent: Percentage of pull requests created by non-owners
+  pr_with_contrib_comments_percent: Percentage of pull requests with contributor comments
+  pr_all_count: Total number of pull requests, with any status
+  pr_processed_in_avg: Average time to close a pull request, rounded to days
+  pr_processed_in_median: Median time to close a pull request, rounded to days
+  first_pr_date_int: Date when the first pull request was created
+  last_pr_date_int: Date when the last pull request was created
+  pr_actual_count: Number of pull requests that were still open at the start of the period
+  last_release_date_int: Date of the last project release
+  releases_count: Total number of releases for the period
+  commits_count_since_last_release_count: How many commits were made since the last project release
+  stale_branches_count: Number of stale branches—branches with no updates for the whole quarter
+  life_period: A period since the moment of the first action till the last one
+  last_changed: Date of the last project update
+  issues_actual_count: Number of issues that were open at the start of the period
+  commits: How many commits were made during the period
 
   # Community
-  dependants_count: Total number of projects that depends on current
-  users_creating_issues_count: Number of unique users that created issues
-  users_commenting_issues_count: Number of unique users that commented any issue
-  users_creating_pr_count: Number of unique users that requested a pull
-  users_commenting_pr_count: Number of unique users commented any pull request
-  watchers_count: Number of unique watchers on Github
+  dependants_count: Total number of projects that depend on this one
+  users_creating_issues_count: Number of unique users who created an issue
+  users_commenting_issues_count: Number of unique users who commented on any issue
+  users_creating_pr_count: Number of unique users who made a pull request
+  users_commenting_pr_count: Number of unique users who commented on a pull request
+  watchers_count: Number of unique GitHub watchers
   contributors_count: Number of unique contributors
-  stargazers_count: Number of unique users that starred the project
-  forks_count: Number of unique users that forked the project
-  users_involved_count: Number of unique users made any action for the project like leaving comment or requesting a pull
+  stargazers_count: Number of unique users who starred the project
+  forks_count: Number of unique users who forked the project
+  users_involved_count: Number of unique users who made any action on the project—like leaving a comment or performing a pull request
   users_involved_no_stars_count:
-    Number of unique users that made any action for project excluding users that only give a Star on Github
-  total_downloads_count: Total number of downloads since first day of the project
-  delta_downloads: Number of downloads that were made during period
-  download_divergence: Downloads Growth From Previous Period %
-  questions_count: Number of questions on StackOverflow concerning a project
-  questions_resolved_percent: Percent of questions marked as solved
+    Number of unique users who made any action on the project, excluding users who only starred the project on GitHub
+  total_downloads_count: Total number of downloads since the start of the project
+  delta_downloads: Number of downloads that were made during the period
+  download_divergence: Downloads Growth From Previous Period, %
+  questions_count: Number of questions on StackOverflow regarding the project
+  questions_resolved_percent: Percentage of questions that were marked as solved
   last_question_date_int: Date of the latest question
-  questioner_rep_median: Median of all questioner reputation
+  questioner_rep_median: Median of all questioner reputations
   question_view_sum: Total number of all question views
   answers_avg: Average number of answers
   question_score_sum: Total number of question scores
-  questioners_count: Number of unique authors of questions
+  questioners_count: Number of unique question authors

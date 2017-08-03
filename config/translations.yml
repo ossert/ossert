@@ -1,22 +1,22 @@
 translations:
   # Common
-  participate: "Participate on Github"
-  random_projects: "Random ready analyzes:"
-  no_github_data: "Warning: no data found on GitHub for the project"
+  participate: "Join on GitHub"
+  random_projects: "Reports ready for:"
+  no_github_data: "Warning: no data was found for this project on GitHub"
   not_found:
-    "Sorry, but gem <big> \"%{name}\" </big> was not analyzed yet. </br> \
-    You can try <a href=\"/suggest/%{name}\"> suggest </a> it."
+    "Sorry, but the <big>\"%{name}\"</big> gem was not analyzed yet. </br> \
+    You can try to <a href=\"/suggest/%{name}\">suggest</a> it for analysis."
   welcome:
     Welcome to Ossert!
   intro:
     "%{text} </br> \
-    You can search for a finished analyzes of a project via its name on Rubygems"
+    You can search for a report by typing a Ruby gem name"
   maintenance_description:
-    Maintenance is metric calculated from project activity for the last year and total from all time. This way we can see if project's development is dynamic and core team is responsive or project is unstable and non-trusted.
+    Maintenance is a metric based on the project activity for the last year and its all-time activity. It can show if the project is still under active development and the core team is responsive enough—or if the project is outdated and slow to evolve.
   popularity_description:
-    Popularity is metric calculated from user activity for the last year and total from all time. This way we can see if projects popularity rises or is already in decline.
+    Popularity is a metric based on project's user activity for the last year and all-time user activity. It can show if the project's popularity is growing or if it is in slow decline.
   maturity_description:
-    Maturity is metric calculated from both project and users activity for the last year and total from all time. This way we can see if project reached high growth level or just on its seedling stage.
+    Maturity a is metric based on both project and users activity for the last year all-time activity. It shows if the project has reached good traction levels, or if it is just in its early stages of growth.
   survey_text: Contribute to OSS without a single line of code.
   survey_button: Take part in our survey
   oss_maturity: Open-Source Maturity
@@ -33,29 +33,29 @@ translations:
 
   # Agility
   dependencies_count: 'Number of Runtime Dependencies'
-  issues_closed_percent: 'Issues Closed %'
-  issues_non_owner_percent: 'Issues Created Not By Repo Owner'
-  issues_with_contrib_comments_percent: 'Issues With Contibutors Comments'
+  issues_closed_percent: 'Issues Closed, %'
+  issues_non_owner_percent: 'Issues Created not by Owner'
+  issues_with_contrib_comments_percent: 'Issues With Contibutor Comments'
   issues_all_count: 'Number of Issues'
   issues_processed_in_avg: 'Average Issue Processing Time'
   issues_processed_in_median: 'Median Issue Processing Time'
-  first_issue_date_int: 'First Issue Created At'
-  last_issue_date_int: 'Last Issue Created At'
-  pr_closed_percent: 'Pull Requests Closed %'
-  pr_non_owner_percent: 'Pull Requests Created Not By Repo Owner'
-  pr_with_contrib_comments_percent: 'Pull Requests With Contibutors Comments'
+  first_issue_date_int: 'First Issue Created at'
+  last_issue_date_int: 'Last Issue Created at'
+  pr_closed_percent: 'Pull Requests Closed, %'
+  pr_non_owner_percent: 'Pull Requests Created not by Owner'
+  pr_with_contrib_comments_percent: 'Pull Requests with Contibutor Comments'
   pr_all_count: 'Number of Pull Requests'
   pr_processed_in_avg: 'Average Pull Request Processing Time'
   pr_processed_in_median: 'Median Pull Request Processing Time'
-  first_pr_date_int: 'First Pull Request Created At'
-  last_pr_date_int: 'Last Pull Request Created At'
+  first_pr_date_int: 'First Pull Request Created at'
+  last_pr_date_int: 'Last Pull Request Created at'
   pr_actual_count: 'Number of Legacy Pull Requests'
   last_release_date_int: 'Last Release Date'
   releases_count: 'Number of Releases'
-  commits_count_since_last_release_count: 'Commits Since Last Release'
+  commits_count_since_last_release_count: 'Commits Since the Last Release'
   stale_branches_count: 'Number of Stale Branches'
-  life_period: 'Active Years Age'
-  last_changed: 'Last Changed At'
+  life_period: 'Active Years'
+  last_changed: 'Last Changed at'
   issues_actual_count: 'Number of Legacy Issues'
   commits: 'Number of Commits Made'
 
@@ -70,15 +70,15 @@ translations:
   contributors_count: 'Number of Contributors'
   forks_count: 'Number of Forks'
   users_involved_count: 'Number of Total Users Involved'
-  users_involved_no_stars_count: 'Number of Users Involved Without Stargazers'
+  users_involved_no_stars_count: 'Number of Users Involved without Stargazers'
   total_downloads_count: 'Number of Downloads'
-  delta_downloads: 'Number of Downloads Increased By'
-  download_divergence: 'Downloads Growth From Previous Period %'
-  questions_count: 'Number of questions'
-  questions_resolved_percent: 'Resolved questions %'
-  last_question_date_int: 'Last question asked at'
-  questioner_rep_median: 'Median questioner reputation'
-  question_view_sum: 'Sum of question views'
-  answers_avg: 'Average number of answers'
-  question_score_sum: 'Sum of question scores'
-  questioners_count: 'Number of questioners'
+  delta_downloads: 'Number of Downloads Increased by'
+  download_divergence: 'Downloads Growth From Previous Period, %'
+  questions_count: 'Number of Questions'
+  questions_resolved_percent: 'Resolved Questions, %'
+  last_question_date_int: 'Last Question Asked at'
+  questioner_rep_median: 'Median Questioner Reputation'
+  question_view_sum: 'Sum of Question Views'
+  answers_avg: 'Average Number of Answers'
+  question_score_sum: 'Sum of Question Scores'
+  questioners_count: 'Number of Questioners'
