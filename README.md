@@ -1,76 +1,84 @@
-# ossert (OSS cERTificate) [![Build Status](https://travis-ci.org/ossert/ossert.svg?branch=master)](https://travis-ci.org/ossert/ossert) [![Inline docs](http://inch-ci.org/github/ossert/ossert.svg)](http://inch-ci.org/github/ossert/ossert)  [![Code Climate](https://codeclimate.com/github/ossert/ossert/badges/gpa.svg)](https://codeclimate.com/github/ossert/ossert) [![Code Coverage](https://codecov.io/gh/ossert/ossert/coverage.svg?branch=master)](https://codecov.io/gh/ossert/ossert)
+# Ossert (OSS cERTificate) [![Build Status](https://travis-ci.org/ossert/ossert.svg?branch=master)](https://travis-ci.org/ossert/ossert) [![Inline docs](http://inch-ci.org/github/ossert/ossert.svg)](http://inch-ci.org/github/ossert/ossert)  [![Code Climate](https://codeclimate.com/github/ossert/ossert/badges/gpa.svg)](https://codeclimate.com/github/ossert/ossert) [![Code Coverage](https://codecov.io/gh/ossert/ossert/coverage.svg?branch=master)](https://codecov.io/gh/ossert/ossert)
 
 [![Join the chat at https://gitter.im/ossert_app/Lobby](https://badges.gitter.im/ossert_app/Lobby.svg)](https://gitter.im/ossert_app/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-Introducing **Ossert**! Crowdsourced project support and availablity metrics.
+Introducing **Ossert**— an Open-Source Maturity
+Maintenance Certification service.
 
-The main goal of project is to provide "certificate" for open-source software with different validity check, just to be more
-formal in estimation of projects' risks, value and ability to use in an enterprise.
-Also system is designed as open one, so any new checks and validations from community are appreciated.
+The goal of the project is to provide a "certificate" for open-source software, a formal way to calculate and estimate all the risks of using a certain project as a dependency for the product you are building, its value and the ability to use it in an enterprise environment.
 
-The simple structure is:
-- "Project" has set of raw attributes gathered from different data sources and metrics built upon them.
-- "Fetch" classes gathers data from sources like Rubygems, Bestgems, GitHub.
-- "Reference" class chooses reference projects from different popularity groups (from most to the least popular).
-- "Classifiers::Growing::Classifier" class prepares classification  by sections (Maintenance, Popularity, Maturity) using reference projects.
+Ossert is free and open-source. Any new checks and validations from the community are appreciated.
+
+Ossert tries to answer a simple question:
+
+> "Is this gem ready for production? Will it still be available, supported and consistent in a year?"
+
+Ossert marks projects with grades (A, B, C, D, E). The highest grade means that you possibly can trust that open-source project because it is used widely and well-supported. Lesser grades mean higher risks for production usage. Also, you can check several alternatives around the same checks to select the most stable and mature alternative.
+
+Ossert should help you dive into any open-source library on any level of detail, from overall marks to a particular change during the project's timespan. The long term milestone is to provide not only marks and metrics—but also give a context of classification (trends, metadata, discussions, docs, users and so on).
+
+**Be sure to check this blog post to understand the motivation behind Ossert and its methodology: https://evilmartians.com/chronicles/open-source-software-whats-in-a-poke**
+
+<a href="https://evilmartians.com/?utm_source=ossert">
+<img src="https://evilmartians.com/badges/sponsored-by-evil-martians.svg" alt="Sponsored by Evil Martians" width="236" height="54">
+</a>
+
+## Ossert architecture
+
+- `Project` has a set of raw attributes gathered from different data sources—and metrics built upon them.
+- `Fetch` classes gather data from sources like RubyGems, Bestgems, GitHub.
+- `Reference` class chooses reference projects from various popularity groups (from most to the least popular).
+- `Classifiers::Growing::Classifier` class provides classification by sections (Maintenance, Popularity, Maturity) using reference projects.
   Each classifier section performs calculation upon its own metrics and weights.
-- "Classifiers::Growing::Check" running checks against classifier and prepares marks for particular project.
-
-Project tries to answer simple question: "Is this gem ready for production? Will it be available and consistent in a year?"
-Ossert marks projects with grades A, B, C, D, E. Highest grade means you possibly can trust that open-source project because it is
-used widely and supported in efficient way. Less grades means higher risks for production.
-
-Also you can check several alternatives against same checks to select most stable and mature from them.
-
-Long term milestone is to provide not only marks and metrics but also give a context of classification (trends, metadata, discussions, docs, users and so on).
-This tool should help you dive into any open-source library on any level of detalization, from overall marks to a particular change in time.
+- Running `Classifiers::Growing::Check` checks against the classifier and prepares marks for a particular project.
 
 ## Metrics
 
-I choose to start with following basic validity checks
+I chose to start with the following basic validity checks:
 
 ### Project Community Metrics
 
 #### Stats, total for all time
-- Users count writing issues
-- Users count sent PR
+- Users writing issues count
+- Users sent a PR count
 - Contributors count
 - Watchers, Stargazers, Forks
-- Owners... (link Rubygems and Github by email)
+- Owners (link RubyGems and Github by email)
 
 #### Pulse, for last year/quarter/month (amount + delta from total)
-- Users count writing issues
-- Users count sent PR
+- Users writing issues count
+- Users sent PR count
 - Contributors count
 - Watchers, Stargazers, Forks
 
 ### Project Agility Metrics
 
 #### Stats, total for all time
-- Opened and Closed Issues
-- Opened, Merged and Closed PRs
-- Opened non-author Issues, "with author comments" and total count
+- Open and Closed Issues
+- Open, Merged and Closed PRs
+- Open non-author Issues, "with author comments" and total count
 - Time since first/last PR and Issue
 - Releases Count
 - Last Release Date
-- Commits count since last release
+- Commits count since the last release
 - Amount of changes each quarter
 - Stale and Total branches count
 
 #### Pulse, for last year/quarter/month (amount + delta from total)
-- Opened and Closed Issues
-- Opened and Merged PRs
+- Open and Closed Issues
+- Open and Merged PRs
 - Releases Count
 - Downloads divergence
-- Downloads degradation per release (Comes later)
+- Downloads degradation per release (will come later)
 - Stale Branches Count
 
-## Existining alternatives
+## Existing alternatives
 
 ### RecordNotFound.com
-Interesting overview by commits and pull requests activity, not very detailed
 
-### Github Archive (https://www.githubarchive.org/#bigquery)
+Interesting overview by commits and pull requests activity; not very detailed.
+
+### GitHub Archive (https://www.githubarchive.org/#bigquery)
 
 ### RubyToolbox has:
 - Popularity Rating (https://www.ruby-toolbox.com/projects/delayed_job/popularity)
@@ -80,7 +88,7 @@ Interesting overview by commits and pull requests activity, not very detailed
   - Wiki
   - Source Code
   - Bug Tracker
-- from Rubygems
+- from RubyGems
   - Total Downloads + increased for month
   - Total Releases Count
   - Current Version
@@ -89,7 +97,7 @@ Interesting overview by commits and pull requests activity, not very detailed
   - Depends on following gems
   - Depending Gems (reverse dependencies)
   - Popular gems depending on this... (list)
-- from Github
+- from GitHub
   - Watchers
   - Forks
   - Development activity (N commits within last year)
@@ -100,17 +108,17 @@ Interesting overview by commits and pull requests activity, not very detailed
   - Issues Count
   - Wiki pages link
 
-### Rubygems has:
+### RubyGems has:
 - Total Downloads
 - Total Releases Count
-- current version and when it was released
-- first release date
+- Current version and when was it released
+- First release date
 - Dependencies
 - Depending Gems (reverse dependencies)
 
-### Github has:
-- Opened and Closed PRs
-- Opened and Closed Issues
+### GitHub has:
+- Open and Closed PRs
+- Open and Closed Issues
 - Labels list
 - Milestones list
 - Watchers Count & Links
@@ -123,8 +131,10 @@ Interesting overview by commits and pull requests activity, not very detailed
 - Latest commit date
 
 #### Pulse, for month/week/3 days/24 hours period
+```
 "Excluding merges, 29 authors have pushed 76 commits to master and 87 commits to all branches.
  On master, 128 files have changed and there have been 5,342 additions and 5,554 deletions."
+```
 - Active PRs Count and List (sent, merged)
 - Active Issues Count and List (new, closed)
 - Unresolved conversations
@@ -132,7 +142,7 @@ Interesting overview by commits and pull requests activity, not very detailed
   Here is a list of all the Issues and Pull Requests with unresolved conversations."
 
 #### Graphs, all time or selected period
-- Top contributors (by commits/additoins/deletions)
+- Top contributors (by commits/additions/deletions)
 - Commits timeline
 - Code frequency (Additions/Deletions amount on timeline)
 - Punch card (Days and Hours of most activity)
@@ -147,13 +157,17 @@ gem 'ossert'
 
 And then execute:
 
-    $ bundle
+```
+$ bundle
+```
 
-Or install it yourself as:
+Alternatively, install it manually as:
 
-    $ gem install ossert
+```
+$ gem install ossert
+```
 
-After that you should set ENV variables:
+After that you should set `ENV` variables:
 
 ```
 $ export GITHUB_TOKEN xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -168,12 +182,11 @@ Then you can run:
 bundle exec rake db:setup
 ```
 
-Or if you have previous dumps of data:
+Or, if you have previous dumps of data:
 
 ```
 bundle exec rake db:restore:last
 ```
-
 
 ## Usage
 
@@ -196,3 +209,4 @@ Bug reports and pull requests are welcome on GitHub at https://github.com/ossert
 ## License
 
 The gem is available as open source under the terms of the [MIT License](http://opensource.org/licenses/MIT).
+ 

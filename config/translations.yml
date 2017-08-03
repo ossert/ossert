@@ -21,7 +21,7 @@ translations:
   survey_button: Take a part in our survey!
   oss_maturity: Open-Source Maturity
   maintenance_cert: Maintenance Certification
-  copyright: "&copy; Copyright 2015-2017 Sergey Dolganov"
+  copyright: "&copy; Copyright 2015-2017 Sergey Dolganov. Sponsored by <a href=\"https://evilmartians.com/?utm_source=ossert\">Evil Martians.</a>"
   found_not_enough: Did not find what you were looking for?
   found_nothing: Nothing found.
   suggest_not_found: "You may <a class=\"link\" href=\"/suggest/%{name}\">suggest</a> it"
