@@ -17,16 +17,16 @@ translations:
     Popularity is a metric based on project's user activity for the last year and all-time user activity. It can show if the project's popularity is growing or if it is in slow decline.
   maturity_description:
     Maturity a is metric based on both project and users activity for the last year all-time activity. It shows if the project has reached good traction levels, or if it is just in its early stages of growth.
-  survey_text: Contribute to OSS without a single line of code.
-  survey_button: Take part in our survey
+  survey_text: Contribute to Open Source without a single line of code.
+  survey_button: Take a part in our survey!
   oss_maturity: Open-Source Maturity
   maintenance_cert: Maintenance Certification
   copyright: "&copy; Copyright 2015-2017 Sergey Dolganov"
-  found_not_enough: Not found what you are looking for?
+  found_not_enough: Did not find what you were looking for?
   found_nothing: Nothing found.
   suggest_not_found: "You may <a class=\"link\" href=\"/suggest/%{name}\">suggest</a> it"
   search_results_for: "Search results for <span class=\"page-search-results__header-gem\">&quot;%{name}&quot;</span>"
-  request_update: "&#8635; Request Update"
+  request_update: "&#8635; Request an Update"
   maintenance: 'Maintenance'
   popularity: 'Popularity'
   maturity: 'Maturity'
