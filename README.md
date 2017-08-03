@@ -2,7 +2,7 @@
 
 [![Join the chat at https://gitter.im/ossert_app/Lobby](https://badges.gitter.im/ossert_app/Lobby.svg)](https://gitter.im/ossert_app/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-Introducing **Ossert**— an Open-Source Maturity
+## Introducing **Ossert**—an Open-Source Maturity
 Maintenance Certification service.
 
 The goal of the project is to provide a "certificate" for open-source software, a formal way to calculate and estimate all the risks of using a certain project as a dependency for the product you are building, its value and the ability to use it in an enterprise environment.
@@ -209,4 +209,3 @@ Bug reports and pull requests are welcome on GitHub at https://github.com/ossert
 ## License
 
 The gem is available as open source under the terms of the [MIT License](http://opensource.org/licenses/MIT).
- 
