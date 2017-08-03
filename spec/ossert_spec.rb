@@ -69,7 +69,7 @@ describe Ossert do
 
           it do
             expect(tooltip_data).to eq(
-              :description => "Total number of issues with any status",
+              :description => "Total number of issues, with any status",
               :ranks => [{:type=>"a", :quarter=>"&gt;&nbsp; 1", :total=>"&gt;&nbsp; 92", :year=>"&gt;&nbsp; 8"},
                          # Strange behavior with B values higher then A. Do we need to change initial projects list?
                          {:type=>"b", :quarter=>"&gt;&nbsp; 27", :total=>"&gt;&nbsp; 68", :year=>"&gt;&nbsp; 51"},
@@ -192,7 +192,7 @@ describe Ossert do
       expect(decorated_project.agility_quarter(Time.parse('01.01.2016'))).to eq({
         "Average Issue Processing Time" => "  ~24 days&nbsp;A <> ~-58 months\n",
         "Average Pull Request Processing Time" => "  ~17 days&nbsp;A <> ~4 days\n",
-        "Issues Closed %" => "  70%&nbsp;C <> +70%\n",
+        "Issues Closed, %" => "  70%&nbsp;C <> +70%\n",
         "Median Issue Processing Time" => "  ~1 day&nbsp;A <> ~-58 months\n",
         "Median Pull Request Processing Time" => "  ~16 days&nbsp;A <> ~1 day\n",
         "Number of Commits Made" => "  11&nbsp;A <> +4\n",
@@ -201,13 +201,13 @@ describe Ossert do
         "Number of Legacy Pull Requests" => "  3&nbsp;A <> +3\n",
         "Number of Pull Requests" => "  13&nbsp;A <> +7\n",
         "Number of Releases" => "  1&nbsp;A <> +1\n",
-        "Pull Requests Closed %" => "  70%&nbsp;C <> +19%\n",
+        "Pull Requests Closed, %" => "  70%&nbsp;C <> +19%\n",
       })
     end
     it do
       expect(decorated_project.community_quarter(Time.parse('01.01.2016'))).to eq({
-        "Average number of answers" => "  0&nbsp;E <> 0\n",
-        "Median questioner reputation" => "  0&nbsp;E <> 0\n",
+        "Average Number of Answers" => "  0&nbsp;E <> 0\n",
+        "Median Questioner Reputation" => "  0&nbsp;E <> 0\n",
         "Number of Downloads" => "  15,435&nbsp;D <> +10,981\n",
         "Number of Forks" => "  51&nbsp;A <> +43\n",
         "Number of Stargazers" => "  2013&nbsp;A <> +1536\n",
@@ -216,13 +216,12 @@ describe Ossert do
         "Number of Users Commenting Pull Requests" => "  19&nbsp;A <> +13\n",
         "Number of Users Creating Issues" => "  6&nbsp;A <> +5\n",
         "Number of Users Creating Pull Requests" => "  5&nbsp;A <> 0\n",
-        "Number of Users Involved Without Stargazers" => "  50&nbsp;A <> +39\n",
-        "Number of questioners" => "  0&nbsp;D <> 0\n",
-        "Number of questions" => "  0&nbsp;C <> 0\n",
-        "Resolved questions %" => "  0%&nbsp;A <> 0%\n",
-        "Sum of question scores" => "  0&nbsp;E <> 0\n",
-        "Sum of question views" => "  0&nbsp;E <> 0\n",
-
+        "Number of Users Involved without Stargazers" => "  50&nbsp;A <> +39\n",
+        "Number of Questioners" => "  0&nbsp;D <> 0\n",
+        "Number of Questions" => "  0&nbsp;C <> 0\n",
+        "Resolved Questions, %" => "  0%&nbsp;A <> 0%\n",
+        "Sum of Question Scores" => "  0&nbsp;E <> 0\n",
+        "Sum of Question Views" => "  0&nbsp;E <> 0\n",
       })
     end
     it do
