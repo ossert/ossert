@@ -35,8 +35,20 @@ module Ossert
     def all(project)
       all_fetchers.each do |fetcher|
         puts "======> with #{fetcher}..."
-        time = Benchmark.realtime do
-          fetcher.new(project).process
+        retry_count = 3
+        begin
+          time = Benchmark.realtime do
+            fetcher.new(project).process
+          end
+        rescue => e
+          retry_count -= 1
+          raise e if retry_count.zero?
+
+          puts "Attempt #{3 - retry_count} Failed for '#{name}' with error: #{e.inspect}"
+          puts "Wait..."
+          sleep(15 * retry_count)
+          puts "Retrying..."
+          retry
         end
         puts "<====== Finished in #{time.round(3)} sec."
         sleep(1)

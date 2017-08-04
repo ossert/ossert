@@ -1,0 +1,5 @@
+all_fetchers:
+  - Rubygems
+  - Bestgems
+  - GitHub
+  - StackOverflow
