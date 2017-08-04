@@ -16,7 +16,10 @@ module Ossert
   # functionality for fetching HTTP API.
   # TODO: Add logging
   module Fetch
-    ALL_FETCHERS = [Rubygems, Bestgems, GitHub, StackOverflow].freeze
+    def all_fetchers
+      @all_fetchers ||= ::Settings['all_fetchers'].map { |fetcher_name| Kernel.const_get("Ossert::Fetch::#{fetcher_name}") }
+    end
+    module_function :all_fetchers
 
     # Public: Fetch data for project using all fetchers by default process method
     #
@@ -30,7 +33,7 @@ module Ossert
     #
     # Returns nothing.
     def all(project)
-      ALL_FETCHERS.each do |fetcher|
+      all_fetchers.each do |fetcher|
         puts "======> with #{fetcher}..."
         time = Benchmark.realtime do
           fetcher.new(project).process
@@ -63,7 +66,7 @@ module Ossert
     def only(fetchers, project, process = :process)
       fetchers = Array.wrap(fetchers)
       puts "Fetching project '#{project.name}'..."
-      (ALL_FETCHERS & fetchers).each do |fetcher|
+      (all_fetchers & fetchers).each do |fetcher|
         puts "======> with #{fetcher}..."
         time = Benchmark.realtime do
           fetcher.new(project).send(process)

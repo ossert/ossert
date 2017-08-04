@@ -6,7 +6,7 @@ require 'json'
 require 'oj'
 
 require 'ossert/config'
-Ossert::Config.load(:stats, :classifiers_growth, :classifiers_cluster, :translations, :descriptions)
+Ossert::Config.load(:stats, :classifiers_growth, :classifiers_cluster, :translations, :descriptions, :fetchers)
 
 require 'ossert/stats'
 require 'ossert/quarters_store'

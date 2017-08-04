@@ -62,7 +62,7 @@ RSpec.configure do |config|
     Ossert::Config.send(:remove_const, config_root_const)
     Ossert::Config.const_set(config_root_const, TEST_CONFIG_ROOT)
     Ossert::Config.load(
-      :stats, :classifiers_growth, :classifiers_cluster, :translations, :descriptions
+      :stats, :classifiers_growth, :classifiers_cluster, :translations, :descriptions, :fetchers
     )
 
     Ossert.init(DB_URL)
