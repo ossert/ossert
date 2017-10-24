@@ -35,6 +35,10 @@ classifiers_cluster:
           questioners_count: 2
           questions_count: 5
           questions_resolved_percent: 2
+          posts_count: 5
+          post_score_sum: 3
+          comments_avg: 3
+          authors_count: 2
         total:
           dependants_count: 6
           users_creating_issues_count: 1
@@ -48,6 +52,10 @@ classifiers_cluster:
           total_downloads_count: 8
           questions_count: 2
           questions_resolved_percent: 1
+          posts_count: 2
+          post_score_sum: 1
+          comments_avg: 1
+          authors_count: 0.5
       maintenance:
         last_year:
           issues_processed_in_avg: 1
@@ -103,6 +111,9 @@ classifiers_cluster:
           pr_all_count: 1
           releases_count: 2
           commits: 2
+          posts_count: 2
+          authors_count: 2
+          post_score_sum: 0.5
         total:
           dependants_count: 3
           users_creating_issues_count: 1
@@ -130,3 +141,6 @@ classifiers_cluster:
           last_changed: 1
           questions_count: 1
           questions_resolved_percent: 0.5
+          posts_count: 1
+          authors_count: 1
+          post_score_sum: 0.5

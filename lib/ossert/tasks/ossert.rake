@@ -11,6 +11,12 @@ namespace :ossert do
   end
 
   namespace :refresh do
+    desc 'Refresh Reddit data for all projects'
+    task :reddit do
+      require './config/sidekiq.rb'
+      Ossert::Workers::PartialRefreshFetch.perform_async(:Reddit)
+    end
+
     desc 'Refresh StackOverflow data for all projects'
     task :stackoverflow do
       require './config/sidekiq.rb'

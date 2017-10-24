@@ -82,3 +82,7 @@ translations:
   answers_avg: 'Average Number of Answers'
   question_score_sum: 'Sum of Question Scores'
   questioners_count: 'Number of Questioners'
+  posts_count: 'Number of posts'
+  post_score_sum: 'Sum of Post Scores'
+  comments_avg: 'Average Number of Comments'
+  authors_count: 'Number of Authors'

@@ -104,6 +104,58 @@ classifiers_growth:
           - 1
           - 0
           - 0
+      posts_count:
+        default:
+          - 90
+          - 30
+          - 10
+          - 0
+          - 0
+        community_last_year:
+          - 30
+          - 9
+          - 2
+          - 0
+          - 0
+      post_score_sum:
+        default:
+          - 700
+          - 200
+          - 30
+          - 0
+          - 0
+        community_last_year:
+          - 250
+          - 45
+          - 15
+          - 0
+          - 0
+      comments_avg:
+        default:
+          - 8
+          - 4
+          - 1
+          - 0
+          - 0
+        community_last_year:
+          - 8
+          - 4
+          - 1
+          - 0
+          - 0
+      authors_count:
+        default:
+          - 80
+          - 30
+          - 10
+          - 0
+          - 0
+        community_last_year:
+          - 25
+          - 10
+          - 5
+          - 0
+          - 0
     reversed:
       - stale_branches_count
       - issues_active_percent
@@ -128,6 +180,10 @@ classifiers_growth:
           users_involved_count: 3
           users_involved_no_stars_count: 3
           total_downloads_count: 8
+          posts_count: 5
+          post_score_sum: 3
+          comments_avg: 3
+          authors_count: 2
         total:
           dependants_count: 6
           users_creating_issues_count: 1
@@ -141,6 +197,10 @@ classifiers_growth:
           total_downloads_count: 8
           questions_count: 2
           questions_resolved_percent: 1
+          posts_count: 2
+          post_score_sum: 1
+          comments_avg: 1
+          authors_count: 0.5
       maintenance:
         last_year:
           issues_processed_in_avg: 1
@@ -191,6 +251,9 @@ classifiers_growth:
           pr_all_count: 1
           releases_count: 2
           commits: 2
+          posts_count: 2
+          authors_count: 2
+          post_score_sum: 0.5
         total:
           dependants_count: 3
           users_creating_issues_count: 1
@@ -218,3 +281,6 @@ classifiers_growth:
           last_changed: 1
           questions_count: 1
           questions_resolved_percent: 0.5
+          posts_count: 1
+          authors_count: 1
+          post_score_sum: 0.5

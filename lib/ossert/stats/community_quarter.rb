@@ -9,16 +9,16 @@ module Ossert
       define_counts(
         :users_creating_issues, :users_commenting_issues, :users_creating_pr,
         :users_commenting_pr, :contributors, :stargazers, :forks,
-        :users_involved, :questioners, :questions
+        :users_involved, :questioners, :questions, :posts, :authors
       )
 
       define_percent(questions_resolved: :questions)
 
-      define_average(:answers)
+      define_average(:answers, :comments)
 
       define_median(:questioner_rep)
 
-      define_sum(:question_view, :question_score)
+      define_sum(:question_view, :question_score, :post_score)
 
       def users_involved_no_stars_count
         (users_involved - stargazers).count
