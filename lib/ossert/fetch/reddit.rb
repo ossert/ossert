@@ -93,7 +93,6 @@ module Ossert
         resp = {}
         loop do
           resp = fetch_posts(after: resp[:after])[:data]
-          binding.pry
           resp[:children].each { |post| process_post(post[:data]) }
           break if resp[:after].nil?
         end
