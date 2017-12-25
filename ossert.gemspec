@@ -30,7 +30,7 @@ Gem::Specification.new do |spec|
   spec.add_runtime_dependency 'activesupport' # TODO: remove dependency later
   spec.add_runtime_dependency 'oj'
   spec.add_runtime_dependency 'multi_json'
-  spec.add_runtime_dependency 'sequel'
+  spec.add_runtime_dependency 'sequel', '< 5'
   spec.add_runtime_dependency 'pg'
   spec.add_runtime_dependency 'nokogiri'
   spec.add_runtime_dependency 'graphr'
