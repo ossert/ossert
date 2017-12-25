@@ -1,22 +1,35 @@
 # frozen_string_literal: true
+
+require 'uri'
+
 namespace :db do
   require 'sequel'
   Sequel.extension :migration
 
+  def create_db(uri)
+    database_name = uri.path.split('/').last
+    sh "createdb #{db_opts(uri)} #{database_name}"
+  end
+
+  def drop_db(uri)
+    database_name = uri.path.split('/').last
+    sh "dropdb #{db_opts(uri)} --if-exists #{database_name}"
+  end
+
+  def db_opts(uri)
+    ["-h #{uri.host}"].tap do |opts|
+      opts << "-U #{uri.user}" if uri.user
+    end.join(' ')
+  end
+
   namespace :test do
     task :prepare do
-      test_database_url = ENV.fetch('TEST_DATABASE_URL')
-      database_name = test_database_url.split('/').last
+      uri = URI(ENV.fetch('TEST_DATABASE_URL'))
 
-      DB = Sequel.connect(test_database_url)
+      drop_db(uri)
+      create_db(uri)
 
-      sh "dropdb #{database_name}" do
-        # Ignore errors
-      end
-
-      sh "createdb #{database_name}" do
-        # Ignore errors
-      end
+      DB = Sequel.connect(uri.to_s)
 
       Sequel::Migrator.run(DB, File.expand_path('../../../../db/migrate', __FILE__))
       Rake::Task['db:version'].execute
@@ -51,6 +64,7 @@ namespace :db do
 
   desc 'Create the database, load the schema, and initialize with the seed data (db:reset to also drop the db first)'
   task :setup do
+    Rake::Task['db:drop'].invoke
     Rake::Task['db:create'].invoke
     Rake::Task['db:load_config'].invoke
 
@@ -59,15 +73,11 @@ namespace :db do
   end
 
   task :drop do
-    sh "dropdb #{ENV.fetch('DATABASE_URL').split('/').last}" do
-      # Ignore errors
-    end
+    drop_db(URI(ENV.fetch('DATABASE_URL')))
   end
 
   task :create do
-    sh "createdb #{ENV.fetch('DATABASE_URL').split('/').last}" do
-      # Ignore errors
-    end
+    create_db(URI(ENV.fetch('DATABASE_URL')))
   end
 
   desc 'Dumps the database to backups'
