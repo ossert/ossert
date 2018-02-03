@@ -72,7 +72,7 @@ RSpec.configure do |config|
     db.run('TRUNCATE TABLE exceptions;')
     db.run('TRUNCATE TABLE classifiers;')
 
-    Timecop.freeze(Time.parse('2017-02-20').utc)
+    Timecop.freeze(Time.parse('2017-11-03').utc)
     init_projects
 
     threads = []

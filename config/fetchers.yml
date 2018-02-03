@@ -3,3 +3,4 @@ all_fetchers:
   - Bestgems
   - GitHub
   - StackOverflow
+  - Reddit

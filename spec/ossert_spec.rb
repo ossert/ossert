@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 require 'spec_helper'
+require 'pry'
 
 describe Ossert do
   let(:projectA) { Ossert::Project.load_by_name(@a_project) }
@@ -16,7 +17,7 @@ describe Ossert do
     it { expect(github_not_found_project).to be_without_github_data }
 
     let(:project_A_time_range) do
-      [Date.parse('01/04/2010'), Date.parse('01/10/2016')]
+      [Date.parse('01/04/2010'), Date.parse('01/10/2017')]
     end
 
     it { expect(Ossert::Project.load_by_name('Not Exists')).to be_nil }
@@ -28,19 +29,19 @@ describe Ossert do
       before { Ossert::Classifiers.train }
 
       let(:grades_A) do
-        { popularity: 'B', maintenance: 'C', maturity: 'C' }
+        { popularity: 'C', maintenance: 'B', maturity: 'C' }
       end
       let(:grades_B) do
         { popularity: 'A', maintenance: 'B', maturity: 'A' }
       end
       let(:grades_C) do
-        { popularity: 'C', maintenance: 'B', maturity: 'B' }
+        { popularity: 'C', maintenance: 'C', maturity: 'C' }
       end
       let(:grades_D) do
-        { popularity: 'D', maintenance: 'C', maturity: 'D' }
+        { popularity: 'D', maintenance: 'B', maturity: 'D' }
       end
       let(:grades_E) do
-        { popularity: 'E', maintenance: 'D', maturity: 'E' }
+        { popularity: 'E', maintenance: 'E', maturity: 'E' }
       end
 
       it do
@@ -70,12 +71,12 @@ describe Ossert do
           it do
             expect(tooltip_data).to eq(
               :description => "Total number of issues, with any status",
-              :ranks => [{:type=>"a", :quarter=>"&gt;&nbsp; 1", :total=>"&gt;&nbsp; 92", :year=>"&gt;&nbsp; 8"},
+              :ranks => [{:type=>"a", :quarter=>"&gt;&nbsp; 2", :total=>"&gt;&nbsp; 97", :year=>"&gt;&nbsp; 5"},
                          # Strange behavior with B values higher then A. Do we need to change initial projects list?
-                         {:type=>"b", :quarter=>"&gt;&nbsp; 27", :total=>"&gt;&nbsp; 68", :year=>"&gt;&nbsp; 51"},
-                         {:type=>"c", :quarter=>"&gt;&nbsp; 4", :total=>"&gt;&nbsp; 19", :year=>"&gt;&nbsp; 14"},
-                         {:type=>"d", :quarter=>"&gt;&nbsp; 8", :total=>"&gt;&nbsp; 10", :year=>"&gt;&nbsp; 10"},
-                         {:type=>"e", :quarter=>"&gt;&nbsp; 0", :total=>"&gt;&nbsp; 2", :year=>"&gt;&nbsp; 2"}],
+                         {:type=>"b", :quarter=>"&gt;&nbsp; 30", :total=>"&gt;&nbsp; 95", :year=>"&gt;&nbsp; 46"},
+                         {:type=>"c", :quarter=>"&gt;&nbsp; 8", :total=>"&gt;&nbsp; 24", :year=>"&gt;&nbsp; 9"},
+                         {:type=>"d", :quarter=>"&gt;&nbsp; 8", :total=>"&gt;&nbsp; 17", :year=>"&gt;&nbsp; 15"},
+                         {:type=>"e", :quarter=>"&gt;&nbsp; 0", :total=>"&gt;&nbsp; 3", :year=>"&gt;&nbsp; 2"}],
               :title => "Number of Issues"
             )
           end
@@ -88,11 +89,11 @@ describe Ossert do
 
             it do
               expect(preview[:total_mark]).to eq('e')
-              expect(preview[:total_text]).to eq('Less than a year&nbsp;E')
-              expect(preview[:total_val]).to eq(87828.0)
+              expect(preview[:total_text]).to eq('1+ years&nbsp;E')
+              expect(preview[:total_val]).to eq(32411893.0)
               expect(other_preview[:total_mark]).to eq('b')
-              expect(other_preview[:total_text]).to eq('2+ years&nbsp;B')
-              expect(other_preview[:total_val]).to eq(75673089.0)
+              expect(other_preview[:total_text]).to eq('3+ years&nbsp;B')
+              expect(other_preview[:total_val]).to eq(107510642.0)
             end
           end
 
@@ -100,9 +101,9 @@ describe Ossert do
             let(:preview) { project.metric_preview('issues_processed_in_avg') }
 
             it do
-              expect(preview[:last_year_mark]).to eq('b')
-              expect(preview[:last_year_text]).to eq('~1 month&nbsp;B')
-              expect(preview[:last_year_val]).to eq(44.0)
+              expect(preview[:last_year_mark]).to eq('e')
+              expect(preview[:last_year_text]).to eq('N/A&nbsp;E')
+              expect(preview[:last_year_val]).to eq(1826.0)
               expect(preview[:total_mark]).to eq('b')
               expect(preview[:total_text]).to eq('~1 month&nbsp;B')
               expect(preview[:total_val]).to eq(44.0)
@@ -113,9 +114,9 @@ describe Ossert do
             let(:preview) { project.metric_preview('issues_processed_in_median') }
 
             it do
-              expect(preview[:last_year_mark]).to eq('b')
-              expect(preview[:last_year_text]).to eq('~1 month&nbsp;B')
-              expect(preview[:last_year_val]).to eq(44.0)
+              expect(preview[:last_year_mark]).to eq('e')
+              expect(preview[:last_year_text]).to eq('N/A&nbsp;E')
+              expect(preview[:last_year_val]).to eq(1826.0)
               expect(preview[:total_mark]).to eq('b')
               expect(preview[:total_text]).to eq('~1 month&nbsp;B')
               expect(preview[:total_val]).to eq(44.0)
@@ -131,11 +132,11 @@ describe Ossert do
               let(:metric_name) { 'issues_all_count' }
 
               it do
-                expect(call_references).to eq('A' => '> 92',
-                                              'B' => '> 68',
-                                              'C' => '> 19',
-                                              'D' => '> 10',
-                                              'E' => '> 2')
+                expect(call_references).to eq('A' => '> 97',
+                                              'B' => '> 95',
+                                              'C' => '> 24',
+                                              'D' => '> 17',
+                                              'E' => '> 3')
               end
             end
 
@@ -175,7 +176,7 @@ describe Ossert do
     let(:cluster_ref_values) { cluster_classifier.reference_values_per_grade }
 
     it { expect(cluster_ref_values[:agility_total]['pr_closed_percent'].keys).to eq(Ossert::Classifiers::GRADES) }
-    it { expect(projectE.grade_by_cluster).to eq(:popularity=>"E", :maintenance=>"E", :maturity=>"E") }
+    it { expect(projectE.grade_by_cluster).to eq(:popularity=>nil, :maintenance=>"E", :maturity=>"E") }
   end
 
   describe 'Ossert::Presenters::Project' do
@@ -189,75 +190,83 @@ describe Ossert do
       )
     end
     it do
-      expect(decorated_project.agility_quarter(Time.parse('01.01.2016'))).to eq({
-        "Average Issue Processing Time" => "  ~24 days&nbsp;A <> ~-58 months\n",
-        "Average Pull Request Processing Time" => "  ~17 days&nbsp;A <> ~4 days\n",
-        "Issues Closed, %" => "  70%&nbsp;C <> +70%\n",
-        "Median Issue Processing Time" => "  ~1 day&nbsp;A <> ~-58 months\n",
-        "Median Pull Request Processing Time" => "  ~16 days&nbsp;A <> ~1 day\n",
-        "Number of Commits Made" => "  11&nbsp;A <> +4\n",
-        "Number of Issues" => "  10&nbsp;A <> +8\n",
-        "Number of Legacy Issues" => "  2&nbsp;A <> +1\n",
-        "Number of Legacy Pull Requests" => "  3&nbsp;A <> +3\n",
-        "Number of Pull Requests" => "  13&nbsp;A <> +7\n",
-        "Number of Releases" => "  1&nbsp;A <> +1\n",
-        "Pull Requests Closed, %" => "  70%&nbsp;C <> +19%\n",
+      expect(decorated_project.agility_quarter(Time.parse('01.01.2017'))).to eq({
+        "Average Issue Processing Time" => "  ~11 days&nbsp;A <> ~-58 months\n",
+        "Average Pull Request Processing Time" => "  ~4 months&nbsp;E <> ~3 months\n",
+        "Issues Closed, %" => "  13%&nbsp;E <> +12%\n",
+        "Median Issue Processing Time" => "  ~11 days&nbsp;A <> ~-58 months\n",
+        "Median Pull Request Processing Time" => "  ~3 months&nbsp;E <> ~3 months\n",
+        "Number of Commits Made" => "  4&nbsp;D <> +4\n",
+        "Number of Issues" => "  8&nbsp;A <> +2\n",
+        "Number of Legacy Issues" => "  6&nbsp;A <> +2\n",
+        "Number of Legacy Pull Requests" => "  5&nbsp;A <> 0\n",
+        "Number of Pull Requests" => "  8&nbsp;A <> 0\n",
+        "Number of Releases" => "  0&nbsp;E <> 0\n",
+        "Pull Requests Closed, %" => "  50%&nbsp;D <> +13%\n",
       })
     end
     it do
-      expect(decorated_project.community_quarter(Time.parse('01.01.2016'))).to eq({
-        "Average Number of Answers" => "  0&nbsp;E <> 0\n",
-        "Median Questioner Reputation" => "  0&nbsp;E <> 0\n",
-        "Number of Downloads" => "  15,435&nbsp;D <> +10,981\n",
-        "Number of Forks" => "  51&nbsp;A <> +43\n",
-        "Number of Stargazers" => "  2013&nbsp;A <> +1536\n",
-        "Number of Total Users Involved" => "  2063&nbsp;A <> +1575\n",
-        "Number of Users Commenting Issues" => "  7&nbsp;A <> +6\n",
-        "Number of Users Commenting Pull Requests" => "  19&nbsp;A <> +13\n",
-        "Number of Users Creating Issues" => "  6&nbsp;A <> +5\n",
-        "Number of Users Creating Pull Requests" => "  5&nbsp;A <> 0\n",
-        "Number of Users Involved without Stargazers" => "  50&nbsp;A <> +39\n",
-        "Number of Questioners" => "  0&nbsp;D <> 0\n",
-        "Number of Questions" => "  0&nbsp;C <> 0\n",
-        "Resolved Questions, %" => "  0%&nbsp;A <> 0%\n",
-        "Sum of Question Scores" => "  0&nbsp;E <> 0\n",
-        "Sum of Question Views" => "  0&nbsp;E <> 0\n",
+      expect(decorated_project.community_quarter(Time.parse('01.01.2017'))).to eq({
+        "Average Number of Answers" => "  1&nbsp;A <> 0\n",
+        "Average Number of Comments" => "  6&nbsp;B <> +6\n",
+        "Median Questioner Reputation" => "  181&nbsp;A <> +47\n",
+        "Number of Authors" => "  1&nbsp;D <> +1\n",
+        "Number of Downloads" => "  102,299&nbsp;D <> +39,597\n",
+        "Number of Forks" => "  8&nbsp;A <> -2\n",
+        "Number of Questioners" => "  1&nbsp;C <> 0\n",
+        "Number of Questions" => "  1&nbsp;C <> 0\n",
+        "Number of Stargazers" => "  223&nbsp;A <> +46\n",
+        "Number of Total Users Involved" => "  239&nbsp;A <> +48\n",
+        "Number of Users Commenting Issues" => "  1&nbsp;A <> -1\n",
+        "Number of Users Commenting Pull Requests" => "  8&nbsp;A <> +4\n",
+        "Number of Users Creating Issues" => "  2&nbsp;A <> 0\n",
+        "Number of Users Creating Pull Requests" => "  3&nbsp;A <> 0\n",
+        "Number of Users Involved without Stargazers" => "  16&nbsp;A <> +2\n",
+        "Number of posts" => "  1&nbsp;D <> +1\n",
+        "Resolved Questions, %" => "  100%&nbsp;A <> 0%\n",
+        "Sum of Post Scores" => "  19&nbsp;D <> +19\n",
+        "Sum of Question Scores" => "  0&nbsp;E <> -2\n",
+        "Sum of Question Views" => "  51&nbsp;D <> -74\n",
       })
     end
     it do
-      expect(decorated_project.agility_quarter_values(Time.parse('01.01.2016'))).to eq({
-        "commits" => 11,
-        "issues_actual_count" => 2,
-        "issues_all_count" => 10,
-        "issues_closed_percent" => 70,
-        "issues_processed_in_avg" => 24,
-        "issues_processed_in_median" => 1,
-        "pr_actual_count" => 3,
-        "pr_all_count" => 13,
-        "pr_closed_percent" => 69,
-        "pr_processed_in_avg" => 17,
-        "pr_processed_in_median" => 16,
-        "releases_count" => 1
+      expect(decorated_project.agility_quarter_values(Time.parse('01.01.2017'))).to eq({
+        "commits" => 4,
+        "issues_actual_count" => 6,
+        "issues_all_count" => 8,
+        "issues_closed_percent" => 12,
+        "issues_processed_in_avg" => 11,
+        "issues_processed_in_median" => 11,
+        "pr_actual_count" => 5,
+        "pr_all_count" => 8,
+        "pr_closed_percent" => 50,
+        "pr_processed_in_avg" => 138,
+        "pr_processed_in_median" => 117,
+        "releases_count" => 0,
       })
     end
     it do
-      expect(decorated_project.community_quarter_values(Time.parse('01.01.2016'))).to eq({
-        "answers_avg" => 0,
-        "forks_count" => 51,
+      expect(decorated_project.community_quarter_values(Time.parse('01.01.2017'))).to eq({
+        "answers_avg" => 1,
+        "authors_count" => 1,
+        "comments_avg" => 6,
+        "forks_count" => 8,
+        "post_score_sum" => 19,
+        "posts_count" => 1,
         "question_score_sum" => 0,
-        "question_view_sum" => 0,
-        "questioner_rep_median" => 0,
-        "questioners_count" => 0,
-        "questions_count" => 0,
-        "questions_resolved_percent" => 0,
-        "stargazers_count" => 2013,
-        "total_downloads_count" => 15435,
-        "users_commenting_issues_count" => 7,
-        "users_commenting_pr_count" => 19,
-        "users_creating_issues_count" => 6,
-        "users_creating_pr_count" => 5,
-        "users_involved_count" => 2063,
-        "users_involved_no_stars_count" => 50,
+        "question_view_sum" => 51,
+        "questioner_rep_median" => 181,
+        "questioners_count" => 1,
+        "questions_count" => 1,
+        "questions_resolved_percent" => 100,
+        "stargazers_count" => 223,
+        "total_downloads_count" => 102299,
+        "users_commenting_issues_count" => 1,
+        "users_commenting_pr_count" => 8,
+        "users_creating_issues_count" => 2,
+        "users_creating_pr_count" => 3,
+        "users_involved_count" => 239,
+        "users_involved_no_stars_count" => 16,
       })
     end
   end

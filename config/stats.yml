@@ -135,6 +135,10 @@ stats:
         - questions_count
         - questions_resolved_percent
         - last_question_date_int
+        - posts_count
+        - post_score_sum
+        - comments_avg
+        - authors_count
       uniq_attributes:
         - dependants
         - users_creating_issues
@@ -148,6 +152,8 @@ stats:
         - users_involved
         - owners_github
         - owners_rubygems
+        - posts
+        - authors
       attributes:
         dependants: Array
         users_creating_issues: Array
@@ -166,6 +172,10 @@ stats:
         questions_count: Ossert::Zero
         questions_resolved_count: Ossert::Zero
         last_question_date: Ossert::Zero
+        posts: Array
+        comments: Array
+        authors: Array
+        post_score: Array
     quarter:
       metrics:
         - users_creating_issues_count
@@ -184,6 +194,10 @@ stats:
         - questioners_count
         - questions_count
         - questions_resolved_percent
+        - posts_count
+        - post_score_sum
+        - comments_avg
+        - authors_count
       uniq_attributes:
         - users_creating_issues
         - users_commenting_issues
@@ -198,6 +212,8 @@ stats:
         - questioners
         - questions
         - questions_resolved
+        - posts
+        - authors
       absolute_attributes:
         - total_downloads
       attributes:
@@ -219,3 +235,7 @@ stats:
         question_view: Array
         question_score: Array
         answers: Array
+        posts: Array
+        comments: Array
+        authors: Array
+        post_score: Array

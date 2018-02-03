@@ -51,3 +51,7 @@ descriptions:
   answers_avg: Average number of answers
   question_score_sum: Total number of question scores
   questioners_count: Number of unique question authors
+  comments_avg: Average number of comments
+  post_score_sum: Total number of post scores
+  authors_count: Number of unique post authors
+  posts_count: Number of posts on popular programming subreddits regarding the project

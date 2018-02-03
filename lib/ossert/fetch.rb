@@ -8,7 +8,7 @@ require 'ossert/fetch/github'
 require 'ossert/fetch/rubygems'
 require 'ossert/fetch/bestgems'
 require 'ossert/fetch/stackoverflow'
-
+require 'ossert/fetch/reddit'
 
 module Ossert
   # Public: Various classes and methods for fetching data from different sources.

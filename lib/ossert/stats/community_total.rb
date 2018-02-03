@@ -11,10 +11,14 @@ module Ossert
       define_counts(
         :users_creating_issues, :users_commenting_issues, :users_creating_pr,
         :users_commenting_pr, :contributors, :watchers, :stargazers, :forks,
-        :users_involved, :dependants
+        :users_involved, :dependants, :posts, :authors
       )
 
       define_ints(:last_question_date)
+
+      define_average(:comments)
+
+      define_sum(:post_score)
 
       def users_involved_no_stars_count
         (users_involved - stargazers).count
