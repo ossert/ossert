@@ -66,10 +66,16 @@ module Ossert
 
         readme_file_name = find_filename(project_folder: project_folder, name_like: 'readme')
 
+        md_file_paths = Dir["#{folder}/**/*.md"]
+        md_files_total_size = md_file_paths.map do |p|
+          p =~ /#{readme_file_name}/ ? 0 : File.size?(p).to_i
+        end.sum
+
+
         # check Readme size
         readme_size = File.size?(File.join(project_folder, readme_file_name)).to_i
 
-        {docs_lines: docs_lines, loc: total_lines[:loc], readme_size: readme_size, has_wiki: has_wiki}
+        {docs_lines: docs_lines, loc: total_lines[:loc], readme_size: readme_size, has_wiki: has_wiki, other_docs_size: md_files_total_size}
       end
 
       def perform(name, reference = Ossert::Saveable::UNUSED_REFERENCE)

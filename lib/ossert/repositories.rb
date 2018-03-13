@@ -2,6 +2,10 @@
 require 'oj'
 require 'multi_json'
 
+class Aggregation < Sequel::Model(:aggregations)
+  set_primary_key [:name]
+end
+
 class NameException < Sequel::Model(:exceptions)
   set_primary_key [:name]
   class << self

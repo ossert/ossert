@@ -112,7 +112,7 @@ module Ossert
         end
 
         # Transform classifier values of reversed metrics to the correct state.
-        # Odinary metric values should grow to show the best results that means
+        # Ordinary metric values should grow to show the best results that means
         # that they have a highest bar of the values that makes it the best.
         # For reversed metrics we should invert ranges as for them less values
         # are harder to achieve for a project and we don't have a limit for

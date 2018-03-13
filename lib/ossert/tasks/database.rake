@@ -95,6 +95,7 @@ namespace :db do
 
   desc 'Restores the database from a backup using PATTERN'
   task :restore, [:pat] do |_, args|
+require_relative "blood_contracts/runner"
     puts 'Please pass a pattern to the task' unless args.pat.present?
     cmd = nil
     with_config do |_, db_url|
