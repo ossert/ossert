@@ -15,17 +15,29 @@ ENV['TEST'] = '1'
 require 'sequel'
 require 'ossert'
 
+require 'dotenv'
+Dotenv.load('.env.test.local', '.env.test')
 require 'multi_json'
 require 'rspec'
 require 'webmock/rspec'
 require 'base64'
 
 require 'sidekiq/testing'
+require 'rspec-sidekiq'
 require 'timecop'
-
 require 'vcr'
+
 VCR.configure do |c|
   c.configure_rspec_metadata!
+
+  %w(
+    TWITTER_CONSUMER_KEY TWITTER_CONSUMER_SECRET
+    TWITTER_ACCESS_TOKEN TWITTER_ACCESS_TOKEN_SECRET
+  ).each do |sensitive_key|
+    c.filter_sensitive_data("<<#{sensitive_key}>>") do
+      ENV.fetch(sensitive_key)
+    end
+  end
 
   c.filter_sensitive_data('<<GITHUB_TOKEN>>') do
     env_token_for :github
@@ -51,7 +63,7 @@ VCR.configure do |c|
 end
 
 TEST_CONFIG_ROOT = File.join(File.dirname(__FILE__), '..', 'tmp', 'config')
-DB_URL = ENV.fetch('TEST_DATABASE_URL')
+DB_URL = ENV.fetch('DATABASE_URL')
 
 RSpec.configure do |config|
   config.raise_errors_for_deprecations!
