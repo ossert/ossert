@@ -1,0 +1,43 @@
+{
+  "type": "object",
+  "required": ["statuses"],
+  "properties": {
+    "statuses": {
+      "type": "array",
+      "items": {
+        "required": [
+          "id",
+          "in_reply_to_user_id",
+          "favorite_count",
+          "user"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "in_reply_to_user_id": {
+            "type": ["integer", null]
+          },
+          "favorite_count": {
+            "type": "integer"
+          },
+          "retweeted_status": {
+            "type": ["object", null]
+          },
+          "user": {
+            "type": "object",
+            "required": ["id", "followers_count"],
+            "properties": {
+              "id": {
+                "type": "integer"
+              },
+              "followers_count": {
+                "type": "integer"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -11,6 +11,18 @@ namespace :ossert do
     end
   end
 
+  namespace :twitter do
+    desc 'Fetches twitter metrics for top 100 random projects'
+    task :enqueue_jobs do
+      require './config/sidekiq.rb'
+      ::Ossert.init
+
+      Ossert::Project.random_top(100).each do |project|
+        Ossert::Workers::FetchTwitter.perform_async(project.name)
+      end
+    end
+  end
+ 
   namespace :refresh do
     desc 'Refresh StackOverflow data for all projects'
     task :stackoverflow do

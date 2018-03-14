@@ -24,7 +24,9 @@ namespace :db do
 
   namespace :test do
     task :prepare do
-      uri = URI(ENV.fetch('TEST_DATABASE_URL'))
+      require 'dotenv'
+      Dotenv.load('.env.test.local', '.env.test')
+      uri = URI(ENV.fetch('DATABASE_URL'))
 
       drop_db(uri)
       create_db(uri)
