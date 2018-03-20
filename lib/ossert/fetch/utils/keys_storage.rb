@@ -1,10 +1,12 @@
+# frozen_string_literal: true
+
 module Ossert
   module Fetch
     module Utils
       module KeysStorage
         class Base
           def self.call
-            new(self.name.split('::').last.upcase).call
+            new(name.split('::').last.upcase).call
           end
 
           def initialize(name)
@@ -12,7 +14,7 @@ module Ossert
           end
 
           def keys
-            @keys ||= ENV.fetch(@storage_name) { "" }.split(':')
+            @keys ||= ENV.fetch(@storage_name) { '' }.split(':')
           end
 
           def call

@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require 'ossert'
 
 SIDEKIQ_REDIS_CONFIGURATION = {

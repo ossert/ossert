@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require 'oj'
 require 'multi_json'
 
@@ -23,8 +24,7 @@ end
 class Project < Sequel::Model
   set_primary_key [:name]
 
-
- #Sequel::Model.def_dataset_method is deprecated and will be removed in Sequel 5.  Define the method inside a dataset_module block, or use the def_dataset_method_plugin.
+  # Sequel::Model.def_dataset_method is deprecated and will be removed in Sequel 5.  Define the method inside a dataset_module block, or use the def_dataset_method_plugin.
   dataset_module do
     def random(count)
       where(Sequel.lit('github_name NOT IN (?, ?)', Ossert::NO_GITHUB_NAME, Ossert::NOT_FOUND_GITHUB_NAME))
@@ -62,7 +62,7 @@ class Project < Sequel::Model
     end
 
     def process
-      [:agility, :community].each_with_object(process_meta) do |stats_type, result|
+      %i[agility community].each_with_object(process_meta) do |stats_type, result|
         result[stats_type] = factory_project_stats(stats_type).new(
           [Total, Quarter].each_with_object({}) do |unpacker_type, stats_result|
             section_unpacker = unpacker_type.new(@stored_project, stats_type)
@@ -101,8 +101,8 @@ class Project < Sequel::Model
       end
 
       def coerce_value(value)
-        return DateTime.parse(value)
-      rescue
+        DateTime.parse(value)
+      rescue StandardError
         value
       end
 

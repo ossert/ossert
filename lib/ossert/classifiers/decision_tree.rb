@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require 'graphr'
 require 'decisiontree'
 
@@ -57,8 +58,8 @@ module Ossert
         community_last_year: Stats::CommunityQuarter.metrics
       }.freeze
 
-      [:community, :agility].each do |section|
-        [:total, :last_year].each do |period|
+      %i[community agility].each do |section|
+        %i[total last_year].each do |period|
           name = "#{section}_#{period}".to_sym
           define_method("#{name}_check") do |project|
             public_send("#{name}_dec_tree").predict(project.data_for(section: section, period: period).values)

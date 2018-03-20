@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 module Ossert
   class Project
     include Ossert::Saveable
@@ -142,7 +143,7 @@ module Ossert
 
       agility.quarters.fullfill! && community.quarters.fullfill!
 
-      [:start, :end].map { |time_bound| time_bound_value(time_bound, config).to_date }
+      %i[start end].map { |time_bound| time_bound_value(time_bound, config).to_date }
     end
 
     # Public: Prepare value of time bound using config

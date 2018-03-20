@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require 'yaml'
 
 module Ossert
@@ -19,7 +20,7 @@ module Ossert
     def self.load(*configs)
       config_data = configs.each_with_object({}) do |config, result|
         if (path = File.join(CONFIG_ROOT, "#{config}.yml")) && File.exist?(path.to_s)
-          result.merge! YAML.load(IO.read(path.to_s))
+          result.merge! YAML.safe_load(IO.read(path.to_s))
         end
       end
 

@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 module Ossert
   module Fetch
     # Class implementing `StackOverflow` crawler.

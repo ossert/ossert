@@ -31,13 +31,13 @@ namespace :db do
 
       DB = Sequel.connect(uri.to_s)
 
-      Sequel::Migrator.run(DB, File.expand_path('../../../../db/migrate', __FILE__))
+      Sequel::Migrator.run(DB, File.expand_path('../../../db/migrate', __dir__))
       Rake::Task['db:version'].execute
     end
   end
 
-  task :migrate => :load_config do
-    Sequel::Migrator.run(DB, File.expand_path('../../../../db/migrate', __FILE__))
+  task migrate: :load_config do
+    Sequel::Migrator.run(DB, File.expand_path('../../../db/migrate', __dir__))
     Rake::Task['db:version'].execute
   end
 
@@ -45,7 +45,7 @@ namespace :db do
     if (version = current_version).positive?
       Sequel::Migrator.run(
         DB,
-        File.expand_path('../../../../db/migrate', __FILE__),
+        File.expand_path('../../../db/migrate', __dir__),
         target: version - ENV.fetch('STEP', 1).to_i
       )
     end
@@ -68,7 +68,7 @@ namespace :db do
     Rake::Task['db:create'].invoke
     Rake::Task['db:load_config'].invoke
 
-    Sequel::Migrator.run(DB, File.expand_path('../../../../db/migrate', __FILE__))
+    Sequel::Migrator.run(DB, File.expand_path('../../../db/migrate', __dir__))
     Rake::Task['db:version'].execute
   end
 

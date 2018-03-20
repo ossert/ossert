@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 module Ossert
   # Public: Class for data divided by quarters. Each quarter instantiates some statistics class.
   # Contains methods for quarters calculations, such as grouping, preview and other.

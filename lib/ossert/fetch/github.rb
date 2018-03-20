@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require 'octokit'
 
 module Ossert
@@ -247,13 +248,12 @@ module Ossert
         values = @pulls_processed_in_days.to_a.sort
         agility.total.pr_processed_in_avg = values.count.positive? ? values.sum / values.count : 0
         agility.total.pr_processed_in_median = if values.count.odd?
-                                              values[values.count / 2]
-                                            elsif values.count.zero?
-                                              0
-                                            else
-                                              ((values[values.count / 2 - 1] + values[values.count / 2]) / 2.0).to_i
+                                                 values[values.count / 2]
+                                               elsif values.count.zero?
+                                                 0
+                                               else
+                                                 ((values[values.count / 2 - 1] + values[values.count / 2]) / 2.0).to_i
                                             end
-
 
         retry_call do
           pulls_comments do |pull_comment|
@@ -330,11 +330,11 @@ module Ossert
         values = @issues_processed_in_days.to_a.sort
         agility.total.issues_processed_in_avg = values.count.positive? ? values.sum / values.count : 0
         agility.total.issues_processed_in_median = if values.count.odd?
-                                                  values[values.count / 2]
-                                                elsif values.count.zero?
-                                                  0
-                                                else
-                                                  ((values[values.count / 2 - 1] + values[values.count / 2]) / 2.0).to_i
+                                                     values[values.count / 2]
+                                                   elsif values.count.zero?
+                                                     0
+                                                   else
+                                                     ((values[values.count / 2 - 1] + values[values.count / 2]) / 2.0).to_i
                                                 end
 
         issues_comments do |issue_comment|

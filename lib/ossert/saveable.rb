@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 module Ossert
   module Saveable
     UNUSED_REFERENCE = 'unused'
@@ -46,7 +47,7 @@ module Ossert
     end
 
     def validate!
-      raise RecordInvalid.new unless valid?
+      raise RecordInvalid unless valid?
     end
 
     def attributes
@@ -82,7 +83,7 @@ module Ossert
       end
 
       def random_top(count = 10)
-        ::Project.where(reference: %w(ClassA ClassB ClassC)).random(count)
+        ::Project.where(reference: %w[ClassA ClassB ClassC]).random(count)
       end
 
       def random(count = 10)

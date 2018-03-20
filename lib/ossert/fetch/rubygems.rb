@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 module Ossert
   module Fetch
     class Rubygems
@@ -52,7 +53,7 @@ module Ossert
       def process_github_alias
         return unless project.github_alias.blank?
         match = info[:source_code_uri].try(:match, GITHUB_REPO_REGEX) ||
-          info[:homepage_uri].try(:match, GITHUB_REPO_REGEX)
+                info[:homepage_uri].try(:match, GITHUB_REPO_REGEX)
         project.github_alias = match ? "#{match[1]}/#{match[2]}" : NO_GITHUB_NAME
       end
 

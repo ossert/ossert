@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 namespace :ossert do
   namespace :cache do
     desc 'Reset data cache'
