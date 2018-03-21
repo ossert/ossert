@@ -26,14 +26,15 @@ require 'sidekiq/testing'
 require 'rspec-sidekiq'
 require 'timecop'
 require 'vcr'
+Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each { |f| require f }
 
 VCR.configure do |c|
   c.configure_rspec_metadata!
 
-  %w(
+  %w[
     TWITTER_CONSUMER_KEY TWITTER_CONSUMER_SECRET
     TWITTER_ACCESS_TOKEN TWITTER_ACCESS_TOKEN_SECRET
-  ).each do |sensitive_key|
+  ].each do |sensitive_key|
     c.filter_sensitive_data("<<#{sensitive_key}>>") do
       ENV.fetch(sensitive_key)
     end
@@ -66,6 +67,7 @@ TEST_CONFIG_ROOT = File.join(File.dirname(__FILE__), '..', 'tmp', 'config')
 DB_URL = ENV.fetch('DATABASE_URL')
 
 RSpec.configure do |config|
+  include KeysSymbolizer
   config.raise_errors_for_deprecations!
   config.before(:suite) do
     FileUtils.mkdir_p(TEST_CONFIG_ROOT)

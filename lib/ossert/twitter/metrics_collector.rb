@@ -11,7 +11,8 @@ module Ossert
       def initialize(tweets)
         @tweets = tweets
       end
-      
+
+      # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
       def call
         Metrics.new.tap do |metrics|
           processed_user_ids = Set.new
@@ -30,6 +31,7 @@ module Ossert
           metrics.twitters_count = processed_user_ids.count
         end
       end
+      # rubocop:enable Metrics/AbcSize, Metrics/MethodLength
     end
   end
 end

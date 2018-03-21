@@ -11,9 +11,7 @@ module Ossert
       def self.apply_json_validator!
         patch_module = Module.new do
           def attrs=(attrs)
-            if SearchResultsValidator.enabled?
-              ::Ossert::Twitter::SearchResultsValidator.call!(attrs)
-            end
+            ::Ossert::Twitter::SearchResultsValidator.call!(attrs) if SearchResultsValidator.enabled?
             super(attrs)
           end
         end
