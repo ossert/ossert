@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 module Ossert
   module Fetch
     # Class implementing `StackOverflow` crawler.
@@ -46,9 +47,10 @@ module Ossert
         @project = project
         @cmn_params = SEARCH_PARAMS.merge(q: "\"#{project.name}\"")
 
-        if (token = Utils::KeysStorage::SO.call).present?
-          @cmn_params[:key] = token
-        end
+        token = Utils::KeysStorage::SO.call
+        return unless token.present?
+
+        @cmn_params[:key] = token
       end
 
       # Trigger fetching
@@ -98,9 +100,10 @@ module Ossert
       def process_questions_total
         community.total.questions_count = fetch_questions(filter: :total)[:total]
         community.total.questions_resolved_count = fetch_resolved_questions(filter: :total)[:total]
-        if last_question = fetch_questions(order: :desc, pagesize: 5).dig(:items, 0)
-          community.total.last_question_date = last_question[:creation_date]
-        end
+        last_question = fetch_questions(order: :desc, pagesize: 5).dig(:items, 0)
+        return unless last_question
+
+        community.total.last_question_date = last_question[:creation_date]
       end
 
       # Process last year stats
@@ -115,9 +118,8 @@ module Ossert
           quarter = community.quarters[question[:creation_date]]
 
           quarter.questions << question[:question_id]
-          if question[:is_answered]
-            quarter.questions_resolved << question[:question_id]
-          end
+
+          quarter.questions_resolved << question[:question_id] if question[:is_answered]
           if question[:owner][:user_id] && !quarter.questioners.include?(question[:owner][:user_id])
             quarter.questioners << question[:owner][:user_id]
             quarter.questioner_rep << question[:owner][:reputation]

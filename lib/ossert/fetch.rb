@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require 'nokogiri'
 require 'open-uri'
 require 'benchmark'
@@ -9,7 +10,6 @@ require 'ossert/fetch/rubygems'
 require 'ossert/fetch/bestgems'
 require 'ossert/fetch/stackoverflow'
 
-
 module Ossert
   # Public: Various classes and methods for fetching data from different sources.
   # Such as GitHub, Rubygems, Bestgems, StackOverflow. Also provides simple
@@ -17,7 +17,9 @@ module Ossert
   # TODO: Add logging
   module Fetch
     def all_fetchers
-      @all_fetchers ||= ::Settings['all_fetchers'].map { |fetcher_name| Kernel.const_get("Ossert::Fetch::#{fetcher_name}") }
+      @all_fetchers ||= ::Settings['all_fetchers'].map do |fetcher_name|
+        Kernel.const_get("Ossert::Fetch::#{fetcher_name}")
+      end
     end
     module_function :all_fetchers
 
@@ -40,21 +42,21 @@ module Ossert
           time = Benchmark.realtime do
             fetcher.new(project).process
           end
-        rescue => e
+        rescue StandardError => e
           retry_count -= 1
           raise e if retry_count.zero?
 
           puts "Attempt #{3 - retry_count} Failed for '#{name}' with error: #{e.inspect}"
-          puts "Wait..."
+          puts 'Wait...'
           sleep(15 * retry_count)
-          puts "Retrying..."
+          puts 'Retrying...'
           retry
         end
         puts "<====== Finished in #{time.round(3)} sec."
         sleep(1)
       end
       nil
-    rescue => e
+    rescue StandardError => e
       puts "Fetching Failed for '#{name}' with error: #{e.inspect}"
       puts e.backtrace
     end

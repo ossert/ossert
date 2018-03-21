@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 Sequel.migration do
   up do
     run 'ALTER TABLE projects ALTER COLUMN agility_total_data SET DATA TYPE jsonb USING agility_total_data::jsonb;'

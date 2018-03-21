@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require 'ossert/classifiers/base'
 require 'ossert/classifiers/decision_tree'
 require 'ossert/classifiers/growing'
@@ -8,15 +9,15 @@ require 'ossert/classifiers/check'
 module Ossert
   module Classifiers
     # The list of available data sections.
-    SECTIONS = %i(agility community)
+    SECTIONS = %i[agility community].freeze
     # The list of available data periods.
-    PERIODS = %i(total quarter last_year)
+    PERIODS = %i[total quarter last_year].freeze
     # The list of available classifiers.
     # It is calculated from all combinations of SECTIONS and PERIODS.
     CLASSIFIERS = SECTIONS.product(PERIODS).map { |s, p| "#{s}_#{p}".to_sym }
 
     # The list of available grades for a project and its metrics.
-    GRADES = %w(ClassA ClassB ClassC ClassD ClassE).freeze
+    GRADES = %w[ClassA ClassB ClassC ClassD ClassE].freeze
     # The map of available grades to its reversed version.
     REVERSED_GRADES = GRADES.zip(GRADES.reverse).to_h.freeze
 
@@ -53,7 +54,7 @@ module Ossert
       # @param metric_name [String] to check.
       # @return [true, false] check result.
       def reversed?(metric_name)
-        @reversed.(metric_name)
+        @reversed.call(metric_name)
       end
 
       # Class for base threshold to range behavior

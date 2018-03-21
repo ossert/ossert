@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require 'ossert/presenters/project_v2'
 
 module Ossert
@@ -60,7 +61,7 @@ module Ossert
           { text: "#{text}&nbsp;#{Project::KLASS_2_GRADE[reference]}",
             value: value,
             mark: Project::KLASS_2_GRADE[reference].downcase }
-        rescue => e
+        rescue StandardError => e
           puts "NO DATA FOR METRIC: '#{metric}'"
           raise e
         end
@@ -187,7 +188,7 @@ module Ossert
         return [] unless Kernel.const_get("Ossert::Stats::#{section.capitalize}Quarter").metrics.include? metric
 
         history = []
-        @project.send(section).quarters.reverse_each_sorted do |quarter, data|
+        @project.send(section).quarters.reverse_each_sorted do |_quarter, data|
           decorated_metric = decorator.metric(metric, data.send(metric), "#{section}_quarter".to_sym)
           history << {
             value: decorated_metric[:value],

@@ -17,5 +17,3 @@ env:
     - REDIS_URL='redis://localhost'
 before_script:
   - bundle exec rake db:test:prepare
-script:
- - bundle exec rspec

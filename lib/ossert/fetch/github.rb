@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require 'octokit'
 
 module Ossert
@@ -247,13 +248,12 @@ module Ossert
         values = @pulls_processed_in_days.to_a.sort
         agility.total.pr_processed_in_avg = values.count.positive? ? values.sum / values.count : 0
         agility.total.pr_processed_in_median = if values.count.odd?
-                                              values[values.count / 2]
-                                            elsif values.count.zero?
-                                              0
-                                            else
-                                              ((values[values.count / 2 - 1] + values[values.count / 2]) / 2.0).to_i
-                                            end
-
+                                                 values[values.count / 2]
+                                               elsif values.count.zero?
+                                                 0
+                                               else
+                                                 ((values[values.count / 2 - 1] + values[values.count / 2]) / 2.0).to_i
+                                               end
 
         retry_call do
           pulls_comments do |pull_comment|
@@ -330,12 +330,12 @@ module Ossert
         values = @issues_processed_in_days.to_a.sort
         agility.total.issues_processed_in_avg = values.count.positive? ? values.sum / values.count : 0
         agility.total.issues_processed_in_median = if values.count.odd?
-                                                  values[values.count / 2]
-                                                elsif values.count.zero?
-                                                  0
-                                                else
-                                                  ((values[values.count / 2 - 1] + values[values.count / 2]) / 2.0).to_i
-                                                end
+                                                     values[values.count / 2]
+                                                   elsif values.count.zero?
+                                                     0
+                                                   else
+                                                     ((values[values.count / 2 - 1] + values[values.count / 2]) / 2.0).to_i
+                                                   end
 
         issues_comments do |issue_comment|
           login = issue_comment[:user].try(:[], :login).presence || generate_anonymous
@@ -352,9 +352,7 @@ module Ossert
             next
           end
 
-          if community.total.contributors.include? login
-            agility.total.issues_with_contrib_comments << issue_url
-          end
+          agility.total.issues_with_contrib_comments << issue_url if community.total.contributors.include? login
 
           community.total.users_commenting_issues << login
           community.quarters[issue_comment[:created_at]].users_commenting_issues << login

@@ -11,18 +11,34 @@ Metrics/AbcSize:
   Max: 16
   Exclude:
     - 'lib/ossert/fetch/github.rb'
+    - 'lib/ossert/presenters/project.rb'
+    - 'lib/ossert/stats/agility_total.rb'
+    - 'lib/ossert/workers/fetch_bestgems_page.rb'
+    - 'lib/ossert/classifiers/growing/classifier.rb'
+    - 'lib/ossert/classifiers/cluster.rb'
+    - 'lib/ossert/fetch/stackoverflow.rb'
+    - 'lib/ossert/fetch/rubygems.rb'
+    - 'lib/ossert/fetch.rb'
+    - 'lib/ossert/project.rb'
+    - 'lib/ossert/reference.rb'
 
 Metrics/BlockLength:
   Exclude:
     - 'ossert.gemspec'
     - 'lib/ossert/tasks/ossert.rake'
     - 'lib/ossert/tasks/database.rake'
+    - 'lib/ossert/classifiers/cluster.rb'
     - 'spec/ossert_spec.rb'
     - 'spec/spec_helper.rb'
+    - 'spec/ossert_stats_spec.rb'
 
 Metrics/ClassLength:
   Exclude:
     - 'lib/ossert/fetch/github.rb'
+    - 'lib/ossert/project.rb'
+    - 'lib/ossert/stats/base.rb'
+    - 'lib/ossert/presenters/project.rb'
+    - 'lib/ossert/classifiers/cluster.rb'
 
 Metrics/CyclomaticComplexity:
   Exclude:
@@ -31,6 +47,17 @@ Metrics/CyclomaticComplexity:
 Metrics/MethodLength:
   Exclude:
     - 'lib/ossert/fetch/github.rb'
+    - 'lib/ossert/fetch/stackoverflow.rb'
+    - 'lib/ossert/workers/fetch_bestgems_page.rb'
+    - 'lib/ossert/presenters/project_v2.rb'
+    - 'lib/ossert/classifiers/cluster.rb'
+    - 'lib/ossert/presenters/project.rb'
+    - 'lib/ossert/classifiers/growing.rb'
+    - 'lib/ossert/fetch.rb'
+    - 'lib/ossert/reference.rb'
+    - 'lib/ossert/classifiers/growing/classifier.rb'
+    - 'lib/ossert/classifiers/check.rb'
+    - 'lib/ossert/classifiers/decision_tree.rb'
 
 Metrics/PerceivedComplexity:
   Max: 16
@@ -39,6 +66,17 @@ Metrics/PerceivedComplexity:
 
 Metrics/LineLength:
   Max: 120
+  Exclude:
+    - 'lib/ossert/repositories.rb'
+    - 'db/migrate/007_migrate_json_to_jsonb.rb'
+    - 'lib/ossert/fetch/github.rb'
 
 Style/Documentation:
   Enabled: false
+
+# Offense count: 3
+Style/DateTime:
+  Exclude:
+    - 'lib/ossert/fetch/github.rb'
+    - 'lib/ossert/quarters_store.rb'
+    - 'lib/ossert/repositories.rb'

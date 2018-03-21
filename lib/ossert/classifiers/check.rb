@@ -1,14 +1,15 @@
 # frozen_string_literal: true
+
 module Ossert
   module Classifiers
     class Check
-      GRADES = %w(
+      GRADES = %w[
         A
         B
         C
         D
         E
-      ).freeze
+      ].freeze
       KLASS_2_GRADE = {
         'ClassA' => 'A',
         'ClassB' => 'B',
@@ -106,7 +107,7 @@ module Ossert
               rate(
                 rates,
                 metrics[period.to_s],
-                @project.data_for(section: section, period: period, opts: {last_year_offset: @last_year_offset}),
+                @project.data_for(section: section, period: period, opts: { last_year_offset: @last_year_offset }),
                 @classifiers.fetch("#{section}_#{period}".to_sym)
               )
             end
@@ -189,8 +190,8 @@ module Ossert
         #   strategy
         def strategy
           {
-            last_year: [:agility, :community],
-            total: [:agility, :community]
+            last_year: %i[agility community],
+            total: %i[agility community]
           }
         end
       end

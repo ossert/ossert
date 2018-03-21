@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require 'ossert/stats/base'
 require 'ossert/stats/agility_total'
 require 'ossert/stats/agility_quarter'

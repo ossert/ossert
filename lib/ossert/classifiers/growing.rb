@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require 'ossert/classifiers/growing/classifier'
 
 module Ossert
@@ -34,7 +35,7 @@ module Ossert
         classifiers_initializer = ClassifiersInitializer.load_or_create
         classifiers_initializer.run
         @classifiers = classifiers_initializer.classifiers.map do |name, classifier|
-           Classifier.new(classifier, self.class.config, name).train
+          Classifier.new(classifier, self.class.config, name).train
         end.to_h
       end
 

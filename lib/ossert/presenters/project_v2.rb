@@ -1,15 +1,16 @@
 # frozen_string_literal: true
+
 module Ossert
   module Presenters
     module ProjectV2
       # The list of projects class types
-      CLASSES = %w(
+      CLASSES = %w[
         ClassE
         ClassD
         ClassC
         ClassB
         ClassA
-      ).freeze
+      ].freeze
       # The map of class to its grade
       KLASS_2_GRADE = {
         'ClassA' => 'A',
@@ -67,7 +68,7 @@ module Ossert
         section = Ossert::Stats.guess_section_by_metric(metric)
         ranks = classes.inject([]) do |preview, klass|
           base = { type: KLASS_2_GRADE[klass].downcase, quarter: ' N/A ', last_year: ' N/A ', total: ' N/A ' }
-          rank = [:quarter, :last_year, :total].each_with_object(base) do |period, result|
+          rank = %i[quarter last_year total].each_with_object(base) do |period, result|
             next unless (metric_data = metric_tooltip_data(metric, section, period, klass)).present?
             result[period] = metric_data
           end

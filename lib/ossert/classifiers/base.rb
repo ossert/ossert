@@ -1,10 +1,11 @@
 # frozen_string_literal: true
+
 module Ossert
   module Classifiers
     class Base
       # @return [Hash] the configuration of Cluster classifier.
       def self.config
-        fail NotImplementedError
+        raise NotImplementedError
       end
 
       # (see .config)
@@ -86,7 +87,7 @@ module Ossert
       # @return [Hash<Symbol, Hash>] collection of classifiers for all combinations
       #   of data sections and periods.
       def train
-        fail NotImplementedError
+        raise NotImplementedError
       end
     end
   end

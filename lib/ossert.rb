@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require 'ossert/version'
 require 'sequel'
 require 'active_support/all' # TODO: remove later

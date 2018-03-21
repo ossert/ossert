@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require 'simplecov'
 SimpleCov.start
 
@@ -7,7 +8,7 @@ if ENV['CI']
   SimpleCov.formatter = SimpleCov::Formatter::Codecov
 end
 
-$LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
+$LOAD_PATH.unshift File.expand_path('../lib', __dir__)
 
 ENV['TEST'] = '1'
 
@@ -138,7 +139,7 @@ def env_token_for(source)
 end
 
 def fixture_path
-  File.expand_path('../fixtures', __FILE__)
+  File.expand_path('fixtures', __dir__)
 end
 
 def fixture(file)

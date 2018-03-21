@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require 'kmeans-clusterer'
 
 module Ossert
@@ -13,7 +14,7 @@ module Ossert
       #
       # @return [Ossert::Classifiers::Cluster] initialized cluster classifer
       def self.current
-        @current ||= new(YAML::load_file(Config.path(THRESHOLDS_PATH)))
+        @current ||= new(YAML.load_file(Config.path(THRESHOLDS_PATH)))
       end
 
       # @return [Hash] the configuration of Cluster classifier.
@@ -98,9 +99,9 @@ module Ossert
       # @return not specified.
       def self.train_all_sections_thresholds
         {
-          Ossert::Stats::AgilityQuarter => [:quarter, :last_year],
+          Ossert::Stats::AgilityQuarter => %i[quarter last_year],
           Ossert::Stats::AgilityTotal => [:total],
-          Ossert::Stats::CommunityQuarter => [:quarter, :last_year],
+          Ossert::Stats::CommunityQuarter => %i[quarter last_year],
           Ossert::Stats::CommunityTotal => [:total]
         }.each_pair do |section_klass, periods|
           periods.each do |period|
@@ -123,7 +124,7 @@ module Ossert
 
         # TODO: move demodulize and whole logic to Utils somewhere
         section = section_klass.to_s.demodulize.underscore.split('_').first.to_sym
-        data = {period => {}}
+        data = { period => {} }
 
         Ossert::Project.yield_all do |project|
           next if project.without_github_data?
@@ -142,12 +143,14 @@ module Ossert
               # Find the best number of clusters to fit the data
               # ks = 3.upto(5).to_a
               ks = [5] # Using 5 to have valid number of thresholds
-              errors, silhouettes = [], []
+              errors = []
+              silhouettes = []
 
               runs = ks.map do |k|
                 begin
                   kmeans = KMeansClusterer.run k, data[period][metric], runs: 3
-                  error, ss = kmeans.error, kmeans.silhouette
+                  error = kmeans.error
+                  ss = kmeans.silhouette
                 rescue ArgumentError, RuntimeError
                   errors << 0.0
                   silhouettes << 0.0
@@ -172,7 +175,6 @@ module Ossert
               end.sort.reverse
 
               distrib_yaml[section][period][metric] = distrib_yaml[section][period][metric].sort.reverse.to_h
-
 
               # Hardcode way to make centroids more accessible for arbitrary project
               #
@@ -209,9 +211,9 @@ module Ossert
       # @return not specified.
       def self.write_yaml(name = Config.path(THRESHOLDS_PATH))
         require 'yaml'
-        yaml = File.exist?(name) ? YAML::load_file(name) : {}
+        yaml = File.exist?(name) ? YAML.load_file(name) : {}
         yield yaml
-        File.open(name, 'w') {|f| f.write yaml.to_yaml }
+        File.open(name, 'w') { |f| f.write yaml.to_yaml }
       end
     end
   end

@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 module Ossert
   module Classifiers
     class Growing < Base
@@ -39,9 +40,7 @@ module Ossert
           GRADES.each_with_index do |grade, idx|
             classifier[grade].each_pair do |metric, values|
               all_values = values
-              if (idx + 1) < GRADES.count
-                all_values += classifier[GRADES[idx + 1]][metric]
-              end
+              all_values += classifier[GRADES[idx + 1]][metric] if (idx + 1) < GRADES.count
 
               classifier[grade][metric] =
                 if all_values.count <= 2

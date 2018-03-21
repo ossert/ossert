@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 module Ossert
   module Stats
     class AgilityTotal < Base

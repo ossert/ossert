@@ -1,8 +1,9 @@
 # frozen_string_literal: true
+
 module Ossert
   module Reference
     def prepare_projects!
-      references = %w(A B C D E).map { |e| Kernel.const_get("Ossert::Reference::Class#{e}").new }
+      references = %w[A B C D E].map { |e| Kernel.const_get("Ossert::Reference::Class#{e}").new }
       references.each(&:prepare_projects!)
       references
     end
@@ -25,7 +26,7 @@ module Ossert
     module_function :process_references
 
     class Base
-      CLASSES = %w(ClassA ClassB ClassC ClassD ClassE).freeze
+      CLASSES = %w[ClassA ClassB ClassC ClassD ClassE].freeze
 
       attr_reader :representative, :pages
       attr_accessor :project_names

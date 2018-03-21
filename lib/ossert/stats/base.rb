@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 module Ossert
   module Stats
     # A base class for storing and handling values extracted from the projects.

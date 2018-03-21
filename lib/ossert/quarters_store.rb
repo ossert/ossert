@@ -1,9 +1,10 @@
 # frozen_string_literal: true
+
 module Ossert
   # Public: Class for data divided by quarters. Each quarter instantiates some statistics class.
   # Contains methods for quarters calculations, such as grouping, preview and other.
   class QuartersStore
-    attr_reader :quarters, :data_klass, :start_date, :end_date
+    attr_reader :quarters, :start_date, :end_date
 
     # Public: Instantiate QuarterStore
     #

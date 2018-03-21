@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 module Ossert
   module Fetch
     class BestgemsBase
@@ -60,7 +61,7 @@ module Ossert
       def process_total_downloads
         @downloads_till_now = nil
         total_downloads.each do |total|
-          @downloads_till_now = total unless @downloads_till_now
+          @downloads_till_now ||= total
           quarter_downloads = community.quarters[total[:date]]
 
           quarter_downloads.total_downloads = [

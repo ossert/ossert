@@ -1,6 +1,6 @@
-# coding: utf-8
 # frozen_string_literal: true
-lib = File.expand_path('../lib', __FILE__)
+
+lib = File.expand_path('lib', __dir__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require 'ossert/version'
 
@@ -28,23 +28,23 @@ Gem::Specification.new do |spec|
   spec.add_runtime_dependency 'sidekiq-unique-jobs'
 
   spec.add_runtime_dependency 'activesupport' # TODO: remove dependency later
-  spec.add_runtime_dependency 'oj'
-  spec.add_runtime_dependency 'multi_json'
-  spec.add_runtime_dependency 'sequel', '< 5'
-  spec.add_runtime_dependency 'pg'
-  spec.add_runtime_dependency 'nokogiri'
-  spec.add_runtime_dependency 'graphr'
-  spec.add_runtime_dependency 'rake', '~> 10.0'
   spec.add_runtime_dependency 'gnuplot'
+  spec.add_runtime_dependency 'graphr'
+  spec.add_runtime_dependency 'multi_json'
+  spec.add_runtime_dependency 'nokogiri'
+  spec.add_runtime_dependency 'oj'
+  spec.add_runtime_dependency 'pg'
+  spec.add_runtime_dependency 'rake', '~> 10.0'
+  spec.add_runtime_dependency 'sequel', '< 5'
 
-  spec.add_development_dependency 'memory_profiler'
-  spec.add_development_dependency 'yard'
-  spec.add_development_dependency 'rubocop'
   spec.add_development_dependency 'bundler', '~> 1.11'
+  spec.add_development_dependency 'codecov'
+  spec.add_development_dependency 'memory_profiler'
   spec.add_development_dependency 'pry'
   spec.add_development_dependency 'rspec', '~> 3.0'
+  spec.add_development_dependency 'rubocop', '~> 0.53'
   spec.add_development_dependency 'timecop'
-  spec.add_development_dependency 'codecov'
-  spec.add_development_dependency 'webmock'
   spec.add_development_dependency 'vcr'
+  spec.add_development_dependency 'webmock'
+  spec.add_development_dependency 'yard'
 end
