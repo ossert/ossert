@@ -18,10 +18,10 @@ module Ossert
         # will obtain the most suitable credentials
         credentials = Ossert::Twitter::Credentials.default
         tweets = Ossert::Twitter::TweetsFetcher.new(project, credentials).call
-        metrics = Ossert::Twitter::MetricsCollector.new(tweets).call
+        Ossert::Twitter::MetricsCollector.new(tweets).call
 
         # will store metrics to database
-     end
+      end
     end
   end
 end

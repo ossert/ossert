@@ -22,7 +22,7 @@ namespace :ossert do
       end
     end
   end
- 
+
   namespace :refresh do
     desc 'Refresh StackOverflow data for all projects'
     task :stackoverflow do

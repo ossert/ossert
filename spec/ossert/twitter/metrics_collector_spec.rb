@@ -2,25 +2,17 @@
 
 require 'spec_helper'
 
+# rubocop:disable Metrics/BlockLength
 describe Ossert::Twitter::MetricsCollector do
   describe 'new' do
     let(:collector) { described_class.new(tweets) }
+    let(:tweets) { json.map { |j| ::Twitter::Tweet.new(j) } }
+    let(:json) do
+      symbolize_keys!(JSON.parse(File.read('spec/fixtures/twitter/' + fixture_file)))
+    end
 
     context 'tweet without reply and retweet' do
-      let(:tweets) do
-        [
-          ::Twitter::Tweet.new(
-            {
-              id: 123,
-              favorite_count: 12, 
-              user: {
-                followers_count: 3, id: '1'
-              }
-            }
-          )
-        ]
-      end
-
+      let(:fixture_file) { 'tweet_without_reply.json' }
       it do
         expect(collector.call).to have_attributes(
           tweets_count: 1,
@@ -34,21 +26,7 @@ describe Ossert::Twitter::MetricsCollector do
     end
 
     context 'one tweet with reply and retweet' do
-      let(:tweets) do
-        [
-          ::Twitter::Tweet.new(
-            {
-              id: 123,
-              in_reply_to_user_id: 123,
-              retweeted_status: {id: 123},
-              favorite_count: 12,
-              user: {
-                followers_count: 3, id: 1
-              }
-            }
-          )
-        ]
-      end
+      let(:fixture_file) { 'tweet_with_reply.json' }
 
       it do
         expect(collector.call).to have_attributes(
@@ -63,33 +41,7 @@ describe Ossert::Twitter::MetricsCollector do
     end
 
     context 'several tweets with reply and retweet' do
-      let(:tweets) do
-        [
-          {
-            id: 123,
-            in_reply_to_user_id: 123,
-            retweeted_status: {
-              id: 123
-            },
-            favorite_count: 12,
-            user: {
-              followers_count: 3,
-              id: 1
-            }
-          },
-          {
-            id: 123,
-            retweeted_status: {
-              id: 123
-            },
-            favorite_count: 52,
-            user: {
-              followers_count: 5,
-              id: 4
-            }
-          }
-        ].map { |j| ::Twitter::Tweet.new(j) }
-      end
+      let(:fixture_file) { 'tweets.json' }
 
       it do
         expect(collector.call).to have_attributes(
@@ -100,7 +52,8 @@ describe Ossert::Twitter::MetricsCollector do
           coverage: 8,
           twitters_count: 2
         )
-     end
+      end
     end
   end
 end
+# rubocop:enable Metrics/BlockLength

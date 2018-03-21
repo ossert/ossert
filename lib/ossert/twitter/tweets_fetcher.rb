@@ -5,7 +5,7 @@ require 'ossert/twitter/search_results_validator'
 module Ossert
   module Twitter
     class TweetsFetcher
-      DEFAULT_TIMEOUTS = {connect: 2.seconds, read: 2.seconds}.freeze
+      DEFAULT_TIMEOUTS = { connect: 2.seconds, read: 2.seconds }.freeze
       attr_reader :project, :credentials, :timeouts
 
       def initialize(project, credentials, timeouts = nil)

@@ -5,8 +5,8 @@ module Ossert
     # Twitter API access tokens
     class Credentials
       class << self
-        @default ||= def default
-          {
+        def default
+          @default ||= {
             consumer_key: ENV.fetch('TWITTER_CONSUMER_KEY'),
             consumer_secret: ENV.fetch('TWITTER_CONSUMER_SECRET'),
             access_token: ENV.fetch('TWITTER_ACCESS_TOKEN'),

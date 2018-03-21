@@ -23,7 +23,8 @@ module Ossert
 
         def call!(json)
           schema_file = File.join(
-            Ossert::Config::CONFIG_ROOT, 'twitter', 'search_results_schema.json')
+            Ossert::Config::CONFIG_ROOT, 'twitter', 'search_results_schema.json'
+          )
           JSON::Validator.validate!(schema_file, json)
         end
 
