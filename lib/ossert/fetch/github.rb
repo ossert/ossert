@@ -253,7 +253,7 @@ module Ossert
                                                  0
                                                else
                                                  ((values[values.count / 2 - 1] + values[values.count / 2]) / 2.0).to_i
-                                            end
+                                               end
 
         retry_call do
           pulls_comments do |pull_comment|
@@ -335,7 +335,7 @@ module Ossert
                                                      0
                                                    else
                                                      ((values[values.count / 2 - 1] + values[values.count / 2]) / 2.0).to_i
-                                                end
+                                                   end
 
         issues_comments do |issue_comment|
           login = issue_comment[:user].try(:[], :login).presence || generate_anonymous
@@ -352,9 +352,7 @@ module Ossert
             next
           end
 
-          if community.total.contributors.include? login
-            agility.total.issues_with_contrib_comments << issue_url
-          end
+          agility.total.issues_with_contrib_comments << issue_url if community.total.contributors.include? login
 
           community.total.users_commenting_issues << login
           community.quarters[issue_comment[:created_at]].users_commenting_issues << login

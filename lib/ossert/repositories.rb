@@ -76,7 +76,7 @@ class Project < Sequel::Model
 
     private
 
-    def process_meta(result = {})
+    def process_meta
       result = {
         created_at: @stored_project.created_at,
         updated_at: @stored_project.updated_at

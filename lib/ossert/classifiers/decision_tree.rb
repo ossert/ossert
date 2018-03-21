@@ -32,7 +32,6 @@ module Ossert
       attr_reader :agility_total_dec_tree,
                   :agility_last_year_dec_tree,
                   :community_total_dec_tree,
-                  :community_total_dec_tree,
                   :community_last_year_dec_tree
 
       # Run a decision tree predict process for given project.

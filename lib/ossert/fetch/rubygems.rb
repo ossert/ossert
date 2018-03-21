@@ -20,7 +20,7 @@ module Ossert
       end
 
       def version_info
-        @info ||= client.get("versions/#{project.rubygems_alias}.json")
+        @version_info ||= client.get("versions/#{project.rubygems_alias}.json")
       end
 
       def releases

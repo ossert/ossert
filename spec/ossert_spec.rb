@@ -328,8 +328,8 @@ describe Ossert do
           @result = nil
         end
 
-        def sum(a, b)
-          process_in_fork(force: true) { @result = a + b }
+        def sum(attr1, attr2)
+          process_in_fork(force: true) { @result = attr1 + attr2 }
         end
       end
       # not working... need to figure out why

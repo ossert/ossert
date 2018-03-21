@@ -17,7 +17,9 @@ module Ossert
   # TODO: Add logging
   module Fetch
     def all_fetchers
-      @all_fetchers ||= ::Settings['all_fetchers'].map { |fetcher_name| Kernel.const_get("Ossert::Fetch::#{fetcher_name}") }
+      @all_fetchers ||= ::Settings['all_fetchers'].map do |fetcher_name|
+        Kernel.const_get("Ossert::Fetch::#{fetcher_name}")
+      end
     end
     module_function :all_fetchers
 
