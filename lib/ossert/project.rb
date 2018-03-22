@@ -6,7 +6,7 @@ module Ossert
 
     attr_accessor :name, :github_alias, :rubygems_alias,
                   :community, :agility, :reference,
-                  :meta, :created_at, :updated_at
+                  :meta, :created_at, :updated_at, :id
 
     # Public: Default structure of meta data for project
     META_STUB = {

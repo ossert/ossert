@@ -134,9 +134,8 @@ module Ossert
           stored_project.rubygems_name,
           stored_project.reference
         )
-        project.assign_data(
-          ::Project::Unpacker.process(stored_project)
-        )
+        project.id = stored_project.id
+        project.assign_data(::Project::Unpacker.process(stored_project))
         project
       end
     end

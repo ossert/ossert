@@ -83,7 +83,7 @@ RSpec.configure do |config|
     Ossert.init(DB_URL)
 
     db = Sequel.connect(DB_URL)
-    db.run('TRUNCATE TABLE projects;')
+    db.run('TRUNCATE TABLE projects CASCADE;')
     db.run('TRUNCATE TABLE exceptions;')
     db.run('TRUNCATE TABLE classifiers;')
 
@@ -134,7 +134,7 @@ RSpec.configure do |config|
   config.after(:suite) do
     Timecop.return
     db = Sequel.connect(DB_URL)
-    db.run('TRUNCATE TABLE projects;')
+    db.run('TRUNCATE TABLE projects CASCADE;')
   end
 end
 
