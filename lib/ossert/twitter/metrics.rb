@@ -1,15 +1,19 @@
 # frozen_string_literal: true
 
+require 'virtus'
+
 module Ossert
   module Twitter
     # Transfer object for twitter metrics
-    Metrics = Struct.new(:tweets_count, :favorites_count, :replies_count,
-                         :retweets_count, :coverage, :twitters_count) do
+    class Metrics
+      include Virtus.model
 
-      # Initializes new instance with zero values
-      def initialize
-        super(0, 0, 0, 0, 0, 0)
-      end
+      attribute :tweets_count, Float, default: 0.0
+      attribute :favorites_count, Float, default: 0.0
+      attribute :replies_count, Float, default: 0.0
+      attribute :retweets_count, Float, default: 0.0
+      attribute :coverage, Float, default: 0.0
+      attribute :twitters_count, Float, default: 0.0
     end
   end
 end

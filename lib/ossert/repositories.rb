@@ -11,6 +11,9 @@ class NameException < Sequel::Model(:exceptions)
 end
 ::NameException.unrestrict_primary_key
 
+class TwitterMetrics < Sequel::Model(:twitter_metrics)
+end
+
 class Classifier < Sequel::Model
   set_primary_key [:section]
   # Calling a dataset filtering method with multiple arguments or

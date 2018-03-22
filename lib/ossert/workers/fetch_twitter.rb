@@ -22,12 +22,9 @@ module Ossert
 
       def perform(project_name)
         Ossert.init
-        project = Ossert::Project.find_by_name(project_name)
+        project = Ossert::Project.load_by_name(project_name)
 
-        metrics = Ossert::Fetch::Twitter.new(project).process
-
-        # temporary log collected data
-        logger.info("Procecced #{project_name} with #{metrics.inspect}")
+        Ossert::Fetch::Twitter.new(project).process
       end
     end
   end
