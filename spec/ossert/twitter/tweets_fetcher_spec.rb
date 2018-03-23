@@ -14,7 +14,7 @@ describe Ossert::Twitter::TweetsFetcher do
     end
 
     context 'deal with errors' do
-      it 'raises an exception whn response json is invalid' do
+      it 'raises an exception when response json is invalid' do
         expect { fetch_cassette('twitter/200/invalid') }.to raise_error JSON::Schema::ValidationError
       end
 

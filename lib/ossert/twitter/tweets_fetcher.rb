@@ -11,7 +11,7 @@ module Ossert
       def initialize(project, credentials, timeouts = nil)
         @project = project
         @credentials = credentials
-        @timeouts = timeouts
+        @timeouts = timeouts || DEFAULT_TIMEOUTS
       end
 
       def call
@@ -28,7 +28,7 @@ module Ossert
 
       def client
         @client ||= ::Twitter::REST::Client.new(
-          Credentials.default.merge(timeouts: timeouts || DEFAULT_TIMEOUTS)
+          Credentials.default.merge(timeouts: timeouts)
         )
       end
     end

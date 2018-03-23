@@ -16,7 +16,7 @@ module Ossert
         when ::Twitter::Error::TooManyRequests
           (exception.rate_limit.reset_at - Time.now) + RATE_LIMIT_ERROR_RETRY_DELTA
         else
-          raise 'Use default intervals'
+          raise
         end
       end
 

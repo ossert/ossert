@@ -22,13 +22,16 @@ module Ossert
         end
 
         def call!(json)
-          schema_file = File.join(
-            Ossert::Config::CONFIG_ROOT, 'twitter', 'search_results_schema.json'
-          )
           JSON::Validator.validate!(schema_file, json)
         end
 
         private
+
+        def schema_file
+          @schema_file ||= File.join(
+            Ossert::Config::CONFIG_ROOT, 'twitter', 'search_results_schema.json'
+          )
+        end
 
         def enable!
           Thread.current[name] = true
