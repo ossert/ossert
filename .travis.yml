@@ -7,13 +7,5 @@ addons:
   postgresql: "9.4"
 services:
   - redis
-env:
-  global:
-    - GITHUB_TOKEN_ARRAY="6a21f190e3422bf89afa8b360d923b0c30e8fbfa"
-    - SO_TOKEN_ARRAY="1*H*o7hMKLwv4sRa5CItlg(("
-    - GITHUB_TOKEN=6a21f190e3422bf89afa8b360d923b0c30e8fbfa
-    - SO_TOKEN="1*H*o7hMKLwv4sRa5CItlg(("
-    - TEST_DATABASE_URL='postgres://localhost/ossert_test'
-    - REDIS_URL='redis://localhost'
 before_script:
   - bundle exec rake db:test:prepare

@@ -37,11 +37,17 @@ Gem::Specification.new do |spec|
   spec.add_runtime_dependency 'rake', '~> 10.0'
   spec.add_runtime_dependency 'sequel', '< 5'
 
+  spec.add_runtime_dependency 'json-schema'
+  spec.add_runtime_dependency 'twitter'
+
   spec.add_development_dependency 'bundler', '~> 1.11'
+  spec.add_development_dependency 'byebug'
   spec.add_development_dependency 'codecov'
+  spec.add_development_dependency 'dotenv'
   spec.add_development_dependency 'memory_profiler'
   spec.add_development_dependency 'pry'
   spec.add_development_dependency 'rspec', '~> 3.0'
+  spec.add_development_dependency 'rspec-sidekiq'
   spec.add_development_dependency 'rubocop', '~> 0.53'
   spec.add_development_dependency 'timecop'
   spec.add_development_dependency 'vcr'
