@@ -28,17 +28,14 @@ module Ossert
       private
 
       def create_metrics(base_attrs, metrics)
-        TwitterMetrics.create(base_attrs.merge(metrics.attributes))
+        TwitterMetrics.create(base_attrs.merge(metrics))
       end
 
       def update_metrics(record, date, metrics)
-        previous_metrics = Ossert::Twitter::Metrics.new(record.values)
-
         record.update(
           Ossert::Twitter::MetricsAverager
-            .new(previous_date: canonical(date), previous_metrics: previous_metrics)
+            .new(previous_date: canonical(date), previous_metrics: record.values)
             .call(next_date: date, next_metrics: metrics)
-            .attributes
         )
       end
 

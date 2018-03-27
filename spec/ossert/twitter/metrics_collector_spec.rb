@@ -14,7 +14,7 @@ describe Ossert::Twitter::MetricsCollector do
     context 'tweet without reply and retweet' do
       let(:fixture_file) { 'tweet_without_reply.json' }
       it do
-        expect(collector.call).to have_attributes(
+        expect(collector.call).to eq(
           tweets_count: 1,
           replies_count: 0,
           retweets_count: 0,
@@ -29,7 +29,7 @@ describe Ossert::Twitter::MetricsCollector do
       let(:fixture_file) { 'tweet_with_reply.json' }
 
       it do
-        expect(collector.call).to have_attributes(
+        expect(collector.call).to eq(
           tweets_count: 1,
           replies_count: 1,
           retweets_count: 1,
@@ -44,7 +44,7 @@ describe Ossert::Twitter::MetricsCollector do
       let(:fixture_file) { 'tweets.json' }
 
       it do
-        expect(collector.call).to have_attributes(
+        expect(collector.call).to eq(
           tweets_count: 2,
           replies_count: 1,
           retweets_count: 2,
