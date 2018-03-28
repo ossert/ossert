@@ -4,7 +4,8 @@ require 'spec_helper'
 
 describe Ossert::Fetch::Twitter do
   describe 'process' do
-    let(:fetcher) { described_class.new(project) }
+    let(:credentials) { Ossert::Twitter::Credentials.default }
+    let(:fetcher) { described_class.new(project, credentials) }
     let(:project) { Ossert::Project.load_by_name('sidekiq') }
     let(:date) { Date.today }
     let(:metrics) do
