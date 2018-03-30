@@ -2,6 +2,7 @@
 
 require 'spec_helper'
 
+# rubocop:disable Metrics/BlockLength
 describe Ossert::Twitter::Credentials do
   describe 'consumer_key' do
     let(:consumer_key) { described_class.consumer_key }
@@ -34,14 +35,19 @@ describe Ossert::Twitter::Credentials do
 
   describe 'access_tokens' do
     it do
-      expect(described_class.access_tokens).to match_array([
-        described_class.default_access_token,
-        {
-          login: ENV.fetch('TWITTER_LOGIN1'),
-          access_token: ENV.fetch('TWITTER_ACCESS_TOKEN1'),
-          access_token_secret: ENV.fetch('TWITTER_ACCESS_TOKEN_SECRET1')
-        }
-      ])
+      expect(described_class.access_tokens).to(
+        match_array(
+          [
+            described_class.default_access_token,
+            {
+              login: ENV.fetch('TWITTER_LOGIN1'),
+              access_token: ENV.fetch('TWITTER_ACCESS_TOKEN1'),
+              access_token_secret: ENV.fetch('TWITTER_ACCESS_TOKEN_SECRET1')
+            }
+          ]
+        )
+      )
     end
   end
 end
+# rubocop:enable Metrics/BlockLength

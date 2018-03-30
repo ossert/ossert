@@ -12,13 +12,41 @@ namespace :ossert do
   end
 
   namespace :twitter do
-    desc 'Fetches twitter metrics for top 100 random projects'
-    task :enqueue_jobs do
+    desc 'Schedules twitter fetch jobs for nearest 24 hour'
+    task :schedule, [:dry_run] do
       require './config/sidekiq.rb'
       ::Ossert.init
 
-      Ossert::Project.random_top(100).each do |project|
-        Ossert::Workers::FetchTwitter.perform_async(project.name)
+      SCHEDULE_PERIOD = 24.hours
+
+      dry_run = ENV.fetch('DRY_RUN', false)
+      puts 'DRY RUN' if dry_run
+
+      dataset = ::Project
+                .dataset
+                .where(Sequel.lit('github_name NOT IN (?, ?)', Ossert::NO_GITHUB_NAME, Ossert::NOT_FOUND_GITHUB_NAME))
+                .select(:name)
+
+      projects_count = dataset.count
+
+      scheduler = Ossert::Twitter::Scheduler.new
+
+      tokens_count = Ossert::Twitter::Credentials.access_tokens.count
+      per_token = scheduler.capacity_per_token(SCHEDULE_PERIOD)
+      total_capacity = tokens_count * per_token
+ 
+      puts "Schedule #{total_capacity} of #{projects_count} (limited with capacity #{total_capacity})"
+      if dry_run
+        if projects_count > total_capacity
+          lacking_accounts_count = (projects_count - total_capacity) / per_token
+          abort("You need to add #{lacking_accounts_count} more twitter account(s)")
+        end
+      else
+        projects_to_schedule = dataset
+          .limit(total_capacity)
+          .order(:reference)
+          .use_cursor
+        scheduler.call(projects_to_schedule)
       end
     end
   end

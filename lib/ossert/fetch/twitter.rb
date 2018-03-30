@@ -14,7 +14,7 @@ module Ossert
       end
 
       def process
-        raise ArgumentError unless project.github_alias.present?
+        raise ArgumentError if project.without_github_data?
 
         tweets = Ossert::Twitter::TweetsFetcher.new(project, credentials).call
         metrics = Ossert::Twitter::MetricsCollector.new(tweets).call

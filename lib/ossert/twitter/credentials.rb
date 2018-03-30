@@ -6,6 +6,7 @@ module Ossert
   module Twitter
     # Twitter API access tokens
     class Credentials
+      MAX_TOKENS = 100
       class << self
         def consumer_key
           @consumer_key ||= {
@@ -19,19 +20,16 @@ module Ossert
         end
 
         def access_tokens
-          return @access_tokens unless @access_tokens.nil?
-          @access_tokens = [default_access_token]
+          @access_tokens ||=
+            (1..MAX_TOKENS).to_a.each_with_object([default_access_token]) do |index, tokens|
+              next if (access_token = ENV["TWITTER_ACCESS_TOKEN#{index}"]).nil?
 
-          i = 1
-          while (access_token = ENV["TWITTER_ACCESS_TOKEN#{i}"]) != nil do
-            @access_tokens.push(
-              login: ENV.fetch("TWITTER_LOGIN#{i}"),
-              access_token: access_token,
-              access_token_secret: ENV.fetch("TWITTER_ACCESS_TOKEN_SECRET#{i}")
-            )
-            i += 1
-          end
-          @access_tokens
+              tokens.push(
+                login: ENV.fetch("TWITTER_LOGIN#{index}"),
+                access_token: access_token,
+                access_token_secret: ENV.fetch("TWITTER_ACCESS_TOKEN_SECRET#{index}")
+              )
+            end
         end
 
         def default_access_token
