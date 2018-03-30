@@ -6,6 +6,7 @@ require 'ossert/twitter/metrics_updater'
 require 'ossert/twitter/metrics_averager'
 require 'ossert/twitter/search_results_patch'
 require 'ossert/twitter/tokens_rotator'
+require 'ossert/twitter/scheduler'
 require 'ossert/twitter/credentials'
 require 'twitter'
 

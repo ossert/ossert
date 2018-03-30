@@ -4,7 +4,7 @@ require 'spec_helper'
 
 describe Ossert::Workers::FetchTwitter do
   it 'retries failed job 3 times' do
-    is_expected.to be_retryable 3
+    is_expected.to be_retryable 5
   end
 
   describe 'perform' do
