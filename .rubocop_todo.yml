@@ -73,10 +73,3 @@ Metrics/LineLength:
 
 Style/Documentation:
   Enabled: false
-
-# Offense count: 3
-Style/DateTime:
-  Exclude:
-    - 'lib/ossert/fetch/github.rb'
-    - 'lib/ossert/quarters_store.rb'
-    - 'lib/ossert/repositories.rb'
