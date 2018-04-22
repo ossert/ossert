@@ -52,8 +52,7 @@ module Ossert
     # Returns begining of quarter DateTime.
     def date_to_start(date)
       if date.is_a? String
-        # Alternative, but more expensive: DateTime.parse(value).beginning_of_quarter.to_i
-        DateTime.new(*date.split('-').map(&:to_i)).beginning_of_quarter.to_i
+        Date.new(*date.split('-').map(&:to_i)).beginning_of_quarter.to_time(:utc).to_i
       else
         Time.at(date).to_date.to_time(:utc).beginning_of_quarter.to_i
       end

@@ -101,7 +101,7 @@ class Project < Sequel::Model
       end
 
       def coerce_value(value)
-        DateTime.parse(value)
+        Date.parse(value)
       rescue StandardError
         value
       end

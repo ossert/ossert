@@ -123,7 +123,7 @@ module Ossert
         tag_info = tag_info(sha)
         return tag_info[:tagger][:date] if tag_info
         value = commit(sha)[:commit][:committer][:date]
-        DateTime.new(*value.split('-').map(&:to_i)).to_i
+        Date.new(*value.split('-').map(&:to_i)).to_time(:utc).to_i
       end
 
       def commits_since(date)
