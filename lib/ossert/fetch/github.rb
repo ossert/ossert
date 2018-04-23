@@ -334,7 +334,7 @@ module Ossert
                                                    elsif values.count.zero?
                                                      0
                                                    else
-                                                     ((values[values.count / 2 - 1] + values[values.count / 2]) / 2.0).to_i
+                                                     (values[values.count / 2 - 1] + values[values.count / 2]) / 2
                                                    end
 
         issues_comments do |issue_comment|

@@ -13,8 +13,11 @@ end
 
 class Classifier < Sequel::Model
   set_primary_key [:section]
-  # Calling a dataset filtering method with multiple arguments or an array where the first argument/element is a string is deprecated and will be removed in Sequel 5.
-  # Use Sequel.lit("updated_at > ?", 2017-07-03 15:47:28 +0500) to create an SQL fragment expression and pass that to the dataset filtering method, or use the auto_literal_strings extension.
+  # Calling a dataset filtering method with multiple arguments or
+  # an array where the first argument/element is a string is deprecated and will be removed in Sequel 5.
+  # Use Sequel.lit("updated_at > ?", 2017-07-03 15:47:28 +0500) to create an SQL fragment expression and
+  # pass that to the dataset filtering method, or use the auto_literal_strings extension.
+
   def self.actual?
     where(Sequel.lit('updated_at > ?', 1.month.ago)).count.positive?
   end
@@ -24,7 +27,9 @@ end
 class Project < Sequel::Model
   set_primary_key [:name]
 
-  # Sequel::Model.def_dataset_method is deprecated and will be removed in Sequel 5.  Define the method inside a dataset_module block, or use the def_dataset_method_plugin.
+  # Sequel::Model.def_dataset_method is deprecated and will be removed in Sequel 5.
+  # Define the method inside a dataset_module block, or use the def_dataset_method_plugin.
+
   dataset_module do
     def random(count)
       where(Sequel.lit('github_name NOT IN (?, ?)', Ossert::NO_GITHUB_NAME, Ossert::NOT_FOUND_GITHUB_NAME))
@@ -39,8 +44,12 @@ class Project < Sequel::Model
     end
 
     def referenced
-      #  Calling a dataset filtering method with multiple arguments or an array where the first argument/element is a string is deprecated and will be removed in Sequel 5.
-      #  Use Sequel.lit("reference <> ? AND github_name NOT IN (?, ?)", "unused", "__unknown__", "__not_found__") to create an SQL fragment expression and pass that to the dataset filtering method, or use the auto_literal_strings extension.
+      # Calling a dataset filtering method with multiple arguments or
+      # an array where the first argument/element is a string is deprecated and will be removed in Sequel 5.
+      # Use Sequel.lit("reference <> ? AND github_name NOT IN (?, ?)", "unused", "__unknown__", "__not_found__")
+      # to create an SQL fragment expression and pass that to the dataset filtering method,
+      # or use the auto_literal_strings extension.
+
       where(
         Sequel.lit(
           'reference <> ? AND github_name NOT IN (?, ?)',

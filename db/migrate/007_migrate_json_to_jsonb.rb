@@ -2,10 +2,12 @@
 
 Sequel.migration do
   up do
-    run 'ALTER TABLE projects ALTER COLUMN agility_total_data SET DATA TYPE jsonb USING agility_total_data::jsonb;'
-    run 'ALTER TABLE projects ALTER COLUMN agility_quarters_data SET DATA TYPE jsonb USING agility_quarters_data::jsonb;'
-    run 'ALTER TABLE projects ALTER COLUMN community_total_data SET DATA TYPE jsonb USING community_total_data::jsonb;'
-    run 'ALTER TABLE projects ALTER COLUMN community_quarters_data SET DATA TYPE jsonb USING community_quarters_data::jsonb;'
-    run 'ALTER TABLE projects ALTER COLUMN meta_data SET DATA TYPE jsonb USING meta_data::jsonb;'
+    %w[agility_total_data
+       agility_quarters_data
+       community_total_data
+       community_quarters_data
+       meta_data].each do |column|
+      run "ALTER TABLE projects ALTER COLUMN #{column} SET DATA TYPE jsonb USING #{column}::jsonb;"
+    end
   end
 end
