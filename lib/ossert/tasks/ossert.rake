@@ -34,7 +34,7 @@ namespace :ossert do
       tokens_count = Ossert::Twitter::Credentials.access_tokens.count
       per_token = scheduler.capacity_per_token(SCHEDULE_PERIOD)
       total_capacity = tokens_count * per_token
- 
+
       puts "Schedule #{total_capacity} of #{projects_count} (limited with capacity #{total_capacity})"
       if dry_run
         if projects_count > total_capacity
@@ -43,9 +43,9 @@ namespace :ossert do
         end
       else
         projects_to_schedule = dataset
-          .limit(total_capacity)
-          .order(:reference)
-          .use_cursor
+                               .limit(total_capacity)
+                               .order(:reference)
+                               .use_cursor
         scheduler.call(projects_to_schedule)
       end
     end
