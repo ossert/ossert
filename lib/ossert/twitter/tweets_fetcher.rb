@@ -29,7 +29,7 @@ module Ossert
 
       def client
         @client ||= ::Twitter::REST::Client.new(
-          Credentials.default.merge(timeouts: timeouts)
+          credentials.merge(timeouts: timeouts)
         )
       end
     end

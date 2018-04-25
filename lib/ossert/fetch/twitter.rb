@@ -6,17 +6,15 @@ module Ossert
   module Fetch
     # Fetches metrics of passed project from Twitter and stores them to db
     class Twitter
-      attr_reader :project
+      attr_reader :project, :credentials
 
-      def initialize(project)
+      def initialize(project, credentials)
         @project = project
+        @credentials = credentials
       end
 
       def process
-        raise ArgumentError unless project.github_alias.present?
-
-        # will obtain the most suitable credentials
-        credentials = Ossert::Twitter::Credentials.default
+        raise ArgumentError if project.without_github_data?
 
         tweets = Ossert::Twitter::TweetsFetcher.new(project, credentials).call
         metrics = Ossert::Twitter::MetricsCollector.new(tweets).call
