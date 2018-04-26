@@ -50,11 +50,12 @@ module Ossert
     # date - the String, Numeric or DateTime to seek begining of quarter for.
     #
     # Returns begining of quarter DateTime.
-    def date_to_start(date)
-      if date.is_a? String
-        Date.new(*date.split('-').map(&:to_i)).beginning_of_quarter.to_time(:utc).to_i
+    def date_to_start(value)
+      if value.is_a? String
+        date = Date.new(*value.split('-').map(&:to_i)).beginning_of_quarter
+        Time.at((date - Ossert::Stats::ZERO_DAY).to_i * Ossert::Stats::SECONDS_IN_DAY).to_i
       else
-        Time.at(date).to_date.to_time(:utc).beginning_of_quarter.to_i
+        Time.at(value).to_date.to_time(:utc).beginning_of_quarter.to_i
       end
     end
 

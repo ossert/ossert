@@ -12,6 +12,10 @@ module Ossert
     PER_QUARTER_TOO_LONG = (5.years / 1.day).to_i
     # @return [Numeric] specifies too long interval border for year
     PER_YEAR_TOO_LONG = PER_QUARTER_TOO_LONG / 4
+    # @return [Numeric] specifies number of seconds in the day
+    SECONDS_IN_DAY = 86_400
+    # @return [Date] specifies UNIX epoch start
+    ZERO_DAY = Date.new(1970, 1, 1)
 
     # Try to find data section for given metric name.
     #
