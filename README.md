@@ -169,10 +169,10 @@ $ gem install ossert
 After that you should set `ENV` variables:
 
 ```
-$ export GITHUB_TOKEN xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-$ export REDIS_URL redis://localhost/
-$ export DATABASE_URL postrgres://localhost/ossert
-$ export TEST_DATABASE_URL postrgres://localhost/ossert_test
+$ export GITHUB_TOKEN_ARRAY=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+$ export REDIS_URL=redis://localhost/
+$ export DATABASE_URL=postgres://localhost/ossert
+$ export TEST_DATABASE_URL=postgres://localhost/ossert_test
 ```
 
 Then you can run:
