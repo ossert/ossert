@@ -75,7 +75,7 @@ module Ossert
       def process_daily_downloads
         daily_downloads.each do |daily|
           downloads_saved = community.quarters[daily[:date]].delta_downloads.to_i
-          community.quarters[daily[:date]].delta_downloads = downloads_saved + daily[:daily_downloads]
+          community.quarters[daily[:date]].delta_downloads = downloads_saved + daily[:daily_downloads].to_i
         end
       end
 
