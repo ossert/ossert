@@ -19,6 +19,7 @@ require 'ossert/reference'
 require 'ossert/classifiers'
 require 'ossert/workers'
 require 'ossert/twitter'
+require 'ossert/reddit'
 
 module Ossert
   def init(database_url = nil)

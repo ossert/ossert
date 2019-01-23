@@ -9,6 +9,7 @@ require 'ossert/fetch/github'
 require 'ossert/fetch/rubygems'
 require 'ossert/fetch/bestgems'
 require 'ossert/fetch/stackoverflow'
+require 'ossert/fetch/reddit'
 require 'ossert/fetch/twitter'
 
 module Ossert

@@ -166,6 +166,16 @@ stats:
         questions_count: Ossert::Zero
         questions_resolved_count: Ossert::Zero
         last_question_date: Ossert::Zero
+        reddit_comment_scores: Array
+        reddit_commentators: Array
+        reddit_comments: Array
+        reddit_submission_comment_numbers: Array
+        reddit_submission_scores: Array
+        reddit_submitters: Array
+        reddit_submissions: Array
+        reddit_users: Array
+        reddit_last_submission_date: Ossert::Zero
+        reddit_last_comment_date: Ossert::Zero
     quarter:
       metrics:
         - users_creating_issues_count
@@ -219,3 +229,11 @@ stats:
         question_view: Array
         question_score: Array
         answers: Array
+        reddit_comment_scores: Array
+        reddit_commentators: Array
+        reddit_comments: Array
+        reddit_submission_comment_numbers: Array
+        reddit_submission_scores: Array
+        reddit_submitters: Array
+        reddit_submissions: Array
+        reddit_users: Array
