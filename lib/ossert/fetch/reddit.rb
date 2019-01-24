@@ -36,6 +36,10 @@ module Ossert
         community_total = @project.community.total
 
         fill_with_formatter(community_total, data)
+
+        community_total.reddit_last_comment_date = last_comment['created_utc']
+        community_total.reddit_last_submission_date =
+          last_submission['created_utc']
       end
 
       def formatted(submissions, comments)
@@ -56,6 +60,14 @@ module Ossert
           submissions: @raw_fetcher.submissions(name, range),
           comments: @raw_fetcher.comments(name, range)
         }
+      end
+
+      def last_submission
+        plain_data[:submissions].first || {}
+      end
+
+      def last_comment
+        plain_data[:comments].first || {}
       end
 
       def quartered_data
