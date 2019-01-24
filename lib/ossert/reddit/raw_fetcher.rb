@@ -8,7 +8,6 @@ module Ossert
     class RawFetcher
       BASE_URI = 'https://api.pushshift.io'
       # maximum amount of items possible for a single response
-      RESPONSE_LIMIT = 1000
       REQUST_LIMIT_PER_MINUTE = 180
       SUBREDDITS = %w[ruby rails learn_ruby].freeze
       COMMENT_FIELDS = %w[id created_utc score author link_id].freeze
@@ -17,21 +16,20 @@ module Ossert
 
       def initialize
         @connection = Faraday.new(BASE_URI)
-        @query_builder = QueryBuilder.new(subreddits: SUBREDDITS,
-                                          response_limit: RESPONSE_LIMIT)
+        @query_builder = QueryBuilder.new(subreddits: SUBREDDITS)
       end
 
-      def submissions(topic, time_range)
+      def submissions(topic, time_range = nil)
         query = @query_builder.submission_search(topic, time_range)
         fetch_data(query, SUBMISSION_FIELDS)
       end
 
-      def comments(topic, time_range)
+      def comments(topic, time_range = nil)
         query = @query_builder.comment_search(topic, time_range)
         fetch_data(query, COMMENT_FIELDS)
       end
 
-      def submission_comments(id, time_range)
+      def submission_comments(id, time_range = nil)
         query = @query_builder.submission_comment_list(id, time_range)
         fetch_data(query, COMMENT_FIELDS)
       end
@@ -44,13 +42,13 @@ module Ossert
 
       # keep fetching reducing the range until we get all of results
       def fetch_all_portions(query, fields)
-        slices = []
+        portions = []
         loop do
-          slice = ResponsePortion.new(fetch_json(query), fields)
-          slices << slice
-          return slices if slice.exhaustive_for?(query)
+          portion = ResponsePortion.new(fetch_json(query), fields)
+          portions << portion
+          return portions if portion.exhaustive_for?(query)
 
-          query.set_param(:before, slice.last_item_creation_time)
+          query[:before] = portion.last_item_creation_time
         end
       end
 
@@ -70,7 +68,9 @@ module Ossert
         attr_reader :data
 
         def initialize(data, fields)
-          @data = data.map { |item| item.slice(*fields) }
+          @data = data.map do |item|
+            item.select { |key| fields.include? key }
+          end
         end
 
         def exhaustive_for?(query)
@@ -78,7 +78,7 @@ module Ossert
         end
 
         def last_item_creation_time
-          raise 'slice is empty' if @data.empty?
+          raise 'Portion is empty' if @data.empty?
 
           @data.last['created_utc']
         end

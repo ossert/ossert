@@ -6,26 +6,27 @@ module Ossert
   module Reddit
     # Simplify Query construction
     class QueryBuilder
+      LIMIT = 1000
+
       attr_reader :response_limit
 
-      def initialize(subreddits:, response_limit:)
+      def initialize(subreddits:)
         @subreddits = subreddits
-        @response_limit = response_limit
       end
 
-      def submission_search(topic, range)
+      def submission_search(topic, range = nil)
         build_base_query('/reddit/submission/search', range).tap do |query|
           query.set_param(:q, topic)
         end
       end
 
-      def comment_search(topic, range)
+      def comment_search(topic, range = nil)
         build_base_query('/reddit/comment/search', range).tap do |query|
           query.set_param(:q, topic)
         end
       end
 
-      def submission_comment_list(topic_id, range)
+      def submission_comment_list(topic_id, range = nil)
         build_base_query('/reddit/comment/search', range).tap do |query|
           query.set_param(:link_id, topic_id)
         end
@@ -34,10 +35,16 @@ module Ossert
       private
 
       def build_base_query(path, range)
-        Query.new(path: path,
-                  range: range,
-                  limit: @response_limit,
-                  subreddits: @subreddits)
+        Query.new(path, default_query_params).tap do |query|
+          query.range = range if range
+        end
+      end
+
+      def default_query_params
+        { limit: LIMIT,
+          sort: :desc,
+          sort_type: :created_utc,
+          subreddit: @subreddits.join(',') }
       end
     end
   end

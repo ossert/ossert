@@ -50,7 +50,7 @@ module Ossert
 
       def plain_data
         name = @project.name
-        range = Ossert::Reddit::TimeRange.exhaustive
+        range = Time.at(0)..Time.now
 
         @plain_data ||= {
           submissions: @raw_fetcher.submissions(name, range),
