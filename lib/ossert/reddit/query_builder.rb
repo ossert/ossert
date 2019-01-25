@@ -4,7 +4,7 @@ require_relative './query'
 
 module Ossert
   module Reddit
-    # Simplify Query construction
+    # Query Builder for common cases
     class QueryBuilder
       LIMIT = 1000
 
@@ -15,20 +15,20 @@ module Ossert
       end
 
       def submission_search(topic, range = nil)
-        build_base_query('/reddit/submission/search', range).tap do |query|
-          query.set_param(:q, topic)
+        build_base_query('reddit/submission/search', range).tap do |query|
+          query[:q] = topic
         end
       end
 
       def comment_search(topic, range = nil)
-        build_base_query('/reddit/comment/search', range).tap do |query|
-          query.set_param(:q, topic)
+        build_base_query('reddit/comment/search', range).tap do |query|
+          query[:q] = topic
         end
       end
 
       def submission_comment_list(topic_id, range = nil)
-        build_base_query('/reddit/comment/search', range).tap do |query|
-          query.set_param(:link_id, topic_id)
+        build_base_query('reddit/comment/search', range).tap do |query|
+          query[:link_id] = topic_id
         end
       end
 

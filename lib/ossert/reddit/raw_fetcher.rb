@@ -4,9 +4,8 @@ require_relative './query_builder'
 
 module Ossert
   module Reddit
-    # Fetch data
+    # Data fetcher in a hash format
     class RawFetcher
-      # maximum amount of items possible for a single response
       REQUST_LIMIT_PER_MINUTE = 180
       SUBREDDITS = %w[ruby rails learn_ruby].freeze
       COMMENT_FIELDS = %i[id created_utc score author link_id].freeze

@@ -2,7 +2,7 @@
 
 module Ossert
   module Reddit
-    # Format raw data into metrics
+    # Ossert-friendly formatter for groups of data
     class Formatter
       FIELDS = %i[comment_scores
                   commentators

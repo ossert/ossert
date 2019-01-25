@@ -78,8 +78,8 @@ module Ossert
       end
 
       def divide_plain_data_by_quarters
-        all_submissions = group_by_quater plain_data[:submissions]
-        all_comments = group_by_quater plain_data[:comments]
+        all_submissions = group_by_quarter plain_data[:submissions]
+        all_comments = group_by_quarter plain_data[:comments]
         all_quarters = all_submissions.keys & all_comments.keys
 
         all_quarters.each_with_object({}) do |quarter, result|
@@ -88,7 +88,7 @@ module Ossert
         end
       end
 
-      def group_by_quater(data)
+      def group_by_quarter(data)
         data.group_by do |item|
           Time.at(item[:created_utc]).beginning_of_quarter.to_i
         end
