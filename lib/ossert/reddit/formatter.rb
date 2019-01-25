@@ -4,7 +4,7 @@ module Ossert
   module Reddit
     # Format raw data into metrics
     class Formatter
-      FIELDS = %w[comment_scores
+      FIELDS = %i[comment_scores
                   commentators
                   comments
                   submission_comment_numbers
@@ -53,18 +53,18 @@ module Ossert
 
       def parse_submissions(data)
         data.each do |hash|
-          @submissions << hash['id']
-          @submission_comment_numbers << hash['num_comments']
-          @submission_scores << hash['score']
-          @submitters << hash['author']
+          @submissions << hash[:id]
+          @submission_comment_numbers << hash[:num_comments]
+          @submission_scores << hash[:score]
+          @submitters << hash[:author]
         end
       end
 
       def parse_comments(data)
         data.each do |hash|
-          @commentators << hash['author']
-          @comments << hash['id']
-          @comment_scores << hash['score']
+          @commentators << hash[:author]
+          @comments << hash[:id]
+          @comment_scores << hash[:score]
         end
       end
     end

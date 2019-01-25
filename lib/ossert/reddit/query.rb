@@ -18,7 +18,7 @@ module Ossert
         @params[:limit]
       end
 
-      def to_faraday_param_list
+      def to_param_list
         [@path, @params]
       end
 

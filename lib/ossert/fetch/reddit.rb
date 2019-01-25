@@ -4,6 +4,8 @@ module Ossert
   module Fetch
     # Class implementing `Reddit` crawler.
     class Reddit
+      BASE_URI = 'https://api.pushshift.io/'
+
       attr_reader :client, :project
 
       # for delegators
@@ -12,7 +14,8 @@ module Ossert
 
       def initialize(project)
         @project = project
-        @raw_fetcher = Ossert::Reddit::RawFetcher.new
+        client = SimpleClient.new(BASE_URI)
+        @raw_fetcher = Ossert::Reddit::RawFetcher.new(client)
       end
 
       def process
@@ -37,9 +40,9 @@ module Ossert
 
         fill_with_formatter(community_total, data)
 
-        community_total.reddit_last_comment_date = last_comment['created_utc']
+        community_total.reddit_last_comment_date = last_comment[:created_utc]
         community_total.reddit_last_submission_date =
-          last_submission['created_utc']
+          last_submission[:created_utc]
       end
 
       def formatted(submissions, comments)
@@ -87,7 +90,7 @@ module Ossert
 
       def group_by_quater(data)
         data.group_by do |item|
-          Time.at(item['created_utc']).beginning_of_quarter.to_i
+          Time.at(item[:created_utc]).beginning_of_quarter.to_i
         end
       end
     end

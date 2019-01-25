@@ -6,16 +6,15 @@ module Ossert
   module Reddit
     # Fetch data
     class RawFetcher
-      BASE_URI = 'https://api.pushshift.io'
       # maximum amount of items possible for a single response
       REQUST_LIMIT_PER_MINUTE = 180
       SUBREDDITS = %w[ruby rails learn_ruby].freeze
-      COMMENT_FIELDS = %w[id created_utc score author link_id].freeze
-      SUBMISSION_FIELDS = %w[title name id created_utc score author
+      COMMENT_FIELDS = %i[id created_utc score author link_id].freeze
+      SUBMISSION_FIELDS = %i[title name id created_utc score author
                              num_comments full_link author].freeze
 
-      def initialize
-        @connection = Faraday.new(BASE_URI)
+      def initialize(client)
+        @client = client
         @query_builder = QueryBuilder.new(subreddits: SUBREDDITS)
       end
 
@@ -54,8 +53,7 @@ module Ossert
 
       def fetch_json(query)
         ensure_rate_limits
-        response = @connection.get(*query.to_faraday_param_list)
-        Oj.load(response.body)['data']
+        @client.get(*query.to_param_list)[:data]
       end
 
       # just keep average pace
@@ -80,7 +78,7 @@ module Ossert
         def last_item_creation_time
           raise 'Portion is empty' if @data.empty?
 
-          @data.last['created_utc']
+          @data.last[:created_utc]
         end
       end
     end
