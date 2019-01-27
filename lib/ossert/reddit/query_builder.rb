@@ -26,12 +26,6 @@ module Ossert
         end
       end
 
-      def submission_comment_list(topic_id, range = nil)
-        build_base_query('reddit/comment/search', range).tap do |query|
-          query[:link_id] = topic_id
-        end
-      end
-
       private
 
       def build_base_query(path, range)

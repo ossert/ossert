@@ -7,6 +7,8 @@ module Ossert
     # Data fetcher in a hash format
     class RawFetcher
       REQUST_LIMIT_PER_MINUTE = 180
+      MAX_ATTEMPTS_TO_FETCH = 3
+      AWAIT_BEFORE_RETRY = 3
       SUBREDDITS = %w[ruby rails learn_ruby].freeze
       COMMENT_FIELDS = %i[id created_utc score author link_id].freeze
       SUBMISSION_FIELDS = %i[title name id created_utc score author
@@ -24,11 +26,6 @@ module Ossert
 
       def comments(topic, time_range = nil)
         query = @query_builder.comment_search(topic, time_range)
-        fetch_data(query, COMMENT_FIELDS)
-      end
-
-      def submission_comments(id, time_range = nil)
-        query = @query_builder.submission_comment_list(id, time_range)
         fetch_data(query, COMMENT_FIELDS)
       end
 
@@ -51,8 +48,20 @@ module Ossert
       end
 
       def fetch_json(query)
+        @fetch_attempts = 0
         ensure_rate_limits
+        try_to_fetch(query)
+      end
+
+      def try_to_fetch(query)
         @client.get(*query.to_param_list)[:data]
+      rescue StandardError => error
+        raise error unless @fetch_attempts < MAX_ATTEMPTS_TO_FETCH
+
+        puts "Got an error #{error} retrying..."
+        sleep AWAIT_BEFORE_RETRY
+        @fetch_attempts += 1
+        retry
       end
 
       # just keep average pace
