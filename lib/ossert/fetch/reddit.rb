@@ -57,7 +57,7 @@ module Ossert
 
       def plain_data
         name = @project.name
-        range = Time.at(0)..Time.now
+        range = (Time.at(0))..(Time.now.utc)
 
         @plain_data ||= {
           submissions: @raw_fetcher.submissions(name, range),
