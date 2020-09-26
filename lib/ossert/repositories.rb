@@ -3,8 +3,11 @@
 require 'oj'
 require 'multi_json'
 
+Sequel::Model.require_valid_table = false
+
 class NameException < Sequel::Model(:exceptions)
   set_primary_key [:name]
+
   class << self
     alias by_name []
   end

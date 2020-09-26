@@ -106,7 +106,7 @@ module Ossert
         }
 
         GRADES.each_with_object(train_group) do |grade, grouped_projects|
-          grouped_projects[grade].each do |project|
+          grouped_projects[grade].to_a.each do |project|
             SECTIONS.product(PERIODS).each do |section, period|
               classifier_name = "#{section}_#{period}".to_sym
               result[classifier_name] << (project.data_for(section: section, period: period).values << grade)

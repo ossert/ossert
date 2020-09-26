@@ -1,4 +1,6 @@
 # frozen_string_literal: true
+require 'dotenv'
+Dotenv.load('.env.test.local', '.env.test')
 
 require 'uri'
 
@@ -17,15 +19,14 @@ namespace :db do
   end
 
   def db_opts(uri)
-    ["-h #{uri.host}"].tap do |opts|
+    host = uri.host || 'localhost'
+    ["-h #{host}"].tap do |opts|
       opts << "-U #{uri.user}" if uri.user
     end.join(' ')
   end
 
   namespace :test do
     task :prepare do
-      require 'dotenv'
-      Dotenv.load('.env.test.local', '.env.test')
       uri = URI(ENV.fetch('DATABASE_URL'))
 
       drop_db(uri)
