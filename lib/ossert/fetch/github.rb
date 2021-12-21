@@ -122,8 +122,7 @@ module Ossert
       def date_from_tag(sha)
         tag_info = tag_info(sha)
         return tag_info[:tagger][:date] if tag_info
-        value = commit(sha)[:commit][:committer][:date]
-        DateTime.new(*value.split('-').map(&:to_i)).to_i
+        commit(sha)[:commit][:committer][:date].to_date.to_datetime.to_i
       end
 
       def commits_since(date)
@@ -199,7 +198,7 @@ module Ossert
         agility.quarters[pull[:merged_at]].pr_merged << pull[:url] if pull[:merged_at]
 
         return unless pull[:closed_at].present?
-        days_to_close = (Date.parse(pull[:closed_at]) - Date.parse(pull[:created_at])).to_i + 1
+        days_to_close = (pull[:closed_at].to_date - pull[:created_at].to_date).to_i + 1
         @pulls_processed_in_days << days_to_close
         (agility.quarters[pull[:closed_at]].pr_processed_in_days ||= []) << days_to_close
       end
@@ -282,7 +281,7 @@ module Ossert
         agility.quarters[issue[:closed_at]].issues_closed << issue[:url] if issue[:closed_at]
 
         return unless issue[:closed_at].present?
-        days_to_close = (Date.parse(issue[:closed_at]) - Date.parse(issue[:created_at])).to_i + 1
+        days_to_close = (issue[:closed_at].to_date - issue[:created_at].to_date).to_i + 1
         @issues_processed_in_days << days_to_close
         (agility.quarters[issue[:closed_at]].issues_processed_in_days ||= []) << days_to_close
       end
