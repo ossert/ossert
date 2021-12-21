@@ -8,7 +8,7 @@ module Ossert
       extend Forwardable
       def_delegators :project, :agility, :community, :meta
 
-      GITHUB_REPO_REGEX = %r{github.com/([a-zA-Z0-9\.\_\-]+)/([a-zA-Z0-9\.\_\-]+)}
+      GITHUB_REPO_REGEX = %r{github.com/([a-zA-Z0-9\.\_\-]+)/([a-zA-Z0-9\.\_\-]+)}.freeze
 
       def initialize(project)
         @client = SimpleClient.new('https://rubygems.org/api/v1/')
@@ -39,19 +39,20 @@ module Ossert
 
       def process_links
         meta.merge!(
-          homepage_url:      info[:homepage_uri],
-          docs_url:          info[:documentation_uri],
-          wiki_url:          info[:wiki_uri],
-          source_url:        info[:source_code_uri],
+          homepage_url: info[:homepage_uri],
+          docs_url: info[:documentation_uri],
+          wiki_url: info[:wiki_uri],
+          source_url: info[:source_code_uri],
           issue_tracker_url: info[:bug_tracker_uri],
-          mailing_list_url:  info[:mailing_list_uri],
-          rubygems_url:      info[:project_uri],
+          mailing_list_url: info[:mailing_list_uri],
+          rubygems_url: info[:project_uri],
           github_url: "https://github.com/#{project.github_alias}" # or exception!
         )
       end
 
       def process_github_alias
         return unless project.github_alias.blank?
+
         match = info[:source_code_uri].try(:match, GITHUB_REPO_REGEX) ||
                 info[:homepage_uri].try(:match, GITHUB_REPO_REGEX)
         project.github_alias = match ? "#{match[1]}/#{match[2]}" : NO_GITHUB_NAME

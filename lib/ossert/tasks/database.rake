@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require 'dotenv'
 Dotenv.load('.env.test.local', '.env.test')
 
@@ -136,6 +137,7 @@ namespace :db do
 
   def command_for_file(file, db_url)
     return puts("No recognized dump file suffix: #{file}") unless (fmt = format_for_file(file)).present?
+
     "pg_restore -d '#{db_url}' -F #{fmt} -v -c #{file}"
   end
 

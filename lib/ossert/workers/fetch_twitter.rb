@@ -26,10 +26,10 @@ module Ossert
         raise ArgumentError if project.without_github_data?
 
         Ossert::Fetch::Twitter.new(project, credentials).process
-      rescue ::Twitter::Error::TooManyRequests => exception
-        defer_time = exception.rate_limit.reset_at + DEFER_TOKEN_DELTA
+      rescue ::Twitter::Error::TooManyRequests => e
+        defer_time = e.rate_limit.reset_at + DEFER_TOKEN_DELTA
         Ossert::Twitter::TokensRotator.defer_token(access_token, defer_time)
-        raise exception
+        raise e
       end
 
       private

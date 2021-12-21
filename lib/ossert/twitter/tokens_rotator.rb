@@ -21,6 +21,7 @@ module Ossert
           Credentials.access_tokens.shuffle.each do |token|
             time = time(token_key(token))
             return token if time.nil? || time < now
+
             defer_times.push(time)
           end
 

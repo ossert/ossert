@@ -26,7 +26,7 @@ require 'sidekiq/testing'
 require 'rspec-sidekiq'
 require 'timecop'
 require 'vcr'
-Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each { |f| require f }
+Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].sort.each { |f| require f }
 
 VCR.configure do |c|
   c.configure_rspec_metadata!

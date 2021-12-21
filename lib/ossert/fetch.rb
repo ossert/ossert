@@ -116,6 +116,7 @@ module Ossert
       # Returns nothing.
       def initialize(api_endpoint, type = nil)
         raise ArgumentError if !api_endpoint.start_with?('http') || !api_endpoint.end_with?('/')
+
         @api_endpoint = api_endpoint
         @type = type || 'json'
       end

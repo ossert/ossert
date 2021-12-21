@@ -21,6 +21,7 @@ module Ossert
       found_section = :not_found
       section_by_metric.each do |section, metrics|
         next unless metrics.include? metric
+
         found_section = section
         break
       end

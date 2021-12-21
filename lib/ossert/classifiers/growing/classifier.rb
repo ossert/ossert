@@ -88,6 +88,7 @@ module Ossert
         # @return [Array<Float>] a list of calculated thresholds
         def syntetic_step_thresholds(values_range)
           return ->(idx) { values_range[idx] } if values_range.count == GRADES.count
+
           max, min = values_range.map(&:to_i)
           step = ((max - min) / GRADES.count.to_f).round(2)
           max.step(min, -step).to_a
@@ -123,6 +124,7 @@ module Ossert
             GRADES.first(GRADES.count / 2).each do |grade|
               grade_metrics = classifier[grade]
               next unless grade_metrics[reversed_metric].present?
+
               reversed_grade_metrics = classifier[REVERSED_GRADES[grade]]
 
               reversed_grade_metrics[reversed_metric], grade_metrics[reversed_metric] =

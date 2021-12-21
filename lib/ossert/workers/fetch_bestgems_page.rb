@@ -21,6 +21,7 @@ module Ossert
             process_in_fork do
               Ossert.init
               next(logger.info("Skipping project: '#{gem_name}'")) if Ossert::Project.exist?(gem_name)
+
               Ossert::Project.fetch_all(gem_name)
             end
           end

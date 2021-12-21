@@ -17,6 +17,7 @@ module Ossert
 
         @project = project
         raise ArgumentError unless (@repo_name = project.github_alias).present?
+
         @owner = @repo_name.split('/')[0]
         @requests_count = 0
       end
@@ -122,6 +123,7 @@ module Ossert
       def date_from_tag(sha)
         tag_info = tag_info(sha)
         return tag_info[:tagger][:date] if tag_info
+
         commit(sha)[:commit][:committer][:date].to_date.to_datetime.to_i
       end
 
@@ -198,6 +200,7 @@ module Ossert
         agility.quarters[pull[:merged_at]].pr_merged << pull[:url] if pull[:merged_at]
 
         return unless pull[:closed_at].present?
+
         days_to_close = (pull[:closed_at].to_date - pull[:created_at].to_date).to_i + 1
         @pulls_processed_in_days << days_to_close
         (agility.quarters[pull[:closed_at]].pr_processed_in_days ||= []) << days_to_close
@@ -281,6 +284,7 @@ module Ossert
         agility.quarters[issue[:closed_at]].issues_closed << issue[:url] if issue[:closed_at]
 
         return unless issue[:closed_at].present?
+
         days_to_close = (issue[:closed_at].to_date - issue[:created_at].to_date).to_i + 1
         @issues_processed_in_days << days_to_close
         (agility.quarters[issue[:closed_at]].issues_processed_in_days ||= []) << days_to_close
@@ -298,6 +302,7 @@ module Ossert
 
         issues do |issue|
           next if issue.key? :pull_request
+
           case issue[:state]
           when 'open'
             process_open_issue(issue)
@@ -491,6 +496,7 @@ module Ossert
         rescue Octokit::InternalServerError => e
           attempt += 1
           raise if attempt > MAX_ATTEMPTS
+
           puts "Github Error: #{e.inspect}... retrying"
           sleep(attempt * 5.minutes)
           retry

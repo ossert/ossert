@@ -21,33 +21,30 @@ require 'ossert/workers'
 require 'ossert/twitter'
 
 module Ossert
+  module_function
+
   def init(database_url = nil)
     Sequel.connect(database_url || ENV.fetch('DATABASE_URL'))
     require 'ossert/repositories'
   end
-  module_function :init
 
   def description(key)
     descriptions.fetch(key.to_s, "Description for '#{key}' - not found")
   end
   alias descr description
-  module_function :descr
 
   def descriptions
     @descriptions ||= ::Settings['descriptions']
   end
-  module_function :descriptions
 
   def translate(key)
     translations.fetch(key.to_s, "Translation for '#{key}' - not found")
   end
   alias t translate
-  module_function :t
 
   def translations
     @translations ||= ::Settings['translations']
   end
-  module_function :translations
 
   # The reserved GitHub name for a project without GitHub link
   NO_GITHUB_NAME = '__unknown__'

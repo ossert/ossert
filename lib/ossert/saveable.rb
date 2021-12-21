@@ -20,6 +20,7 @@ module Ossert
       value = ATTRIBUTE_EXTRACT_VALUE_MAP.fetch(attriibute).call(self)
 
       raise 'Not saved yet, sorry!' unless (found_project = ::Project.find(name: name))
+
       found_project.update(attriibute => value, updated_at: Time.now.utc)
       nil
     end

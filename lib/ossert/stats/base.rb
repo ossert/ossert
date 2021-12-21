@@ -118,6 +118,7 @@ module Ossert
             define_method("#{metric}_percent") do
               total_count = get_count(total)
               return default_value if total_count.zero?
+
               metric_count = get_count(metric)
 
               (metric_count.to_d / total_count.to_d * 100).round(2)
@@ -212,6 +213,7 @@ module Ossert
       def <<(other_stats)
         self.class.attributes_names.each do |attr|
           next unless (other_value = other_stats.instance_variable_get("@#{attr}"))
+
           new_value = other_value
           new_value += instance_variable_get("@#{attr}") unless self.class.absolute_attributes.include?(attr)
           new_value.uniq! if self.class.uniq_attributes.include?(attr)

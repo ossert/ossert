@@ -10,9 +10,9 @@ module Ossert
       define_percent(
         issues_active: :issues_all,
         issues_closed: :issues_all,
-        pr_active:     :pr_all,
-        pr_closed:     :pr_all,
-        pr_merged:     :pr_all,
+        pr_active: :pr_all,
+        pr_closed: :pr_all,
+        pr_merged: :pr_all,
         default_value: 100.0
       )
 
@@ -27,6 +27,7 @@ module Ossert
 
       def issues_processed_in_avg
         return PER_QUARTER_TOO_LONG if (count = Array(issues_processed_in_days).size).zero?
+
         issues_processed_in_days.sum / count
       end
 
@@ -36,6 +37,7 @@ module Ossert
 
       def pr_processed_in_avg
         return PER_QUARTER_TOO_LONG if (count = Array(pr_processed_in_days).size).zero?
+
         pr_processed_in_days.sum / count
       end
 

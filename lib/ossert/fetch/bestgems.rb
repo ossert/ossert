@@ -92,7 +92,7 @@ module Ossert
       private
 
       def divergence(delta, total)
-        (delta.to_f / total.to_f * 100.0).round(2)
+        (delta.to_f / total * 100.0).round(2)
       end
     end
   end

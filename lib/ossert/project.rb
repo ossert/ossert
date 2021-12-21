@@ -68,12 +68,14 @@ module Ossert
     # Returns a Hash with subject as a key and its grade as a value.
     def grade_by_growing_classifier
       raise unless Classifiers::Growing.current.ready?
+
       Classifiers::Growing.current.grade(self)
     end
     alias grade_by_classifier grade_by_growing_classifier
 
     def grade_by_cluster
       raise unless Classifiers::Cluster.current.ready?
+
       Classifiers::Cluster.current.grade(self)
     end
 
@@ -82,6 +84,7 @@ module Ossert
     # Returns a Hash with subject as a key and a Hash of grade and its details as a value.
     def analyze_by_decisision_tree
       raise unless Classifiers::DecisionTree.current.ready?
+
       Classifiers::DecisionTree.current.check(self)
     end
 

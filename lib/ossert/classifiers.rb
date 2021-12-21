@@ -8,6 +8,8 @@ require 'ossert/classifiers/check'
 
 module Ossert
   module Classifiers
+    module_function
+
     # The list of available data sections.
     SECTIONS = %i[agility community].freeze
     # The list of available data periods.
@@ -29,7 +31,6 @@ module Ossert
       # Stale. Very untrusty
       DecisionTree.new(Project.projects_by_reference).train
     end
-    module_function :train
 
     # Helper class for threshold value to range conversion
     class ThresholdToRange
@@ -84,6 +85,7 @@ module Ossert
         # @return [Float] where to start the result range
         def start_value
           return -Float::INFINITY if worst_value?
+
           @value
         end
 
@@ -108,6 +110,7 @@ module Ossert
         # @return [Float] where to end the result range
         def end_value
           return Float::INFINITY if worst_value?
+
           @value
         end
       end

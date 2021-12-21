@@ -70,6 +70,7 @@ module Ossert
           base = { type: KLASS_2_GRADE[klass].downcase, quarter: ' N/A ', last_year: ' N/A ', total: ' N/A ' }
           rank = %i[quarter last_year total].each_with_object(base) do |period, result|
             next unless (metric_data = metric_tooltip_data(metric, section, period, klass)).present?
+
             result[period] = metric_data
           end
           rank[:year] = rank.delete(:last_year)
@@ -92,6 +93,7 @@ module Ossert
       # @return [String] information about threshold for a tooltip
       def metric_tooltip_data(metric, section, period, klass)
         return if section == :not_found # WTF?!? this should not happen
+
         classifier_name = "#{section}_#{period}".to_sym
         return unless (metric_by_grades = @reference[classifier_name][metric.to_s])
 

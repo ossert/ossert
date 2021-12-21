@@ -83,6 +83,7 @@ module Ossert
             GRADES.first(GRADES.count / 2).each do |grade|
               grade_metrics = classifier[grade]
               next unless grade_metrics[reversed_metric].present?
+
               reversed_grade_metrics = classifier[REVERSED_GRADES[grade]]
 
               reversed_grade_metrics[reversed_metric], grade_metrics[reversed_metric] =
@@ -128,6 +129,7 @@ module Ossert
 
         Ossert::Project.yield_all do |project|
           next if project.without_github_data?
+
           project_data = project.data_for(section: section, period: period)
           section_klass.metrics.each do |metric|
             (data[period][metric] ||= []) << [project_data[metric]]
