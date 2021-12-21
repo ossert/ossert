@@ -28,19 +28,17 @@ module Ossert
     require 'ossert/repositories'
   end
 
-  def description(key)
+  def descr(key)
     descriptions.fetch(key.to_s, "Description for '#{key}' - not found")
   end
-  alias descr description
 
   def descriptions
     @descriptions ||= ::Settings['descriptions']
   end
 
-  def translate(key)
+  def t(key)
     translations.fetch(key.to_s, "Translation for '#{key}' - not found")
   end
-  alias t translate
 
   def translations
     @translations ||= ::Settings['translations']
